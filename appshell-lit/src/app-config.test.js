@@ -1,0 +1,209 @@
+import { describe, expect, it } from 'vitest'
+import {
+  CONFIG_FILE,
+  applyEnvOverrides,
+  configSource,
+  envName,
+  mergeAppConfig,
+  resolveAppConfig,
+  validateAppConfig,
+} from './app-config.js'
+
+describe('validateAppConfig', () => {
+  it('aceita a config da demo e as opções conhecidas', () => {
+    const config = {
+      title: 'App',
+      storagePrefix: 'app',
+      accessibility: false,
+      analytics: { id: 'G-ABC123', requireConsent: true, privacyUrl: '#/p' },
+      push: { vapidPublicKey: 'BAbc_-' },
+      debug: true,
+      manifest: { theme_color: '#000' },
+    }
+    expect(validateAppConfig(config)).toBe(config)
+  })
+
+  it('opção desconhecida quebra (um "titulo" não pode sumir em silêncio)', () => {
+    expect(() => validateAppConfig({ titulo: 'X' })).toThrow(/"titulo" não é uma opção conhecida/)
+    expect(() => validateAppConfig({ analytics: { measurementId: 'G-1' } })).toThrow(/analytics: "measurementId"/)
+  })
+
+  it('recusa segredos em qualquer nível', () => {
+    expect(() => validateAppConfig({ push: { vapidPrivateKey: 'x' } })).toThrow(/push.vapidPrivateKey" parece um segredo/)
+    expect(() => validateAppConfig({ manifest: { clientSecret: 'x' } })).toThrow(/segredo/)
+    expect(() => validateAppConfig({ workbox: { runtimeCaching: [{ password: 'x' }] } })).toThrow(/runtimeCaching.0.password/)
+  })
+
+  it('valida os tipos e formatos', () => {
+    expect(() => validateAppConfig({ title: 1 })).toThrow(/"title" deve ser texto/)
+    expect(() => validateAppConfig({ storagePrefix: '' })).toThrow(/não pode ser vazio/)
+    expect(() => validateAppConfig({ debug: 'sim' })).toThrow(/"debug"/)
+    expect(() => validateAppConfig({ analytics: { id: 'UA-123' } })).toThrow(/não é um Measurement ID/)
+    expect(() => validateAppConfig({ push: { vapidPublicKey: 'não é chave' } })).toThrow(/base64url/)
+  })
+})
+
+describe('backends', () => {
+  it('aceita a forma completa e a mínima', () => {
+    const backends = {
+      api: { url: 'https://api.test/v1', auth: 'bearer', health: '/health', timeoutMs: 5000 },
+      arquivos: { url: '/files' },
+      ainda: { url: '' },
+    }
+    expect(() => validateAppConfig({ backends, push: { backend: 'api', path: '/push' } })).not.toThrow()
+  })
+
+  it('recusa nome, url, auth, health e timeout inválidos, e opção desconhecida', () => {
+    const bad = (backend, name = 'api') => () => validateAppConfig({ backends: { [name]: backend } })
+    expect(bad({ url: 'x' }, 'Api')).toThrow(/minúsculo/)
+    expect(bad({})).toThrow(/"backends.api.url" é obrigatória/)
+    expect(bad({ url: 'api.test' })).toThrow(/deve começar com http/)
+    expect(bad({ url: '/a', auth: 'basic' })).toThrow(/"none" ou "bearer"/)
+    expect(bad({ url: '/a', health: 'health' })).toThrow(/começando com \//)
+    expect(bad({ url: '/a', timeoutMs: 0 })).toThrow(/inteiro positivo/)
+    expect(bad({ url: '/a', baseUrl: '/b' })).toThrow(/backends.api: "baseUrl"/)
+  })
+
+  it('push.backend precisa de path e de um backend declarado', () => {
+    expect(() => validateAppConfig({ push: { backend: 'api' } })).toThrow(/andam juntos/)
+    expect(() => validateAppConfig({ push: { backend: 'api', path: '/p' } })).toThrow(/não está em "backends"/)
+  })
+
+  it('cada backend declarado tem sua variável de url; o nome antigo cria o "api"', () => {
+    const file = { backends: { api: { url: 'http://localhost:8080' }, 'meus-arquivos': { url: '' } } }
+    const { config, sources } = applyEnvOverrides(file, {
+      VITE_APPSHELL_BACKENDS_API_URL: 'https://api.prod',
+      VITE_APPSHELL_BACKENDS_MEUS_ARQUIVOS_URL: 'https://files.prod',
+    })
+    expect(config.backends).toEqual({ api: { url: 'https://api.prod' }, 'meus-arquivos': { url: 'https://files.prod' } })
+    expect(sources['backends.meus-arquivos.url']).toBe('VITE_APPSHELL_BACKENDS_MEUS_ARQUIVOS_URL')
+
+    const legacy = resolveAppConfig({}, { env: { VITE_REST_API_BASE_URL: 'http://localhost:8080/api' } })
+    expect(legacy.config.backends).toEqual({ api: { url: 'http://localhost:8080/api' } })
+    expect(legacy.sources['backends.api.url']).toBe('VITE_REST_API_BASE_URL')
+  })
+
+  it('url inválida vinda do ambiente quebra o build', () => {
+    expect(() =>
+      resolveAppConfig({ backends: { api: { url: '' } } }, { env: { VITE_APPSHELL_BACKENDS_API_URL: 'api.prod' } }),
+    ).toThrow(/deve começar com http/)
+  })
+})
+
+describe('variáveis de ambiente', () => {
+  it('nome = VITE_APPSHELL_ + caminho em MAIÚSCULAS_COM_SUBLINHADO', () => {
+    expect(envName('title')).toBe('VITE_APPSHELL_TITLE')
+    expect(envName('push.vapidPublicKey')).toBe('VITE_APPSHELL_PUSH_VAPID_PUBLIC_KEY')
+    expect(envName('backends.meu-api.url')).toBe('VITE_APPSHELL_BACKENDS_MEU_API_URL')
+  })
+
+  it('sobrescreve o arquivo, criando o caminho se preciso, e diz de onde veio cada valor', () => {
+    const file = { title: 'Do arquivo', push: { vapidPublicKey: '' } }
+    const env = { VITE_APPSHELL_ANALYTICS_ID: 'G-ENV1', VITE_APPSHELL_PUSH_VAPID_PUBLIC_KEY: 'BKey' }
+    const { config, sources } = applyEnvOverrides(file, env)
+    expect(config).toEqual({ title: 'Do arquivo', analytics: { id: 'G-ENV1' }, push: { vapidPublicKey: 'BKey' } })
+    expect(sources).toEqual({
+      title: CONFIG_FILE,
+      'analytics.id': 'VITE_APPSHELL_ANALYTICS_ID',
+      'push.vapidPublicKey': 'VITE_APPSHELL_PUSH_VAPID_PUBLIC_KEY',
+    })
+    expect(file.push.vapidPublicKey).toBe('') // não altera o original
+  })
+
+  it('nome antigo vale, mas abaixo do novo; variável vazia não apaga o padrão', () => {
+    const legacy = applyEnvOverrides({}, { VITE_GA4_MEASUREMENT_ID: 'G-OLD' })
+    expect(legacy.config.analytics.id).toBe('G-OLD')
+    expect(legacy.sources['analytics.id']).toBe('VITE_GA4_MEASUREMENT_ID')
+    const both = applyEnvOverrides({}, { VITE_GA4_MEASUREMENT_ID: 'G-OLD', VITE_APPSHELL_ANALYTICS_ID: 'G-NEW' })
+    expect(both.config.analytics.id).toBe('G-NEW')
+    expect(applyEnvOverrides({ title: 'Arquivo' }, { VITE_APPSHELL_TITLE: '' }).config.title).toBe('Arquivo')
+  })
+
+  it('resolveAppConfig valida o resultado: id errado vindo do ambiente quebra o build', () => {
+    expect(() => resolveAppConfig({}, { env: { VITE_APPSHELL_ANALYTICS_ID: 'errado' } })).toThrow(/Measurement ID/)
+  })
+
+  it('resolveAppConfig tira as opções de build e resolve o storagePrefix', () => {
+    const { config } = resolveAppConfig(
+      { title: 'X', manifest: { a: 1 }, workbox: {}, accessibility: false },
+      { packageName: 'meu-app' },
+    )
+    expect(config).toEqual({ title: 'X', storagePrefix: 'meu-app' })
+    expect(resolveAppConfig({ storagePrefix: 'px' }, { packageName: 'meu-app' }).config.storagePrefix).toBe('px')
+  })
+
+  it('configSource lê de onde veio um valor', () => {
+    const resolved = { config: {}, sources: { title: CONFIG_FILE } }
+    expect(configSource('title', resolved)).toBe(CONFIG_FILE)
+    expect(configSource('analytics.id', resolved)).toBe(null)
+  })
+})
+
+describe('mergeAppConfig', () => {
+  const file = {
+    title: 'Do arquivo',
+    storagePrefix: 'app',
+    analytics: { id: 'G-1', requireConsent: true },
+    push: { vapidPublicKey: 'BKey' },
+  }
+
+  it('o arquivo preenche o que o main.js não disse; cookiePrefix padrão = storagePrefix', () => {
+    const onSubscribe = () => {}
+    expect(mergeAppConfig({ mount: '#app', push: { onSubscribe } }, file)).toEqual({
+      mount: '#app',
+      title: 'Do arquivo',
+      analytics: { id: 'G-1', requireConsent: true, cookiePrefix: 'app' },
+      push: { vapidPublicKey: 'BKey', onSubscribe },
+    })
+  })
+
+  it('o main.js vence campo a campo, e null desliga o que o arquivo ligou', () => {
+    const merged = mergeAppConfig({ title: 'Do main', analytics: { id: 'G-2' }, push: null }, file)
+    expect(merged.title).toBe('Do main')
+    expect(merged.analytics.id).toBe('G-2')
+    expect(merged.analytics.requireConsent).toBe(true)
+    expect(merged.push).toBe(null)
+    expect(mergeAppConfig({ analytics: null }, file).analytics).toBe(null)
+  })
+
+  it('sem arquivo, a config passa como veio', () => {
+    const config = { title: 'X' }
+    expect(mergeAppConfig(config, {})).toEqual(config)
+  })
+
+  it('mescla share do arquivo e do main.js, e false/null desliga', () => {
+    const fileWithShare = { ...file, share: { title: 'Compartilhar App', networks: ['whatsapp'] } }
+    expect(mergeAppConfig({ share: { networks: ['telegram'] } }, fileWithShare).share).toEqual({
+      title: 'Compartilhar App',
+      networks: ['telegram'],
+    })
+    expect(mergeAppConfig({ share: false }, fileWithShare).share).toBe(false)
+    expect(mergeAppConfig({ share: null }, fileWithShare).share).toBe(null)
+  })
+})
+
+describe('validateAppConfig — share', () => {
+  it('aceita share booleano ou objeto válido', () => {
+    expect(() => validateAppConfig({ share: true })).not.toThrow()
+    expect(() => validateAppConfig({ share: false })).not.toThrow()
+    expect(() =>
+      validateAppConfig({
+        share: {
+          enabled: true,
+          title: 'Compartilhe',
+          networks: ['whatsapp', 'telegram', 'facebook', 'x', 'linkedin', 'copy'],
+          text: 'Meu app',
+          url: 'https://app.test',
+        },
+      }),
+    ).not.toThrow()
+  })
+
+  it('recusa chave desconhecida em share ou tipo inválido', () => {
+    expect(() => validateAppConfig({ share: { extra: 1 } })).toThrow(/share: "extra" não é uma opção conhecida/)
+    expect(() => validateAppConfig({ share: 'sim' })).toThrow(/"share" deve ser um objeto ou boolean/)
+    expect(() => validateAppConfig({ share: { enabled: 'sim' } })).toThrow(/"share.enabled" deve ser true ou false/)
+    expect(() => validateAppConfig({ share: { networks: ['invalida'] } })).toThrow(/não reconhece "invalida"/)
+  })
+})
+

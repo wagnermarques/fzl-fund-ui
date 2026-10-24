@@ -1,0 +1,334 @@
+import { describe, expect, it, vi } from 'vitest'
+import { validateConfig, withPushBackend } from './create-app-shell.js'
+
+const noop = () => {}
+const base = { mount: '#app', home: noop, title: 'App' }
+
+describe('validateConfig', () => {
+  it('aceita a config mínima e preenche os opcionais', () => {
+    expect(validateConfig(base)).toEqual({
+      mount: '#app',
+      routes: [],
+      home: noop,
+      title: 'App',
+      drawer: { sections: [], shellSections: { conta: true, config: true } },
+      headerActions: null,
+      footerItems: null,
+      analytics: { provider: 'none' },
+      auth: null,
+      push: null,
+      share: {
+        enabled: true,
+        title: 'Compartilhar este app',
+        networks: ['whatsapp', 'telegram', 'facebook', 'x', 'linkedin', 'copy'],
+        text: '',
+        url: '',
+      },
+      on: {},
+      debug: false,
+    })
+  })
+
+  it('aceita listeners de eventos do shell em "on"', () => {
+    const on = { 'auth:login': noop, 'network:offline': noop }
+    expect(validateConfig({ ...base, on }).on).toBe(on)
+  })
+
+  it('recusa "on" com evento desconhecido ou listener que não é função', () => {
+    expect(() => validateConfig({ ...base, on: [] })).toThrow(/"on" deve ser um objeto/)
+    expect(() => validateConfig({ ...base, on: { 'user:login': noop } })).toThrow(/não reconhece o evento "user:login"/)
+    expect(() => validateConfig({ ...base, on: { 'auth:login': 'x' } })).toThrow(/on\["auth:login"\] deve ser uma função/)
+  })
+
+  it('push: chave vazia desliga; chave preenchida exige onSubscribe', () => {
+    expect(validateConfig({ ...base, push: { vapidPublicKey: '', onSubscribe: noop } }).push).toBe(null)
+    expect(() => validateConfig({ ...base, push: { vapidPublicKey: 'BAbc_-' } })).toThrow(/onSubscribe/)
+    expect(validateConfig({ ...base, push: { vapidPublicKey: 'BAbc_-', onSubscribe: noop } }).push).toEqual({
+      vapidPublicKey: 'BAbc_-',
+      onSubscribe: noop,
+      onUnsubscribe: undefined,
+    })
+  })
+
+  it('recusa "debug" que não é booleano', () => {
+    expect(() => validateConfig({ ...base, debug: 'sim' })).toThrow(/"debug"/)
+  })
+
+  it('aceita um elemento como mount, não só um seletor', () => {
+    const el = {}
+    expect(validateConfig({ ...base, mount: el }).mount).toBe(el)
+  })
+
+  it('passa as rotas do app adiante quando válidas', () => {
+    const route = { name: 'busca', match: noop, render: noop }
+    expect(validateConfig({ ...base, routes: [route] }).routes).toEqual([route])
+  })
+
+  it('recusa config ausente ou não-objeto', () => {
+    expect(() => validateConfig()).toThrow(/config é obrigatório/)
+    expect(() => validateConfig('x')).toThrow(/config é obrigatório/)
+  })
+
+  it('recusa mount ausente', () => {
+    expect(() => validateConfig({ ...base, mount: undefined })).toThrow(/"mount"/)
+  })
+
+  it('recusa home ausente ou que não seja função', () => {
+    expect(() => validateConfig({ ...base, home: undefined })).toThrow(/"home"/)
+    expect(() => validateConfig({ ...base, home: 'x' })).toThrow(/"home"/)
+  })
+
+  it('recusa title ausente ou vazio', () => {
+    expect(() => validateConfig({ ...base, title: undefined })).toThrow(/"title"/)
+    expect(() => validateConfig({ ...base, title: '' })).toThrow(/"title"/)
+  })
+
+  it('recusa rota sem name', () => {
+    expect(() => validateConfig({ ...base, routes: [{ match: noop, render: noop }] })).toThrow(/precisa de "name"/)
+  })
+
+  it('recusa nomes de rota duplicados', () => {
+    const routes = [
+      { name: 'busca', match: noop, render: noop },
+      { name: 'busca', match: noop, render: noop },
+    ]
+    expect(() => validateConfig({ ...base, routes })).toThrow(/duplicado "busca"/)
+  })
+
+  it('recusa rota sem match', () => {
+    expect(() => validateConfig({ ...base, routes: [{ name: 'busca', render: noop }] })).toThrow(
+      /"busca" precisa de "match"/,
+    )
+  })
+
+  it('recusa rota sem render', () => {
+    expect(() => validateConfig({ ...base, routes: [{ name: 'busca', match: noop }] })).toThrow(
+      /"busca" precisa de "render"/,
+    )
+  })
+
+  it('title da rota (aba do navegador, WCAG 2.4.2) é texto ou função', () => {
+    const route = (title) => ({ name: 'busca', match: noop, render: noop, title })
+    expect(() => validateConfig({ ...base, routes: [route('Busca')] })).not.toThrow()
+    expect(() => validateConfig({ ...base, routes: [route(({ params }) => params.id)] })).not.toThrow()
+    expect(() => validateConfig({ ...base, routes: [route(42)] })).toThrow(/"title" da rota "busca"/)
+  })
+
+  it('recusa headerActions/footerItems que não sejam função', () => {
+    expect(() => validateConfig({ ...base, headerActions: 'x' })).toThrow(/"headerActions"/)
+    expect(() => validateConfig({ ...base, footerItems: 'x' })).toThrow(/"footerItems"/)
+  })
+
+  it('aceita uma seção do drawer com items', () => {
+    const drawer = { sections: [{ id: 'normas', label: 'Normas', items: [{ label: 'Favoritos', href: '#/fav' }] }] }
+    expect(validateConfig({ ...base, drawer }).drawer.sections).toEqual(drawer.sections)
+  })
+
+  it('aceita uma seção do drawer com render', () => {
+    const drawer = { sections: [{ id: 'normas', label: 'Normas', render: noop }] }
+    expect(validateConfig({ ...base, drawer }).drawer.sections).toEqual(drawer.sections)
+  })
+
+  it('recusa seção do drawer sem id', () => {
+    const drawer = { sections: [{ label: 'Normas', items: [] }] }
+    expect(() => validateConfig({ ...base, drawer })).toThrow(/precisa de "id"/)
+  })
+
+  it('recusa ids de seção duplicados', () => {
+    const drawer = {
+      sections: [
+        { id: 'normas', label: 'Normas', items: [] },
+        { id: 'normas', label: 'Normas 2', items: [] },
+      ],
+    }
+    expect(() => validateConfig({ ...base, drawer })).toThrow(/duplicado "normas"/)
+  })
+
+  it('recusa seção sem label', () => {
+    const drawer = { sections: [{ id: 'normas', items: [] }] }
+    expect(() => validateConfig({ ...base, drawer })).toThrow(/"normas" precisa de "label"/)
+  })
+
+  it('recusa seção com items e render ao mesmo tempo, ou nenhum dos dois', () => {
+    const comOsDois = { sections: [{ id: 'normas', label: 'Normas', items: [], render: noop }] }
+    const comNenhum = { sections: [{ id: 'normas', label: 'Normas' }] }
+    expect(() => validateConfig({ ...base, drawer: comOsDois })).toThrow(/"items" ou "render"/)
+    expect(() => validateConfig({ ...base, drawer: comNenhum })).toThrow(/"items" ou "render"/)
+  })
+
+  it('recusa shellSections com chave desconhecida', () => {
+    const drawer = { shellSections: { contaa: false } }
+    expect(() => validateConfig({ ...base, drawer })).toThrow(/shellSections não reconhece "contaa"/)
+  })
+
+  it('preenche shellSections com os padrões e aceita sobrescrever só uma', () => {
+    expect(validateConfig({ ...base, drawer: { shellSections: { config: false } } }).drawer.shellSections).toEqual({
+      conta: true,
+      config: false,
+    })
+  })
+})
+
+describe('validateConfig — analytics', () => {
+  it('aceita o id do GA4 do app e assume provider "ga4"', () => {
+    const analytics = validateConfig({ ...base, analytics: { id: 'G-ABC123' } }).analytics
+    expect(analytics).toEqual({
+      provider: 'ga4',
+      id: 'G-ABC123',
+      cookiePrefix: undefined,
+      params: {},
+      requireConsent: true,
+      privacyUrl: undefined,
+    })
+  })
+
+  it('passa cookiePrefix, params, requireConsent e privacyUrl adiante', () => {
+    const analytics = {
+      id: 'G-ABC123',
+      cookiePrefix: 'legisreader',
+      params: { debug_mode: true },
+      requireConsent: false,
+      privacyUrl: 'https://exemplo.com/privacidade',
+    }
+    expect(validateConfig({ ...base, analytics }).analytics).toEqual({ provider: 'ga4', ...analytics })
+  })
+
+  it('desliga quando não há id — o caso de VITE_GA4_MEASUREMENT_ID indefinida em dev', () => {
+    expect(validateConfig({ ...base, analytics: { id: undefined } }).analytics).toEqual({ provider: 'none' })
+    expect(validateConfig({ ...base, analytics: { id: '' } }).analytics).toEqual({ provider: 'none' })
+  })
+
+  it('desliga com provider "none", mesmo com id', () => {
+    const analytics = { provider: 'none', id: 'G-ABC123' }
+    expect(validateConfig({ ...base, analytics }).analytics).toEqual({ provider: 'none' })
+  })
+
+  it('recusa um id preenchido fora do formato do GA4', () => {
+    expect(() => validateConfig({ ...base, analytics: { id: 'UA-12345-1' } })).toThrow(/Measurement ID/)
+    expect(() => validateConfig({ ...base, analytics: { id: 'G ABC' } })).toThrow(/Measurement ID/)
+  })
+
+  it('recusa provider desconhecido', () => {
+    expect(() => validateConfig({ ...base, analytics: { provider: 'plausible' } })).toThrow(/provider/)
+  })
+
+  it('recusa analytics que não seja objeto, e cookiePrefix/params de tipo errado', () => {
+    expect(() => validateConfig({ ...base, analytics: 'G-ABC123' })).toThrow(/"analytics"/)
+    expect(() => validateConfig({ ...base, analytics: { id: 'G-ABC123', cookiePrefix: 1 } })).toThrow(/cookiePrefix/)
+    expect(() => validateConfig({ ...base, analytics: { id: 'G-ABC123', params: 'x' } })).toThrow(/params/)
+    expect(() => validateConfig({ ...base, analytics: { id: 'G-ABC123', requireConsent: 'sim' } })).toThrow(
+      /requireConsent/,
+    )
+    expect(() => validateConfig({ ...base, analytics: { id: 'G-ABC123', privacyUrl: 1 } })).toThrow(/privacyUrl/)
+  })
+})
+
+describe('validateConfig — auth', () => {
+  const minimal = { signIn: async () => ({}), signOut: async () => {} }
+
+  it('aceita um provedor com só signIn e signOut', () => {
+    expect(validateConfig({ ...base, auth: minimal }).auth).toBe(minimal)
+  })
+
+  it('aceita as operações opcionais de senha', () => {
+    const auth = {
+      ...minimal,
+      signUp: noop,
+      requestPasswordReset: noop,
+      resetPassword: noop,
+      changePassword: noop,
+      init: noop,
+      passwordMinLength: 8,
+    }
+    expect(validateConfig({ ...base, auth }).auth).toBe(auth)
+  })
+
+  it('recusa provedor que não é objeto ou sem signIn/signOut', () => {
+    expect(() => validateConfig({ ...base, auth: 'x' })).toThrow(/"auth" deve ser um objeto/)
+    expect(() => validateConfig({ ...base, auth: { signOut: noop } })).toThrow(/auth.signIn é obrigatório/)
+    expect(() => validateConfig({ ...base, auth: { signIn: noop } })).toThrow(/auth.signOut é obrigatório/)
+  })
+
+  it('recusa operação opcional que não é função e passwordMinLength inválido', () => {
+    expect(() => validateConfig({ ...base, auth: { ...minimal, resetPassword: true } })).toThrow(
+      /auth.resetPassword deve ser uma função/,
+    )
+    expect(() => validateConfig({ ...base, auth: { ...minimal, passwordMinLength: 0 } })).toThrow(/passwordMinLength/)
+  })
+})
+
+describe('withPushBackend', () => {
+  function fakeClient() {
+    const api = { post: vi.fn(async () => ({})), delete: vi.fn(async () => null) }
+    return { api, client: vi.fn(() => api) }
+  }
+
+  it('push.backend + path viram onSubscribe (POST) e onUnsubscribe (DELETE)', async () => {
+    const { api, client } = fakeClient()
+    const push = withPushBackend({ vapidPublicKey: 'B', backend: 'api', path: '/push' }, client)
+    const subscription = { endpoint: 'https://push/1' }
+    await push.onSubscribe(subscription)
+    await push.onUnsubscribe(subscription)
+    expect(client).toHaveBeenCalledWith('api')
+    expect(api.post).toHaveBeenCalledWith('/push', subscription)
+    expect(api.delete).toHaveBeenCalledWith('/push', { body: subscription })
+  })
+
+  it('callbacks do main.js vencem; sem backend, nada muda', () => {
+    const { client } = fakeClient()
+    const onSubscribe = () => {}
+    expect(withPushBackend({ backend: 'api', path: '/p', onSubscribe }, client).onSubscribe).toBe(onSubscribe)
+    const plain = { vapidPublicKey: 'B' }
+    expect(withPushBackend(plain, client)).toBe(plain)
+    expect(withPushBackend(null, client)).toBe(null)
+  })
+})
+
+describe('validateConfig — share', () => {
+  it('desliga quando share é false ou null', () => {
+    expect(validateConfig({ ...base, share: false }).share).toEqual({ enabled: false })
+    expect(validateConfig({ ...base, share: null }).share).toEqual({ enabled: false })
+  })
+
+  it('aceita configuração customizada de redes e título', () => {
+    const share = {
+      enabled: true,
+      title: 'Divulgar',
+      networks: ['whatsapp', 'telegram'],
+      text: 'Confira!',
+      url: 'https://exemplo.com',
+    }
+    expect(validateConfig({ ...base, share }).share).toEqual(share)
+  })
+
+  it('normaliza aliases de redes (twitter -> x, clipboard -> copy)', () => {
+    const share = { networks: ['twitter', 'clipboard'] }
+    expect(validateConfig({ ...base, share }).share.networks).toEqual(['x', 'copy'])
+  })
+
+  it('recusa tipo inválido de share, networks não-array ou rede desconhecida', () => {
+    expect(() => validateConfig({ ...base, share: 'sim' })).toThrow(/"share" deve ser um objeto ou boolean/)
+    expect(() => validateConfig({ ...base, share: { enabled: 'sim' } })).toThrow(/share.enabled deve ser true ou false/)
+    expect(() => validateConfig({ ...base, share: { title: 123 } })).toThrow(/share.title deve ser uma string/)
+    expect(() => validateConfig({ ...base, share: { networks: 'whatsapp' } })).toThrow(/share.networks deve ser um array/)
+    expect(() => validateConfig({ ...base, share: { networks: ['orkut'] } })).toThrow(/não reconhece "orkut"/)
+  })
+
+  it('aceita compartilhar e share em drawer.shellSections', () => {
+    expect(
+      validateConfig({ ...base, drawer: { shellSections: { compartilhar: false } } }).drawer.shellSections,
+    ).toEqual({
+      conta: true,
+      config: true,
+      compartilhar: false,
+    })
+    expect(
+      validateConfig({ ...base, drawer: { shellSections: { share: false } } }).drawer.shellSections,
+    ).toEqual({
+      conta: true,
+      config: true,
+      share: false,
+    })
+  })
+})
+

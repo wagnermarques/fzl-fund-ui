@@ -1,0 +1,118 @@
+import { LitElement, html, css } from 'lit'
+import { backendService } from '../src/services/backend-service.js'
+
+/** Página inicial do app de demonstração deste próprio repositório: explica
+ *  o propósito do appshell e resume os parâmetros de configuração atuais
+ *  (lidos das variáveis de ambiente). Não faz parte do shell — é o exemplo
+ *  de "home" que um app consumidor passa via createAppShell({ home }). */
+export class HomeView extends LitElement {
+  static styles = css`
+    :host {
+      display: block;
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 16px 24px 64px;
+    }
+    h1 {
+      font-size: 1.6rem;
+      margin: 0 0 4px;
+    }
+    .subtitle {
+      color: var(--md-sys-color-on-surface-variant);
+      margin: 0 0 24px;
+    }
+    h2 {
+      font-size: 1.05rem;
+      margin: 32px 0 8px;
+    }
+    p {
+      line-height: 1.6;
+      color: var(--md-sys-color-on-surface);
+    }
+    ul {
+      line-height: 1.6;
+      padding-left: 20px;
+    }
+    .config-card {
+      margin-top: 12px;
+      padding: 16px;
+      border: 1px solid var(--md-sys-color-outline);
+      border-radius: 12px;
+      background: var(--md-sys-color-surface-variant);
+    }
+    .config-card dl {
+      display: grid;
+      grid-template-columns: max-content 1fr;
+      gap: 4px 16px;
+      margin: 0;
+    }
+    .config-card dt {
+      color: var(--md-sys-color-on-surface-variant);
+      font-size: 0.85rem;
+    }
+    .config-card dd {
+      margin: 0;
+      font-family: monospace;
+      word-break: break-all;
+    }
+    .config-card dd.unset {
+      font-family: inherit;
+      font-style: italic;
+      color: var(--md-sys-color-error);
+    }
+    .config-card a {
+      display: inline-block;
+      margin-top: 12px;
+    }
+    code {
+      background: var(--md-sys-color-surface-variant);
+      color: var(--md-sys-color-on-surface-variant);
+      padding: 1px 4px;
+      border-radius: 4px;
+    }
+  `
+
+  render() {
+    const api = backendService.list().find((b) => b.name === 'api')
+    const baseUrl = api?.url ?? ''
+    return html`
+      <h1>Fund Appshell</h1>
+      <p class="subtitle">Casca de aplicação de referência da família fzlbpms-funds</p>
+
+      <p>
+        Este projeto não é um aplicativo de negócio — é um <strong>appshell</strong>: uma base
+        comum, já pronta e testada, para começar rapidamente qualquer novo projeto da família
+        <strong>fzlbpms-funds</strong> sem precisar decidir de novo a stack, a navegação, o tema
+        ou a configuração de acesso ao backend.
+      </p>
+
+      <p>
+        É construído com <strong>Web Components</strong> (<a href="https://lit.dev" target="_blank" rel="noopener">Lit</a>
+        + <a href="https://github.com/material-components/material-web" target="_blank" rel="noopener">Material Web</a>,
+        Material&nbsp;3), empacotado com <a href="https://vitejs.dev" target="_blank" rel="noopener">Vite</a>, e
+        instalável como <strong>PWA</strong> — funciona offline depois do primeiro carregamento e
+        pode ser adicionado à tela inicial do celular ou do desktop.
+      </p>
+
+      <h2>Parâmetros de configuração</h2>
+      <p>
+        A configuração deste appshell fica em um lugar só, o <code>appshell.config.js</code>;
+        cada ambiente sobrescreve o que precisa por variáveis <code>VITE_APPSHELL_*</code>
+        (veja <code>.env.example</code>). A tela em <em>Config → Backend</em> mostra os
+        endereços e se cada backend está respondendo — só leitura, de propósito.
+      </p>
+
+      <div class="config-card">
+        <dl>
+          <dt>Backend "api" — endereço</dt>
+          <dd class=${baseUrl ? '' : 'unset'}>
+            ${baseUrl || 'não definido — configure VITE_APPSHELL_BACKENDS_API_URL em .env.local'}
+          </dd>
+        </dl>
+        <a href="#/config/backend">Ver em Config → Backend</a>
+      </div>
+    `
+  }
+}
+
+customElements.define('home-view', HomeView)

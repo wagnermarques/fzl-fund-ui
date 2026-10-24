@@ -1,0 +1,332 @@
+/**
+ * Lógica de createAppShell(), separada de index.js para ficar livre de
+ * imports com efeito colateral (registro de web components, que precisam de
+ * DOM) e assim ser testável em Node puro.
+ */
+
+import { appConfig, mergeAppConfig, validateAnalytics } from './app-config.js'
+import { accessibilityService } from './services/accessibility-service.js'
+import { authService, validateAuthProvider } from './services/auth-service.js'
+import { backend, backendService } from './services/backend-service.js'
+import { consentService } from './services/consent-service.js'
+import { networkService } from './services/network-service.js'
+import { notificationService } from './services/notification-service.js'
+import { pushService, validatePushConfig } from './services/push-service.js'
+import {
+  SHELL_EVENTS,
+  bridgeAuth,
+  bridgeBackends,
+  bridgeNetwork,
+  bridgeNotifications,
+  bridgePush,
+  bridgePreferences,
+  shellEvents,
+} from './services/shell-events.js'
+
+const SHELL_SECTION_NAMES = ['conta', 'config', 'compartilhar', 'share']
+
+export const DEFAULT_SHARE_NETWORKS = ['whatsapp', 'telegram', 'facebook', 'x', 'linkedin', 'copy']
+export const SUPPORTED_SHARE_NETWORKS = [
+  'whatsapp',
+  'telegram',
+  'facebook',
+  'x',
+  'twitter',
+  'linkedin',
+  'copy',
+  'clipboard',
+  'native',
+  'email',
+]
+
+export function validateShareConfig(share) {
+  if (share === false || share === null) {
+    return { enabled: false }
+  }
+  if (share === undefined || share === true) {
+    return {
+      enabled: true,
+      title: 'Compartilhar este app',
+      networks: [...DEFAULT_SHARE_NETWORKS],
+      text: '',
+      url: '',
+    }
+  }
+  if (typeof share !== 'object' || Array.isArray(share)) {
+    throw new Error('createAppShell: "share" deve ser um objeto ou boolean')
+  }
+
+  const {
+    enabled = true,
+    title = 'Compartilhar este app',
+    networks = DEFAULT_SHARE_NETWORKS,
+    text = '',
+    url = '',
+  } = share
+
+  if (typeof enabled !== 'boolean') {
+    throw new Error('createAppShell: share.enabled deve ser true ou false')
+  }
+  if (typeof title !== 'string') {
+    throw new Error('createAppShell: share.title deve ser uma string')
+  }
+  if (!Array.isArray(networks)) {
+    throw new Error('createAppShell: share.networks deve ser um array')
+  }
+  for (const net of networks) {
+    if (typeof net !== 'string' || !SUPPORTED_SHARE_NETWORKS.includes(net.toLowerCase())) {
+      throw new Error(
+        `createAppShell: share.networks não reconhece "${net}" (use ${DEFAULT_SHARE_NETWORKS.map((n) => `"${n}"`).join(', ')})`,
+      )
+    }
+  }
+  if (typeof text !== 'string') {
+    throw new Error('createAppShell: share.text deve ser uma string')
+  }
+  if (typeof url !== 'string') {
+    throw new Error('createAppShell: share.url deve ser uma string')
+  }
+
+  return {
+    enabled,
+    title: title || 'Compartilhar este app',
+    networks: networks.map((n) =>
+      n.toLowerCase() === 'twitter' ? 'x' : n.toLowerCase() === 'clipboard' ? 'copy' : n.toLowerCase(),
+    ),
+    text,
+    url,
+  }
+}
+
+function validateRoutes(routes) {
+  const seen = new Set()
+  for (const route of routes) {
+    if (!route.name) {
+      throw new Error('createAppShell: toda rota precisa de "name"')
+    }
+    if (seen.has(route.name)) {
+      throw new Error(`createAppShell: nome de rota duplicado "${route.name}"`)
+    }
+    seen.add(route.name)
+    if (typeof route.match !== 'function') {
+      throw new Error(`createAppShell: rota "${route.name}" precisa de "match"`)
+    }
+    if (typeof route.render !== 'function') {
+      throw new Error(`createAppShell: rota "${route.name}" precisa de "render"`)
+    }
+    if (route.title !== undefined && typeof route.title !== 'string' && typeof route.title !== 'function') {
+      throw new Error(`createAppShell: "title" da rota "${route.name}" deve ser texto ou ({ params, query }) => texto`)
+    }
+  }
+}
+
+function validateDrawer(drawer) {
+  const sections = drawer.sections || []
+  const seen = new Set()
+  for (const section of sections) {
+    if (!section.id) {
+      throw new Error('createAppShell: toda seção do drawer precisa de "id"')
+    }
+    if (seen.has(section.id)) {
+      throw new Error(`createAppShell: id de seção duplicado "${section.id}"`)
+    }
+    seen.add(section.id)
+    if (!section.label) {
+      throw new Error(`createAppShell: seção "${section.id}" precisa de "label"`)
+    }
+    const hasItems = section.items !== undefined
+    const hasRender = section.render !== undefined
+    if (hasItems === hasRender) {
+      throw new Error(`createAppShell: seção "${section.id}" precisa de "items" ou "render" (não os dois, nem nenhum)`)
+    }
+    if (hasRender && typeof section.render !== 'function') {
+      throw new Error(`createAppShell: "render" da seção "${section.id}" deve ser uma função`)
+    }
+    if (hasItems && !Array.isArray(section.items)) {
+      throw new Error(`createAppShell: "items" da seção "${section.id}" deve ser um array`)
+    }
+  }
+
+  const shellSections = { conta: true, config: true, ...drawer.shellSections }
+  for (const key of Object.keys(shellSections)) {
+    if (!SHELL_SECTION_NAMES.includes(key)) {
+      throw new Error(`createAppShell: shellSections não reconhece "${key}" (use "conta" ou "config")`)
+    }
+  }
+
+  return { sections, shellSections }
+}
+
+/** `on` é { 'nome:do-evento': listener }, com nomes de SHELL_EVENTS. */
+function validateListeners(on) {
+  if (on === null || typeof on !== 'object' || Array.isArray(on)) {
+    throw new Error('createAppShell: "on" deve ser um objeto { "evento": listener }')
+  }
+  for (const [name, fn] of Object.entries(on)) {
+    if (!Object.hasOwn(SHELL_EVENTS, name)) {
+      throw new Error(`createAppShell: on não reconhece o evento "${name}" (veja SHELL_EVENTS)`)
+    }
+    if (typeof fn !== 'function') {
+      throw new Error(`createAppShell: on["${name}"] deve ser uma função`)
+    }
+  }
+  return on
+}
+
+/** Valida a config de createAppShell() (já mesclada com o
+ *  appshell.config.js — ver mergeAppConfig) e devolve os campos
+ *  normalizados. */
+export function validateConfig(config) {
+  if (!config || typeof config !== 'object') {
+    throw new Error('createAppShell: config é obrigatório')
+  }
+
+  const {
+    mount,
+    routes = [],
+    home,
+    title,
+    drawer = {},
+    headerActions = null,
+    footerItems = null,
+    analytics = null,
+    auth = null,
+    push = null,
+    share = undefined,
+    on = {},
+    debug = false,
+  } = config
+
+  if (!mount) {
+    throw new Error('createAppShell: "mount" é obrigatório')
+  }
+  if (typeof home !== 'function') {
+    throw new Error('createAppShell: "home" deve ser uma função')
+  }
+  if (!title) {
+    throw new Error('createAppShell: "title" é obrigatório')
+  }
+  if (headerActions !== null && typeof headerActions !== 'function') {
+    throw new Error('createAppShell: "headerActions" deve ser uma função')
+  }
+  if (footerItems !== null && typeof footerItems !== 'function') {
+    throw new Error('createAppShell: "footerItems" deve ser uma função')
+  }
+
+  if (typeof debug !== 'boolean') {
+    throw new Error('createAppShell: "debug" deve ser true ou false')
+  }
+
+  validateRoutes(routes)
+  // Sem auth, fica o provedor local de demonstração (auth-service.js).
+  if (auth !== null) validateAuthProvider(auth)
+
+  return {
+    mount,
+    routes,
+    home,
+    title,
+    drawer: validateDrawer(drawer),
+    headerActions,
+    footerItems,
+    analytics: validateAnalytics(analytics),
+    auth,
+    push: validatePushConfig(push),
+    share: validateShareConfig(share),
+    on: validateListeners(on),
+    debug,
+  }
+}
+
+// Desfaz os listeners e pontes da chamada anterior de createAppShell(),
+// para uma segunda chamada (ex.: remontar o app) não duplicar eventos.
+let teardownEvents = null
+
+/** Registra os listeners do app e liga os serviços aos eventos. A ordem
+ *  importa: listeners primeiro, pontes depois — bridgeAuth já emite o
+ *  auth:login 'restored' de quem estiver logado no momento. */
+function connectEvents({ on, debug }) {
+  teardownEvents?.()
+  const offs = Object.entries(on).map(([name, fn]) => shellEvents.on(name, fn))
+  if (debug) offs.push(shellEvents.onAny((name, detail) => console.info(`[appshell] ${name}`, detail)))
+  offs.push(
+    bridgeAuth(shellEvents, authService),
+    bridgeNetwork(shellEvents, networkService),
+    bridgeNotifications(shellEvents, notificationService),
+    bridgePush(shellEvents, pushService),
+    bridgeBackends(shellEvents, backendService),
+    // Checagem de saúde dos backends quando faz sentido de novo: a rede
+    // voltou (sempre) ou o app voltou ao primeiro plano (no máximo a cada
+    // 30 s — ver backend-service.js).
+    shellEvents.on('network:online', () => backendService.checkAll({ force: true })),
+    shellEvents.on('app:visible', () => backendService.checkAll()),
+    bridgePreferences(shellEvents, { consent: consentService, accessibility: accessibilityService }),
+  )
+  teardownEvents = () => offs.forEach((off) => off())
+}
+
+/** push.backend + push.path (do appshell.config.js) viram os callbacks
+ *  padrão: POST da inscrição em path, e DELETE no mesmo path ao desligar.
+ *  Callbacks passados no main.js vencem. */
+export function withPushBackend(push, client = backend) {
+  if (!push?.backend || !push.path) return push
+  const api = client(push.backend)
+  return {
+    onSubscribe: (subscription) => api.post(push.path, subscription),
+    onUnsubscribe: (subscription) => api.delete(push.path, { body: subscription }),
+    ...push,
+  }
+}
+
+/** Cria e monta o <app-shell>, configurado com as rotas, a home, o drawer
+ *  e o título do app, instala o provedor de autenticação do app (auth —
+ *  contrato no topo de services/auth-service.js) e registra os listeners
+ *  dos eventos do shell (on — lista em services/shell-events.js; debug:
+ *  true loga todos no console) e o Web Push (push — contrato em
+ *  services/push-service.js). mount pode ser um
+ *  seletor CSS ou o próprio elemento container. Pressupõe que o custom element 'app-shell' já foi registrado
+ *  (index.js cuida disso antes de expor esta função).
+ *
+ *  As propriedades são setadas *antes* do elemento entrar no DOM — nunca
+ *  via innerHTML + set depois — porque connectedCallback() já cria o
+ *  router lendo this.routes naquele instante; setar depois de conectado
+ *  deixaria o router preso à lista vazia do construtor, e nenhuma rota do
+ *  app jamais casaria. */
+export function createAppShell(config) {
+  // O que o app pôs no appshell.config.js (título, analytics, push...) vem
+  // do build; o que veio aqui vence campo a campo.
+  const merged = mergeAppConfig(config)
+  const { mount, routes, home, title, drawer, headerActions, footerItems, analytics, auth, push, share, on, debug } =
+    validateConfig({ ...merged, push: withPushBackend(merged?.push) })
+
+  const container = typeof mount === 'string' ? document.querySelector(mount) : mount
+  if (!container) {
+    throw new Error(`createAppShell: elemento não encontrado para mount "${mount}"`)
+  }
+
+  // Antes de criar o <app-shell>: ele e o header já leem o usuário atual
+  // ao conectar, e esse usuário tem de vir do provedor do app.
+  if (auth) authService.use(auth)
+  backendService.use(appConfig.config.backends ?? {}, { getAccessToken: () => authService.getAccessToken() })
+  // Depois do use(): a troca do provedor local pelo do app não vira um
+  // auth:logout falso. Antes do <app-shell>: ele emite shell:ready e a
+  // primeira rota ao conectar.
+  connectEvents({ on, debug })
+  // Depois dos eventos: o clique em notificação que abriu o app do zero
+  // sai aqui como push:clicked.
+  pushService.use(push)
+  backendService.checkAll({ force: true })
+
+  const shell = document.createElement('app-shell')
+  shell.routes = routes
+  shell.home = home
+  shell.title = title
+  shell.drawer = drawer
+  shell.headerActions = headerActions
+  shell.footerItems = footerItems
+  shell.analytics = analytics
+  shell.share = share
+
+  container.replaceChildren(shell)
+  return shell
+}

@@ -1,0 +1,37 @@
+{
+  "name": "fzl-fund-ui-widgets-components",
+  "version": "0.1.0",
+  "private": true,
+  "description": "FZL UI Widgets & Web Components Monorepo (Vanilla ES6, Lit, and Angular Elements)",
+  "workspaces": [
+    "packages/*",
+    "webcomponents-es6",
+    "webcomponents-lit",
+    "webcomponents-angular"
+  ],
+  "scripts": {
+    "build": "npm run build --workspaces --if-present",
+    "build:tokens": "npm run build --workspace=@fzl/design-tokens --if-present",
+    "build:es6": "npm run build --workspace=@fzl/webcomponents-es6 --if-present",
+    "build:lit": "npm run build --workspace=@fzl/webcomponents-lit --if-present",
+    "build:angular": "npm run build --workspace=@fzl/webcomponents-angular --if-present",
+    "dev:es6": "npm run dev --workspace=@fzl/webcomponents-es6",
+    "dev:lit": "npm run dev --workspace=@fzl/webcomponents-lit",
+    "dev:angular": "npm run dev --workspace=@fzl/webcomponents-angular",
+    "analyze": "npm run analyze --workspaces --if-present",
+    "docs:sync": "npm run analyze && node scripts/sync-docs.mjs",
+    "typecheck": "npm run typecheck --workspaces --if-present"
+  },
+  "devDependencies": {
+    "@angular/build": "^18.2.0",
+    "@angular/compiler-cli": "^18.2.0",
+    "@custom-elements-manifest/analyzer": "^0.10.4",
+    "typescript": "~5.5.4",
+    "vite": "^6.0.0",
+    "vite-plugin-dts": "^4.3.0"
+  },
+  "engines": {
+    "node": ">=20.0.0",
+    "npm": ">=10.0.0"
+  }
+}

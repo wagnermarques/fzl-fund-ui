@@ -1,0 +1,24 @@
+{
+  "name": "@fzl/webcomponents-es6",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "./dist/fzl-es6.js",
+  "module": "./dist/fzl-es6.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/fzl-es6.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "analyze": "cem analyze",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@fzl/design-tokens": "*"
+  },
+  "customElements": "custom-elements.json"
+}

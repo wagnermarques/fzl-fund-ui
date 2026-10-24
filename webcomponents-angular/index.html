@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FZL Web Components - Angular Elements</title>
+  <style>
+    body { font-family: sans-serif; padding: 2rem; }
+    .row { display: flex; gap: 1rem; align-items: center; margin-bottom: 1.5rem; }
+  </style>
+</head>
+<body>
+  <h1>FZL Web Components — Angular Elements (`fzl-ng-button`)</h1>
+
+  <h3>Sizes</h3>
+  <div class="row">
+    <fzl-ng-button size="sm">Small</fzl-ng-button>
+    <fzl-ng-button size="md">Medium</fzl-ng-button>
+    <fzl-ng-button size="lg">Large</fzl-ng-button>
+  </div>
+
+  <h3>Variants</h3>
+  <div class="row">
+    <fzl-ng-button variant="primary">Primary</fzl-ng-button>
+    <fzl-ng-button variant="secondary">Secondary</fzl-ng-button>
+    <fzl-ng-button variant="danger">Danger</fzl-ng-button>
+    <fzl-ng-button variant="primary" disabled>Disabled</fzl-ng-button>
+  </div>
+
+  <div id="log" style="margin-top: 1rem; color: #475569;">Click any button to test custom event dispatching...</div>
+
+  <script type="module" src="/src/index.ts"></script>
+  <script type="module">
+    document.querySelectorAll('fzl-ng-button').forEach(btn => {
+      btn.addEventListener('fzl-click', (e) => {
+        document.getElementById('log').textContent = `Received fzl-click from: <${btn.tagName.toLowerCase()} variant="${btn.variant}"> at ${new Date().toLocaleTimeString()}`;
+      });
+    });
+  </script>
+</body>
+</html>

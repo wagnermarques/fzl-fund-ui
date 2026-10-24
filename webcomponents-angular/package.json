@@ -1,0 +1,35 @@
+{
+  "name": "@fzl/webcomponents-angular",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "./dist/fzl-angular.js",
+  "module": "./dist/fzl-angular.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/fzl-angular.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "analyze": "cem analyze",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@angular/common": "^18.2.0",
+    "@angular/compiler": "^18.2.0",
+    "@angular/core": "^18.2.0",
+    "@angular/elements": "^18.2.0",
+    "@angular/platform-browser": "^18.2.0",
+    "@fzl/design-tokens": "*",
+    "rxjs": "^7.8.1",
+    "zone.js": "~0.14.10"
+  },
+  "devDependencies": {
+    "@analogjs/vite-plugin-angular": "^1.9.0",
+    "@angular/compiler-cli": "^18.2.0"
+  },
+  "customElements": "custom-elements.json"
+}

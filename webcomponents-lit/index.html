@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FZL Web Components - Lit</title>
+  <style>
+    body { font-family: sans-serif; padding: 2rem; }
+    .row { display: flex; gap: 1rem; align-items: center; margin-bottom: 1.5rem; }
+  </style>
+</head>
+<body>
+  <h1>FZL Web Components — Lit 3 (`fzl-lit-button`)</h1>
+
+  <h3>Sizes</h3>
+  <div class="row">
+    <fzl-lit-button size="sm">Small</fzl-lit-button>
+    <fzl-lit-button size="md">Medium</fzl-lit-button>
+    <fzl-lit-button size="lg">Large</fzl-lit-button>
+  </div>
+
+  <h3>Variants</h3>
+  <div class="row">
+    <fzl-lit-button variant="primary">Primary</fzl-lit-button>
+    <fzl-lit-button variant="secondary">Secondary</fzl-lit-button>
+    <fzl-lit-button variant="danger">Danger</fzl-lit-button>
+    <fzl-lit-button variant="primary" disabled>Disabled</fzl-lit-button>
+  </div>
+
+  <div id="log" style="margin-top: 1rem; color: #475569;">Click any button to test custom event dispatching...</div>
+
+  <script type="module" src="/src/index.ts"></script>
+  <script type="module">
+    document.querySelectorAll('fzl-lit-button').forEach(btn => {
+      btn.addEventListener('fzl-click', (e) => {
+        document.getElementById('log').textContent = `Received fzl-click from: <${btn.tagName.toLowerCase()} variant="${btn.variant}"> at ${new Date().toLocaleTimeString()}`;
+      });
+    });
+  </script>
+</body>
+</html>

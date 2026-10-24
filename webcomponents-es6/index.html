@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FZL Web Components - Vanilla ES6</title>
+  <style>
+    body { font-family: sans-serif; padding: 2rem; }
+    .row { display: flex; gap: 1rem; align-items: center; margin-bottom: 1.5rem; }
+  </style>
+</head>
+<body>
+  <h1>FZL Web Components — Vanilla ES6 (`fzl-es6-button`)</h1>
+
+  <h3>Sizes</h3>
+  <div class="row">
+    <fzl-es6-button size="sm">Small</fzl-es6-button>
+    <fzl-es6-button size="md">Medium</fzl-es6-button>
+    <fzl-es6-button size="lg">Large</fzl-es6-button>
+  </div>
+
+  <h3>Variants</h3>
+  <div class="row">
+    <fzl-es6-button variant="primary">Primary</fzl-es6-button>
+    <fzl-es6-button variant="secondary">Secondary</fzl-es6-button>
+    <fzl-es6-button variant="danger">Danger</fzl-es6-button>
+    <fzl-es6-button variant="primary" disabled>Disabled</fzl-es6-button>
+  </div>
+
+  <div id="log" style="margin-top: 1rem; color: #475569;">Click any button to test custom event dispatching...</div>
+
+  <script type="module" src="/src/index.ts"></script>
+  <script type="module">
+    document.querySelectorAll('fzl-es6-button').forEach(btn => {
+      btn.addEventListener('fzl-click', (e) => {
+        document.getElementById('log').textContent = `Received fzl-click from: <${btn.tagName.toLowerCase()} variant="${btn.variant}"> at ${new Date().toLocaleTimeString()}`;
+      });
+    });
+  </script>
+</body>
+</html>

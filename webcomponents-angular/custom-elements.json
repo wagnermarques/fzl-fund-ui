@@ -1,0 +1,181 @@
+{
+  "schemaVersion": "1.0.0",
+  "readme": "",
+  "modules": [
+    {
+      "kind": "javascript-module",
+      "path": "src/index.ts",
+      "declarations": [
+        {
+          "kind": "function",
+          "name": "registerFzlAngularElements",
+          "return": {
+            "type": {
+              "text": "Promise<void>"
+            }
+          },
+          "description": "Registers all Angular Elements Web Components into customElements registry"
+        },
+        {
+          "kind": "variable",
+          "name": "ButtonElement"
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "*",
+          "declaration": {
+            "name": "*",
+            "module": "src/components/button/button.component"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "registerFzlAngularElements",
+          "declaration": {
+            "name": "registerFzlAngularElements",
+            "module": "src/index.ts"
+          }
+        },
+        {
+          "kind": "custom-element-definition",
+          "name": "fzl-ng-button",
+          "declaration": {
+            "name": "ButtonElement",
+            "module": "src/index.ts"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/components/button/button.component.ts",
+      "declarations": [
+        {
+          "kind": "class",
+          "description": "Angular Elements Custom Element button with Shadow DOM encapsulation.",
+          "name": "FzlNgButtonComponent",
+          "cssParts": [
+            {
+              "description": "The internal native `<button>` element",
+              "name": "button"
+            }
+          ],
+          "slots": [
+            {
+              "description": "Content to be displayed inside the button",
+              "name": ""
+            }
+          ],
+          "members": [
+            {
+              "kind": "field",
+              "name": "variant",
+              "type": {
+                "text": "FzlButtonVariant"
+              },
+              "default": "'primary'"
+            },
+            {
+              "kind": "field",
+              "name": "size",
+              "type": {
+                "text": "FzlButtonSize"
+              },
+              "default": "'md'"
+            },
+            {
+              "kind": "field",
+              "name": "disabled",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false"
+            },
+            {
+              "kind": "field",
+              "name": "type",
+              "type": {
+                "text": "'button' | 'submit' | 'reset'"
+              },
+              "default": "'button'"
+            },
+            {
+              "kind": "field",
+              "name": "fzlClick",
+              "default": "new EventEmitter<{ originalEvent: MouseEvent }>()"
+            },
+            {
+              "kind": "method",
+              "name": "onClick",
+              "parameters": [
+                {
+                  "name": "event",
+                  "type": {
+                    "text": "MouseEvent"
+                  }
+                }
+              ]
+            }
+          ],
+          "events": [
+            {
+              "type": {
+                "text": "CustomEvent<{ originalEvent: MouseEvent }>"
+              },
+              "description": "Dispatched when the button is activated",
+              "name": "fzl-click"
+            }
+          ],
+          "attributes": [
+            {
+              "type": {
+                "text": "'primary' | 'secondary' | 'danger'"
+              },
+              "description": "Visual appearance variant",
+              "name": "variant",
+              "default": "'primary'"
+            },
+            {
+              "type": {
+                "text": "'sm' | 'md' | 'lg'"
+              },
+              "description": "Size scale of the button",
+              "name": "size",
+              "default": "'md'"
+            },
+            {
+              "type": {
+                "text": "boolean"
+              },
+              "description": "Whether the button is disabled",
+              "name": "disabled",
+              "default": "false"
+            },
+            {
+              "type": {
+                "text": "'button' | 'submit' | 'reset'"
+              },
+              "description": "Form button behavior",
+              "name": "type",
+              "default": "'button'"
+            }
+          ],
+          "tagName": "fzl-ng-button",
+          "customElement": true
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "FzlNgButtonComponent",
+          "declaration": {
+            "name": "FzlNgButtonComponent",
+            "module": "src/components/button/button.component.ts"
+          }
+        }
+      ]
+    }
+  ]
+}

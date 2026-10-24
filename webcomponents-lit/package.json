@@ -1,0 +1,25 @@
+{
+  "name": "@fzl/webcomponents-lit",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "./dist/fzl-lit.js",
+  "module": "./dist/fzl-lit.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/fzl-lit.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "analyze": "cem analyze --litelement",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@fzl/design-tokens": "*",
+    "lit": "^3.2.1"
+  },
+  "customElements": "custom-elements.json"
+}

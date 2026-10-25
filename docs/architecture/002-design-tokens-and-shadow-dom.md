@@ -20,6 +20,14 @@ Because our widgets will run inside multiple heterogeneous host applications wit
 - All widgets use **open Shadow DOM** (`attachShadow({ mode: 'open' })` or `ViewEncapsulation.ShadowDom` in Angular).
 - Visual properties (colors, spacing, fonts, focus rings, transitions) are defined as **CSS Custom Properties** (`--fzl-*`) inside `@fzl/design-tokens`.
 - Because CSS Custom Properties pierce the Shadow DOM boundary via inheritance, host applications can theme all `<fzl-*>` widgets globally on `:root` or locally on a wrapper container.
+- **Single source of truth:** token names and defaults live in `packages/design-tokens/src/tokens.ts`. `tokens.css` (public `--fzl-*` on `:root`) is generated from it with `npm run build:tokens`; `npm run check --workspace=@fzl/design-tokens` fails if it is out of date.
+- **Private token mapping inside Shadow DOM:** widgets must never declare public `--fzl-*` names on `:host`, because a value declared on the element itself overrides any value inherited from `:root` or a wrapper, silently disabling host theming. Instead, every widget adopts `fzlDesignTokensCss`, which maps each token to a private variable with the default as fallback:
+  ```css
+  :host {
+    --_fzl-color-primary: var(--fzl-color-primary, #1d4ed8);
+  }
+  ```
+  Component CSS reads only the private names (`var(--_fzl-color-primary)`). Hosts override the public names; widgets work with no stylesheet linked at all.
 - Every widget exposes key internal elements via `part="..."` attributes (e.g., `part="button"`, `part="input"`, `part="label"`) so host apps can use `::part()` when fine-grained CSS overrides are needed.
 
 ### 2. Custom Events Convention

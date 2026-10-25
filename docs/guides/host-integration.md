@@ -6,13 +6,13 @@ Because all widgets in `webcomponents-es6`, `webcomponents-lit`, and `webcompone
 
 ## 1. Plain HTML / Legacy BPMS Pages
 
-Import the design tokens stylesheet and the component bundle as an ES module:
+Import the component bundle as an ES module. The design tokens stylesheet is optional — widgets already embed the default token values — but linking it exposes the `--fzl-*` variables to your own page CSS:
 
 ```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <link rel="stylesheet" href="/path/to/@fzl/design-tokens/dist/tokens.css" />
+  <link rel="stylesheet" href="/path/to/@fzl/design-tokens/src/tokens.css" />
   <script type="module" src="/path/to/@fzl/webcomponents-lit/dist/fzl-lit-widgets.js"></script>
 </head>
 <body>
@@ -94,3 +94,19 @@ Override `--fzl-*` CSS variables globally in your application's root stylesheet:
   --fzl-font-family: 'Inter', system-ui, sans-serif;
 }
 ```
+
+Tokens are inherited, so you can also theme a single region of the page or a single widget:
+
+```css
+/* Only widgets inside this container */
+.finance-area {
+  --fzl-color-primary: #15803d;
+}
+
+/* Only this widget */
+fzl-lit-button.cta {
+  --fzl-radius-md: 9999px;
+}
+```
+
+Any token you do not override falls back to its default value from `@fzl/design-tokens`.

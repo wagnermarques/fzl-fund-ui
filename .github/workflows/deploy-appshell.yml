@@ -1,0 +1,58 @@
+# Publica o appshell (appshell-lit/) no GitHub Pages a cada push no main,
+# para testar no ar os web components que ele consome.
+# URL: https://wagnermarques.github.io/fzl-fund-ui/
+name: Deploy appshell (GitHub Pages)
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build web components
+        run: npm run build:tokens && npm run build:lit
+
+      - name: Test appshell
+        run: npm test --workspace=fzl-fund-appshell--lit
+
+      # O Pages serve em /<repo>/, daí o --base. Variáveis vazias são ignoradas
+      # pelo appshell (ver src/app-config.js); defina-as em Settings → Variables.
+      - name: Build appshell
+        env:
+          VITE_APPSHELL_TITLE: ${{ vars.VITE_APPSHELL_TITLE }}
+          VITE_APPSHELL_BACKENDS_API_URL: ${{ vars.VITE_APPSHELL_BACKENDS_API_URL }}
+          VITE_APPSHELL_ANALYTICS_ID: ${{ vars.VITE_APPSHELL_ANALYTICS_ID }}
+          VITE_APPSHELL_PUSH_VAPID_PUBLIC_KEY: ${{ vars.VITE_APPSHELL_PUSH_VAPID_PUBLIC_KEY }}
+        run: npm run build --workspace=fzl-fund-appshell--lit -- --base=/${{ github.event.repository.name }}/
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./appshell-lit/dist
+
+      - id: deployment
+        uses: actions/deploy-pages@v4

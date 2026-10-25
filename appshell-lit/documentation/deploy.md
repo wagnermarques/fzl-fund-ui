@@ -293,3 +293,40 @@ After deploying a new application built with the appshell, verify:
 - [ ] **Offline Functionality**: In DevTools Network tab, toggle **Offline** and refresh the page. The app must load immediately.
 - [ ] **Isolated Storage**: In DevTools Application → LocalStorage, all keys are prefixed with `app-name:` and do not conflict with sibling apps.
 - [ ] **Consent & Telemetry**: If GA4 is configured, the `<consent-banner>` appears on first load and no analytics cookies are created before accepting.
+
+---
+
+## 6. Deploying the Appshell from the `fzl-fund-ui` Monorepo
+
+Inside the `fzl-fund-ui` monorepo the appshell lives in `appshell-lit/` and depends on
+`@fzl/webcomponents-lit` through npm workspaces. The pipelines in section 4 still apply,
+with three changes:
+
+1. **Install from the monorepo root** — there is a single `package-lock.json` at the root:
+   `npm ci` (not inside `appshell-lit/`).
+2. **Build the components before the appshell** — `@fzl/webcomponents-lit` is consumed from
+   its compiled `dist/`. The root script does both: `npm run build:appshell`.
+3. **The output directory is `appshell-lit/dist`** — e.g. `path: './appshell-lit/dist'` in
+   `upload-pages-artifact`, `pages deploy appshell-lit/dist` for Cloudflare, or
+   *Build output directory* `appshell-lit/dist` in the Cloudflare dashboard.
+
+GitHub Actions example (GitHub Pages):
+
+```yaml
+      - name: Install dependencies
+        run: npm ci
+      - name: Test
+        run: npm test
+      - name: Build
+        run: npm run build:appshell
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: './appshell-lit/dist'
+```
+
+The variable scripts (`scripts/set-*-variables.sh`) read `package.json` from the current
+directory, so run them from `appshell-lit/`.
+
+> Apps that use the original `fzl-fund-appshell--lit` repository as a Git submodule are not
+> affected: that repository keeps working as before.

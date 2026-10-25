@@ -1,7 +1,7 @@
 # Especificação — Integração com `fzl-fund-ui-widgets-components`
 
-> Status: **rascunho / em planejamento** — nada implementado ainda.
-> Branch: `feat/integracao-ui-widgets`
+> Status: **monorepo criado** — appshell e componentes no `fzl-fund-ui`; migração de componentes ainda não iniciada.
+> Decisão registrada em `docs/architecture/003-appshell-in-monorepo.md` (raiz do monorepo).
 
 ---
 
@@ -39,8 +39,27 @@ O fluxo é de mão dupla:
   - `@fzl/webcomponents-angular` (Angular Elements)
   - `@fzl/design-tokens` (`packages/design-tokens`, variáveis `--fzl-*`)
 - TypeScript, Vite 6.
-- **Ainda não é um repositório Git.**
 - `@fzl/webcomponents-lit` hoje contém apenas o componente `button`.
+
+### 2.3 Monorepo `fzl-fund-ui`
+
+Os dois projetos acima foram reunidos no monorepo `fzl-fund-ui`:
+
+```
+fzl-fund-ui/
+├── packages/design-tokens
+├── webcomponents-es6
+├── webcomponents-lit
+├── webcomponents-angular
+└── appshell-lit              (este appshell, com o histórico Git preservado)
+```
+
+O repositório original `fzl-fund-appshell--lit` continua existindo, porque
+outros projetos o usam como submódulo Git.
+
+O appshell Jetpack Compose não consome web components (é nativo); no futuro
+pode compartilhar só os design tokens, gerados também como Kotlin (ex.:
+Style Dictionary).
 
 ---
 
@@ -48,8 +67,10 @@ O fluxo é de mão dupla:
 
 | Tema | Decisão |
 |---|---|
-| Forma de consumo | Pacote npm local via link (`file:../fzl-fund-ui-widgets-components/webcomponents-lit` ou `npm link`). **Não** usar submódulo Git. |
+| Forma de consumo | **Monorepo** `fzl-fund-ui` com npm workspaces: o appshell depende de `@fzl/webcomponents-lit` via workspace. **Não** usar submódulo Git nem `npm link`. |
 | Distribuição (registry) | Adiada. |
+| Repositório original do appshell | Mantido — é usado como submódulo por outros projetos. |
+| Versões | Vite 8 na raiz; `webcomponents-angular` com Vite 6 próprio (`@analogjs/vite-plugin-angular` 1.x não suporta Vite 8). |
 | Distribuição do próprio appshell | Adiada. |
 | TS × JS | Componentes em TypeScript lá; appshell continua em JavaScript e consome o JS compilado (`dist/`). Os `.d.ts` servem só para autocomplete. |
 | Fronteira | **Componente genérico vai para lá. Cola do appshell fica aqui.** |
@@ -67,6 +88,12 @@ propriedades/atributos e comunica por eventos DOM. Não importa
 A **cola** é o que liga o componente ao appshell: ler config, assinar eventos
 do shell, chamar backends, rotear.
 
+Sobre o `md-imports.js`: não é um componente, é o arquivo que registra de uma
+vez os elementos do Material Web usados pelo appshell. Os componentes de lá
+importam os próprios `@material/web/...` (não podem contar com o
+`md-imports` do appshell); importar o mesmo elemento duas vezes não custa
+nada, desde que haja uma única cópia do `@material/web`.
+
 Componentes acoplados podem ser divididos: parte visual vai para lá, parte de
 cola fica aqui (wrapper fino).
 
@@ -77,7 +104,7 @@ Classificação inicial (a confirmar):
 | `app-clock`, `app-version`, `connection-status`, `nav-accordion` | Genéricos — candidatos fáceis |
 | `app-header`, `app-footer`, `consent-banner`, `user-status`, `user-notifications` | Dividir visual × cola |
 | `app-shell`, `auth-view`, `config-*-view`, `not-found-view` | Cola do appshell — por último ou ficam aqui |
-| `md-imports` | Infra do appshell (imports do Material Web) |
+| `md-imports` | Infra do appshell (imports do Material Web) — fica aqui e tende a encolher |
 
 ---
 
@@ -85,13 +112,12 @@ Classificação inicial (a confirmar):
 
 ### 5.1 No `@fzl/webcomponents-lit`
 
-1. **Lit externo ao bundle** — hoje `vite.config` tem `external: []` e `lit`
-   está em `dependencies`, o que embute uma segunda cópia do Lit. Ajustar para
-   `external: [/^lit/, /^@material\/web/]` e mover `lit` (e `@material/web`)
-   para `peerDependencies`.
-2. **Exports por componente** — além de `"."`, expor cada componente
-   individualmente (ex.: `@fzl/webcomponents-lit/connection-status`) para que o
-   appshell importe só o que já foi migrado.
+1. ✅ **Lit externo ao bundle** — `lit` é `peerDependency` e fica fora do
+   bundle. Quando um componente passar a usar `@material/web`, acrescentá-lo
+   ao `external` e às `peerDependencies` do mesmo jeito.
+2. ✅ **Exports por componente** — cada componente tem uma entrada no
+   `vite.config.ts` e um subpath no `package.json` (hoje:
+   `@fzl/webcomponents-lit/button`). Ao migrar um componente, acrescentar os dois.
 3. **`@material/web`** como dependência dos componentes que o usam.
 
 ### 5.2 Registro de custom elements
@@ -106,8 +132,8 @@ Angular, se usados, carregados sob demanda via `import()` dinâmico.
 
 ### 5.4 Versões
 
-Appshell em Vite 8, projeto de componentes em Vite 6. Como o appshell consome
-o `dist/` compilado, não há conflito direto — mas vale alinhar no futuro.
+Vite 8 na raiz e em todos os workspaces, exceto `webcomponents-angular`, que
+fica com Vite 6 próprio até o `@analogjs/vite-plugin-angular` suportar Vite 8.
 
 ---
 
@@ -115,7 +141,7 @@ o `dist/` compilado, não há conflito direto — mas vale alinhar no futuro.
 
 1. **Levar** — copiar o componente para `webcomponents-lit`, converter para
    TS, remover dependências do appshell (viram propriedades/eventos).
-2. **Build** — gerar o `dist/` do pacote.
+2. **Build** — `npm run build:lit` (o appshell consome o `dist/`).
 3. **Trazer** — no appshell, trocar o import para o pacote; o arquivo antigo é
    removido ou vira wrapper de cola.
 4. **Validar** — testes (vitest) e verificação visual no app rodando.
@@ -126,10 +152,11 @@ Critério de pronto: *a definir*.
 
 ## 7. Pré-requisitos
 
-- [ ] `git init` + commit inicial no `fzl-fund-ui-widgets-components`.
-- [ ] Ajustes do item 5.1.
-- [ ] Ligar o appshell ao pacote via `file:` e consumir o `button` existente
-      como prova do encanamento.
+- [x] Monorepo `fzl-fund-ui` criado (componentes + appshell com histórico).
+- [x] Ajustes do item 5.1.
+- [x] Appshell ligado ao pacote via workspace; a home de demo usa o
+      `fzl-lit-button` como prova do encanamento.
+- [x] Deploy a partir do monorepo documentado (`deploy.md`, seção 6).
 
 ---
 
@@ -139,9 +166,14 @@ Critério de pronto: *a definir*.
   (`--md-sys-*`) convivem sem colisão, mas falta definir a relação entre eles
   (ex.: `--fzl-color-primary` derivar de `--md-sys-color-primary`?).
 - **Ordem da migração.**
+- **Consumidores do submódulo** — o appshell no monorepo e o repositório
+  original passam a divergir. Como levar as melhorias para quem usa o
+  submódulo (ex.: `git subtree split`, ou migrar esses apps para o pacote)?
+  Atenção: depois que o appshell depender de `@fzl/webcomponents-lit`, o
+  repositório original sozinho não terá esse pacote.
 - **Critério de pronto** por componente.
 - **Dependência direta × peer** — com a substituição total planejada, a
   tendência é dependência direta do appshell.
 - **Distribuição** (registry) do pacote de componentes e do appshell.
-- Onde a mudança no outro projeto é feita: nesta sessão ou na sessão daquele
-  projeto.
+- O que fazer com o diretório antigo `fzl-fund-ui-widgets-components` (a outra
+  sessão estava trabalhando nele; o monorepo partiu de um snapshot dele).

@@ -3,11 +3,17 @@ import {
   Input,
   Output,
   EventEmitter,
+  ElementRef,
   ViewEncapsulation,
   ChangeDetectionStrategy
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { fzlDesignTokensCss } from '@fzl/design-tokens';
+
+// Angular's AOT compiler requires `styles` to be static, and fzlDesignTokensCss is
+// built at runtime from the token map (NG1010). It is adopted into the shadow root
+// instead; one sheet is shared by every instance.
+let tokensSheet: CSSStyleSheet | undefined;
 
 export type FzlButtonVariant = 'primary' | 'secondary' | 'danger';
 export type FzlButtonSize = 'sm' | 'md' | 'lg';
@@ -47,7 +53,6 @@ export type FzlButtonSize = 'sm' | 'md' | 'lg';
     </button>
   `,
   styles: [
-    fzlDesignTokensCss,
     `
       :host {
         display: inline-block;
@@ -132,6 +137,17 @@ export type FzlButtonSize = 'sm' | 'md' | 'lg';
   ]
 })
 export class FzlNgButtonComponent {
+  constructor(host: ElementRef<HTMLElement>) {
+    // ShadowDom encapsulation attaches the shadow root before the component is created.
+    const root = host.nativeElement.shadowRoot;
+    if (!root) return;
+    if (!tokensSheet) {
+      tokensSheet = new CSSStyleSheet();
+      tokensSheet.replaceSync(fzlDesignTokensCss);
+    }
+    root.adoptedStyleSheets = [tokensSheet, ...root.adoptedStyleSheets];
+  }
+
   @Input() variant: FzlButtonVariant = 'primary';
   @Input() size: FzlButtonSize = 'md';
   @Input() disabled: boolean = false;

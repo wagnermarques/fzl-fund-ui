@@ -1,3 +1,4 @@
+import { provideExperimentalZonelessChangeDetection } from '@angular/core';
 import { createApplication } from '@angular/platform-browser';
 import { createCustomElement } from '@angular/elements';
 import { FzlNgButtonComponent } from './components/button/button.component';
@@ -10,7 +11,11 @@ export * from './components/button/button.component';
 export async function registerFzlAngularElements(): Promise<void> {
   if (typeof window === 'undefined') return;
 
-  const app = await createApplication({ providers: [] });
+  // Zoneless: widgets are embedded in arbitrary host pages, so we must not require
+  // (or globally install) zone.js, which would also clash with Angular hosts' own zone.
+  const app = await createApplication({
+    providers: [provideExperimentalZonelessChangeDetection()]
+  });
 
   if (!customElements.get('fzl-ng-button')) {
     const ButtonElement = createCustomElement(FzlNgButtonComponent, {

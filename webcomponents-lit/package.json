@@ -4,11 +4,15 @@
   "type": "module",
   "main": "./dist/fzl-lit.js",
   "module": "./dist/fzl-lit.js",
-  "types": "./dist/index.d.ts",
+  "types": "./dist/fzl-lit.d.ts",
   "exports": {
     ".": {
-      "import": "./dist/fzl-lit.js",
-      "types": "./dist/index.d.ts"
+      "types": "./dist/fzl-lit.d.ts",
+      "import": "./dist/fzl-lit.js"
+    },
+    "./button": {
+      "types": "./dist/button.d.ts",
+      "import": "./dist/button.js"
     }
   },
   "scripts": {
@@ -17,9 +21,16 @@
     "analyze": "cem analyze --litelement",
     "typecheck": "tsc --noEmit"
   },
-  "dependencies": {
-    "@fzl/design-tokens": "*",
+  "customElements": "custom-elements.json",
+  "files": [
+    "dist",
+    "custom-elements.json"
+  ],
+  "peerDependencies": {
     "lit": "^3.2.1"
   },
-  "customElements": "custom-elements.json"
+  "devDependencies": {
+    "@fzl/design-tokens": "*",
+    "lit": "^3.3.3"
+  }
 }

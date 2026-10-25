@@ -5,13 +5,18 @@ import { resolve } from 'path';
 export default defineConfig({
   build: {
     lib: {
-      entry: resolve(__dirname, 'src/index.ts'),
-      name: 'FzlWebcomponentsLit',
-      fileName: 'fzl-lit',
+      // One entry per component (subpath exports in package.json) plus the
+      // aggregate index, so consumers can import only what they use.
+      entry: {
+        'fzl-lit': resolve(__dirname, 'src/index.ts'),
+        button: resolve(__dirname, 'src/components/button/button.component.ts')
+      },
       formats: ['es']
     },
     rollupOptions: {
-      external: []
+      // lit stays a peer dependency: bundling it would load a second copy of
+      // Lit in the consumer (e.g. the appshell).
+      external: [/^lit($|\/)/, /^@lit\//]
     }
   },
   plugins: [dts({ rollupTypes: true })]

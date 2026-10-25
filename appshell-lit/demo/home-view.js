@@ -1,4 +1,5 @@
 import { LitElement, html, css } from 'lit'
+import '@fzl/webcomponents-lit/button'
 import { backendService } from '../src/services/backend-service.js'
 
 /** Página inicial do app de demonstração deste próprio repositório: explica
@@ -111,6 +112,13 @@ export class HomeView extends LitElement {
         </dl>
         <a href="#/config/backend">Ver em Config → Backend</a>
       </div>
+
+      <h2>Componentes do monorepo</h2>
+      <p>
+        Os componentes genéricos vêm de <code>@fzl/webcomponents-lit</code>, no mesmo
+        monorepo (<code>fzl-fund-ui</code>). Este botão é o primeiro deles:
+      </p>
+      <fzl-lit-button variant="primary">fzl-lit-button</fzl-lit-button>
     `
   }
 }

@@ -57,3 +57,13 @@ All architectural decisions, styling conventions, and widget API specifications 
 3. [Host Application Integration Guide](./docs/guides/host-integration.md)
 4. [Component Specification Template](./docs/components/_template.md)
 5. [ADR 003: Appshell Lit dentro do monorepo](./docs/architecture/003-appshell-in-monorepo.md)
+
+---
+
+## License
+
+Copyright (C) 2026 Wagner Marques.
+
+This project is free software: you can redistribute it and/or modify it under the terms of the
+**GNU General Public License** as published by the Free Software Foundation, either version 3 of
+the License, or (at your option) any later version. See [`LICENSE`](./LICENSE).

@@ -1,6 +1,7 @@
 {
   "name": "@fzl/design-tokens",
   "version": "0.1.0",
+  "license": "GPL-3.0-or-later",
   "description": "Shared CSS Design Tokens (--fzl-*) and Shadow DOM style helpers for FZL Web Components",
   "type": "module",
   "main": "./src/index.ts",

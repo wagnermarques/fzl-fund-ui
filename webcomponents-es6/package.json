@@ -10,7 +10,8 @@
     ".": {
       "import": "./dist/fzl-es6.js",
       "types": "./dist/index.d.ts"
-    }
+    },
+    "./custom-elements.json": "./custom-elements.json"
   },
   "scripts": {
     "dev": "vite",

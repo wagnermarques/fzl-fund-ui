@@ -119,6 +119,10 @@ export class HomeView extends LitElement {
         monorepo (<code>fzl-fund-ui</code>). Este botão é o primeiro deles:
       </p>
       <fzl-lit-button variant="primary">fzl-lit-button</fzl-lit-button>
+      <p>
+        A documentação viva de cada componente — funcionando, com controles, código e
+        especificação — fica em <a href="#/componentes">Componentes</a>.
+      </p>
     `
   }
 }

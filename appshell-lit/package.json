@@ -47,9 +47,12 @@
   "devDependencies": {
     "@fontsource/atkinson-hyperlegible-next": "^5.3.0",
     "@fontsource/opendyslexic": "^5.3.0",
+    "@fzl/webcomponents-angular": "*",
+    "@fzl/webcomponents-es6": "*",
     "@material-symbols/font-400": "^0.35.0",
     "@material/web": "^2.5.0",
     "lit": "^3.3.3",
+    "marked": "18.1.0",
     "sharp": "^0.35.4",
     "vite": "^8.0.0",
     "vite-plugin-pwa": "^1.3.0",

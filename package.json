@@ -24,7 +24,7 @@
     "docs:sync": "npm run analyze && node scripts/sync-docs.mjs",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "dev:appshell": "npm run dev --workspace=fzl-fund-appshell--lit",
-    "build:appshell": "npm run build:lit && npm run build --workspace=fzl-fund-appshell--lit",
+    "build:appshell": "npm run build:tokens && npm run build:es6 && npm run build:lit && npm run build:angular && npm run build --workspace=fzl-fund-appshell--lit",
     "test": "npm run test --workspaces --if-present"
   },
   "devDependencies": {

@@ -14,7 +14,8 @@
     "./button": {
       "types": "./dist/button.d.ts",
       "import": "./dist/button.js"
-    }
+    },
+    "./custom-elements.json": "./custom-elements.json"
   },
   "scripts": {
     "dev": "vite",

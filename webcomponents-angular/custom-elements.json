@@ -117,6 +117,14 @@
                   }
                 }
               ]
+            },
+            {
+              "kind": "field",
+              "name": "adoptedStyleSheets",
+              "type": {
+                "text": "array"
+              },
+              "default": "[tokensSheet, ...root.adoptedStyleSheets]"
             }
           ],
           "events": [

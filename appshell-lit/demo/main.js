@@ -1,13 +1,44 @@
 import { html } from 'lit'
 import '../src/styles/theme.css'
 import './home-view.js'
-import { createAppShell } from '../src/index.js'
+import './components/components-view.js'
+import { catalog, findComponent } from './components/catalog.js'
+import { createAppShell, pattern } from '../src/index.js'
 
 // Só o que é código. Título, analytics, chave do push... estão no
 // appshell.config.js, e o createAppShell() os recebe pelo build.
 createAppShell({
   mount: '#app',
   home: () => html`<home-view></home-view>`,
+  // Documentação viva dos web components do monorepo (demo/components/).
+  routes: [
+    {
+      name: 'componentes',
+      match: pattern('componentes'),
+      title: 'Componentes',
+      render: () => html`<components-view></components-view>`,
+    },
+    {
+      name: 'componente',
+      match: (segments, query) =>
+        pattern('componentes/:id/:impl')(segments, query) ?? pattern('componentes/:id')(segments, query),
+      title: ({ params }) => findComponent(params.id)?.name ?? 'Componente',
+      render: ({ params }) =>
+        html`<component-docs-view .component=${findComponent(params.id)} .implId=${params.impl}></component-docs-view>`,
+    },
+  ],
+  drawer: {
+    sections: [
+      {
+        id: 'componentes',
+        label: 'Componentes',
+        items: [
+          { label: 'Todos os componentes', icon: 'widgets', href: '#/componentes' },
+          ...catalog.map((component) => ({ label: component.name, icon: component.icon, href: `#/componentes/${component.id}` })),
+        ],
+      },
+    ],
+  },
   // A demo não tem backend — onSubscribe só mostra a inscrição que um app
   // de verdade enviaria ao servidor. Para testar a chegada de um push, use
   // o botão "Push" do Chrome DevTools (Application > Service workers) no

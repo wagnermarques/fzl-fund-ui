@@ -35,7 +35,7 @@ jobs:
         run: npm ci
 
       - name: Build web components
-        run: npm run build:tokens && npm run build:lit
+        run: npm run build:tokens && npm run build:es6 && npm run build:lit && npm run build:angular
 
       - name: Test appshell
         run: npm test --workspace=fzl-fund-appshell--lit

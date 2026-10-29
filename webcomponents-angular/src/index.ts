@@ -2,8 +2,10 @@ import { provideExperimentalZonelessChangeDetection } from '@angular/core';
 import { createApplication } from '@angular/platform-browser';
 import { createCustomElement } from '@angular/elements';
 import { FzlNgButtonComponent } from './components/button/button.component';
+import { FzlNgCrumbComponent } from './components/crumb/crumb.component';
 
 export * from './components/button/button.component';
+export * from './components/crumb/crumb.component';
 
 /**
  * Registers all Angular Elements Web Components into customElements registry
@@ -22,6 +24,13 @@ export async function registerFzlAngularElements(): Promise<void> {
       injector: app.injector
     });
     customElements.define('fzl-ng-button', ButtonElement);
+  }
+
+  if (!customElements.get('fzl-ng-crumb')) {
+    const CrumbElement = createCustomElement(FzlNgCrumbComponent, {
+      injector: app.injector
+    });
+    customElements.define('fzl-ng-crumb', CrumbElement);
   }
 }
 

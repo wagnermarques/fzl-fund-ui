@@ -9,7 +9,8 @@ export default defineConfig({
       // aggregate index, so consumers can import only what they use.
       entry: {
         'fzl-lit': resolve(__dirname, 'src/index.ts'),
-        button: resolve(__dirname, 'src/components/button/button.component.ts')
+        button: resolve(__dirname, 'src/components/button/button.component.ts'),
+        crumb: resolve(__dirname, 'src/components/crumb/crumb.component.ts')
       },
       formats: ['es']
     },

@@ -15,6 +15,10 @@
       "types": "./dist/button.d.ts",
       "import": "./dist/button.js"
     },
+    "./crumb": {
+      "types": "./dist/crumb.d.ts",
+      "import": "./dist/crumb.js"
+    },
     "./custom-elements.json": "./custom-elements.json"
   },
   "scripts": {

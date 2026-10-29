@@ -2,6 +2,8 @@ import { html } from 'lit'
 import '../src/styles/theme.css'
 import './home-view.js'
 import './components/components-view.js'
+import './showcase-view.js'
+import { SHOWCASE_COMPONENTS } from './showcase-view.js'
 import { catalog, findComponent } from './components/catalog.js'
 import { createAppShell, pattern } from '../src/index.js'
 
@@ -16,6 +18,7 @@ createAppShell({
       name: 'componentes',
       match: pattern('componentes'),
       title: 'Componentes',
+      crumb: [{ label: 'Componentes' }],
       render: () => html`<components-view></components-view>`,
     },
     {
@@ -23,18 +26,61 @@ createAppShell({
       match: (segments, query) =>
         pattern('componentes/:id/:impl')(segments, query) ?? pattern('componentes/:id')(segments, query),
       title: ({ params }) => findComponent(params.id)?.name ?? 'Componente',
+      crumb: ({ params }) => [
+        { label: 'Componentes', href: '#/componentes' },
+        { label: findComponent(params.id)?.name ?? params.id },
+      ],
       render: ({ params }) =>
         html`<component-docs-view .component=${findComponent(params.id)} .implId=${params.impl}></component-docs-view>`,
+    },
+    {
+      name: 'showcase',
+      match: pattern('showcase'),
+      title: 'Web Components Showcase',
+      crumb: [{ label: 'Web Components Showcase' }],
+      render: () => html`<showcase-view></showcase-view>`,
+    },
+    {
+      name: 'showcase-component',
+      match: pattern('showcase/:id'),
+      title: ({ params }) => {
+        const comp = SHOWCASE_COMPONENTS.find((c) => c.id === params.id)
+        return comp ? `${comp.name} — Showcase` : 'Web Components Showcase'
+      },
+      crumb: ({ params }) => {
+        const comp = SHOWCASE_COMPONENTS.find((c) => c.id === params.id)
+        return [
+          { label: 'Web Components Showcase', href: '#/showcase' },
+          { label: comp ? comp.name : params.id },
+        ]
+      },
+      render: ({ params }) => html`<showcase-view .componentId=${params.id}></showcase-view>`,
     },
   ],
   drawer: {
     sections: [
       {
+        id: 'showcase',
+        label: 'Web Components Showcase',
+        items: [
+          { label: 'Visão Geral (Catálogo)', icon: 'widgets', href: '#/showcase' },
+          ...SHOWCASE_COMPONENTS.map((comp) => ({
+            label: comp.name,
+            icon: comp.icon,
+            href: `#/showcase/${comp.id}`,
+          })),
+        ],
+      },
+      {
         id: 'componentes',
-        label: 'Componentes',
+        label: 'Componentes (Multi-Engine)',
         items: [
           { label: 'Todos os componentes', icon: 'widgets', href: '#/componentes' },
-          ...catalog.map((component) => ({ label: component.name, icon: component.icon, href: `#/componentes/${component.id}` })),
+          ...catalog.map((component) => ({
+            label: component.name,
+            icon: component.icon,
+            href: `#/componentes/${component.id}`,
+          })),
         ],
       },
     ],

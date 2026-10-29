@@ -14,6 +14,14 @@
             "name": "*",
             "module": "src/components/button/button.component"
           }
+        },
+        {
+          "kind": "js",
+          "name": "*",
+          "declaration": {
+            "name": "*",
+            "module": "src/components/crumb/crumb.component"
+          }
         }
       ]
     },
@@ -170,6 +178,338 @@
           "declaration": {
             "name": "FzlLitButton",
             "module": "src/components/button/button.component.ts"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/components/crumb/crumb.component.ts",
+      "declarations": [
+        {
+          "kind": "function",
+          "name": "parseFzlCrumbItems",
+          "return": {
+            "type": {
+              "text": "FzlCrumbItem[]"
+            }
+          },
+          "parameters": [
+            {
+              "name": "items",
+              "type": {
+                "text": "FzlCrumbItem[] | string | null | undefined"
+              }
+            },
+            {
+              "name": "pathStr",
+              "optional": true,
+              "type": {
+                "text": "string"
+              }
+            }
+          ]
+        },
+        {
+          "kind": "class",
+          "description": "Reactive Lit-based Breadcrumb (\"Crumb\") Custom Element showing current navigation path\nand providing back navigation to the previous view.",
+          "name": "FzlLitCrumb",
+          "cssParts": [
+            {
+              "description": "The outer `<nav>` landmark element",
+              "name": "nav"
+            },
+            {
+              "description": "The back navigation `<button>` element",
+              "name": "back-button"
+            },
+            {
+              "description": "The `<ol>` breadcrumb trail list",
+              "name": "list"
+            },
+            {
+              "description": "Each `<li>` breadcrumb item",
+              "name": "item"
+            },
+            {
+              "description": "Interactive `<a>` link for ancestor items",
+              "name": "link"
+            },
+            {
+              "description": "Visual separator `<span>` between items",
+              "name": "separator"
+            },
+            {
+              "description": "The `<span aria-current=\"page\">` active view label",
+              "name": "current"
+            }
+          ],
+          "members": [
+            {
+              "kind": "field",
+              "name": "items",
+              "type": {
+                "text": "FzlCrumbItem[]"
+              },
+              "default": "[]",
+              "description": "Breadcrumb items array or JSON/delimited string",
+              "attribute": "items"
+            },
+            {
+              "kind": "field",
+              "name": "path",
+              "type": {
+                "text": "string"
+              },
+              "default": "''",
+              "description": "Path string shorthand (e.g. \"Início / Config / Backend\")",
+              "attribute": "path",
+              "reflects": true
+            },
+            {
+              "kind": "field",
+              "name": "separator",
+              "type": {
+                "text": "string"
+              },
+              "default": "'›'",
+              "description": "Visual separator between breadcrumb items",
+              "attribute": "separator",
+              "reflects": true
+            },
+            {
+              "kind": "field",
+              "name": "showBack",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "true",
+              "description": "Whether to display the back button",
+              "attribute": "show-back",
+              "reflects": true
+            },
+            {
+              "kind": "field",
+              "name": "backDisabled",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false",
+              "description": "Whether the back button is disabled",
+              "attribute": "back-disabled",
+              "reflects": true
+            },
+            {
+              "kind": "field",
+              "name": "backLabel",
+              "type": {
+                "text": "string"
+              },
+              "default": "'Voltar'",
+              "description": "Label for the back navigation button",
+              "attribute": "back-label",
+              "reflects": true
+            },
+            {
+              "kind": "field",
+              "name": "backHref",
+              "type": {
+                "text": "string"
+              },
+              "default": "''",
+              "description": "Optional explicit target URL/hash for the back button",
+              "attribute": "back-href",
+              "reflects": true
+            },
+            {
+              "kind": "field",
+              "name": "ariaLabel",
+              "type": {
+                "text": "string"
+              },
+              "default": "'Navegação estrutural'",
+              "description": "Accessible label for the `<nav>` landmark",
+              "attribute": "aria-label",
+              "reflects": true
+            },
+            {
+              "kind": "method",
+              "name": "_resolvedItems",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "FzlCrumbItem[]"
+                }
+              }
+            },
+            {
+              "kind": "method",
+              "name": "_handleBack",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "event",
+                  "type": {
+                    "text": "MouseEvent"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "_handleItemClick",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "event",
+                  "type": {
+                    "text": "MouseEvent"
+                  }
+                },
+                {
+                  "name": "item",
+                  "type": {
+                    "text": "FzlCrumbItem"
+                  }
+                },
+                {
+                  "name": "index",
+                  "type": {
+                    "text": "number"
+                  }
+                }
+              ]
+            }
+          ],
+          "events": [
+            {
+              "type": {
+                "text": "CustomEvent<{ backHref: string; originalEvent: MouseEvent }>"
+              },
+              "description": "Dispatched when the back button is activated",
+              "name": "fzl-back"
+            },
+            {
+              "type": {
+                "text": "CustomEvent<{ item: FzlCrumbItem; index: number; href?: string; originalEvent: MouseEvent }>"
+              },
+              "description": "Dispatched when a breadcrumb link item is clicked",
+              "name": "fzl-navigate"
+            }
+          ],
+          "attributes": [
+            {
+              "name": "items",
+              "type": {
+                "text": "FzlCrumbItem[]"
+              },
+              "default": "[]",
+              "description": "Breadcrumb items array or JSON/delimited string",
+              "fieldName": "items",
+              "attribute": "items"
+            },
+            {
+              "name": "path",
+              "type": {
+                "text": "string"
+              },
+              "default": "''",
+              "description": "Path string shorthand (e.g. \"Início / Config / Backend\")",
+              "fieldName": "path",
+              "attribute": "path"
+            },
+            {
+              "name": "separator",
+              "type": {
+                "text": "string"
+              },
+              "default": "'›'",
+              "description": "Visual separator between breadcrumb items",
+              "fieldName": "separator",
+              "attribute": "separator"
+            },
+            {
+              "name": "show-back",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "true",
+              "description": "Whether to display the back button",
+              "fieldName": "showBack",
+              "attribute": "show-back"
+            },
+            {
+              "name": "back-disabled",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false",
+              "description": "Whether the back button is disabled",
+              "fieldName": "backDisabled",
+              "attribute": "back-disabled"
+            },
+            {
+              "name": "back-label",
+              "type": {
+                "text": "string"
+              },
+              "default": "'Voltar'",
+              "description": "Label for the back navigation button",
+              "fieldName": "backLabel",
+              "attribute": "back-label"
+            },
+            {
+              "name": "back-href",
+              "type": {
+                "text": "string"
+              },
+              "default": "''",
+              "description": "Optional explicit target URL/hash for the back button",
+              "fieldName": "backHref",
+              "attribute": "back-href"
+            },
+            {
+              "name": "aria-label",
+              "type": {
+                "text": "string"
+              },
+              "default": "'Navegação estrutural'",
+              "description": "Accessible label for the `<nav>` landmark",
+              "fieldName": "ariaLabel",
+              "attribute": "aria-label"
+            }
+          ],
+          "superclass": {
+            "name": "LitElement",
+            "package": "lit"
+          },
+          "tagName": "fzl-lit-crumb",
+          "customElement": true
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "parseFzlCrumbItems",
+          "declaration": {
+            "name": "parseFzlCrumbItems",
+            "module": "src/components/crumb/crumb.component.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "FzlLitCrumb",
+          "declaration": {
+            "name": "FzlLitCrumb",
+            "module": "src/components/crumb/crumb.component.ts"
+          }
+        },
+        {
+          "kind": "custom-element-definition",
+          "name": "fzl-lit-crumb",
+          "declaration": {
+            "name": "FzlLitCrumb",
+            "module": "src/components/crumb/crumb.component.ts"
           }
         }
       ]

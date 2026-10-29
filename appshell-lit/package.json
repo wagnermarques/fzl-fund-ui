@@ -60,5 +60,6 @@
   },
   "dependencies": {
     "@fzl/webcomponents-lit": "*"
-  }
+  },
+  "customElements": "custom-elements.json"
 }

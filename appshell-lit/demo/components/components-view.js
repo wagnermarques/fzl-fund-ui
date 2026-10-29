@@ -12,6 +12,7 @@ const MAX_EVENTS = 5
  *  seção de API sincronizada, que a página mostra ao vivo a partir do
  *  manifesto da implementação aberta. */
 function docHtml(markdown) {
+  if (!markdown) return ''
   const sections = markdown.replace(/^# .*\n/, '').split(/^(?=## )/m)
   return marked.parse(sections.filter((section) => !/^## .*API Reference/.test(section)).join(''))
 }
@@ -51,33 +52,48 @@ export class ComponentsView extends LitElement {
     css`
       .grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
         gap: 16px;
       }
       a.card {
-        display: block;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
         padding: 16px;
         border: 1px solid var(--md-sys-color-outline-variant);
         border-radius: 12px;
         color: inherit;
         text-decoration: none;
+        transition: background-color 0.15s ease, border-color 0.15s ease;
       }
       a.card:hover,
       a.card:focus-visible {
         background: var(--md-sys-color-surface-variant);
+        border-color: var(--md-sys-color-outline);
       }
       a.card h2 {
         display: flex;
         align-items: center;
         gap: 8px;
         margin: 0 0 8px;
+        font-size: 1.15rem;
       }
       a.card p {
-        margin: 0 0 8px;
+        margin: 0 0 16px;
+        font-size: 0.9rem;
+        line-height: 1.45;
+        color: var(--md-sys-color-on-surface-variant);
       }
       .impls {
-        color: var(--md-sys-color-on-surface-variant);
-        font-size: 0.85rem;
+        display: inline-flex;
+        align-items: center;
+        padding: 4px 8px;
+        border-radius: 6px;
+        background: var(--md-sys-color-surface-container-high);
+        color: var(--md-sys-color-primary);
+        font-size: 0.75rem;
+        font-weight: 500;
+        width: fit-content;
       }
     `,
   ]
@@ -86,15 +102,17 @@ export class ComponentsView extends LitElement {
     return html`
       <h1>Componentes</h1>
       <p class="subtitle">
-        Documentação viva dos web components do monorepo: cada página mostra o componente
-        funcionando, com controles, o código correspondente e a especificação.
+        Documentação viva e playground interativo dos web components: cada página apresenta o componente funcionando no palco,
+        com controles reativos, código gerado, histórico de eventos, tabela de API e especificação técnica.
       </p>
       <div class="grid">
         ${catalog.map(
           (component) => html`
             <a class="card" href="#/componentes/${component.id}">
-              <h2><md-icon aria-hidden="true">${component.icon}</md-icon>${component.name}</h2>
-              <p>${component.summary}</p>
+              <div>
+                <h2><md-icon aria-hidden="true">${component.icon}</md-icon>${component.name}</h2>
+                <p>${component.summary}</p>
+              </div>
               <div class="impls">${component.implementations.map((impl) => impl.label).join(' · ')}</div>
             </a>
           `,
@@ -135,6 +153,20 @@ export class ComponentDocsView extends LitElement {
         border: 1px dashed var(--md-sys-color-outline);
         border-radius: 12px;
         background: var(--md-sys-color-surface);
+        box-sizing: border-box;
+      }
+      .stage > * {
+        max-width: 100%;
+      }
+      .stage > app-header,
+      .stage > app-footer,
+      .stage > consent-banner,
+      .stage > fzl-lit-crumb,
+      .stage > fzl-es6-crumb,
+      .stage > fzl-ng-crumb,
+      .stage > app-crumb,
+      .stage > nav-accordion {
+        width: 100%;
       }
       .status {
         min-height: 1.5em;
@@ -254,10 +286,8 @@ export class ComponentDocsView extends LitElement {
   }
 
   willUpdate(changed) {
-    // Os valores dos controles sobrevivem à troca de implementação (a API é
-    // a mesma), para comparar as três lado a lado; trocar de componente zera.
     if (changed.has('component')) {
-      this._values = {}
+      this._values = { ...(this.component?.initialValues ?? {}) }
       this._slotText = this.component?.slotText ?? ''
       this._events = []
     }
@@ -307,22 +337,21 @@ export class ComponentDocsView extends LitElement {
     const element = this._element
     if (!element) return
     for (const control of this._controls) {
-      const value = this._values[control.name]
+      const value = this._values[control.name] !== undefined ? this._values[control.name] : control.default
       if (control.kind === 'boolean') {
         element.toggleAttribute(control.name, !!value)
-      } else if (value !== undefined) {
-        // Sempre setAttribute, mesmo para o valor padrão: remover um atributo
-        // refletido (o Lit reflete variant="primary") vira null na propriedade.
+      } else if (value !== undefined && value !== null) {
         element.setAttribute(control.name, value)
       }
     }
-    if (element.textContent !== this._slotText) element.textContent = this._slotText
+    if (this._slotText !== undefined && element.textContent !== this._slotText) {
+      element.textContent = this._slotText
+    }
   }
 
   _logEvent(event) {
     const detail = event.detail ? Object.keys(event.detail).join(', ') : ''
     const time = new Date().toLocaleTimeString()
-    // O log sobrevive à troca de implementação: cada linha diz de qual tag veio.
     const line = `${time}  <${event.currentTarget.localName}>  ${event.type}${detail ? `  { ${detail} }` : ''}`
     this._events = [line, ...this._events].slice(0, MAX_EVENTS)
   }
@@ -336,13 +365,14 @@ export class ComponentDocsView extends LitElement {
     if (!impl) return ''
     const attrs = this._controls
       .map((control) => {
-        const value = this._values[control.name]
-        if (value === undefined || value === control.default || value === false || value === '') return ''
+        const value = this._values[control.name] !== undefined ? this._values[control.name] : control.default
+        if (value === undefined || value === control.default || value === false || value === '' || value === null) return ''
         return value === true ? ` ${control.name}` : ` ${control.name}="${value}"`
       })
       .join('')
     const style = this._primary ? ` style="--fzl-color-primary: ${this._primary}"` : ''
-    return `<script type="module">\n  import '${impl.packageName}'\n</script>\n\n<${impl.tag}${attrs}${style}>${this._slotText}</${impl.tag}>`
+    const slot = this._slotText ? this._slotText : ''
+    return `<script type="module">\n  import '${impl.packageName}'\n</script>\n\n<${impl.tag}${attrs}${style}>${slot}</${impl.tag}>`
   }
 
   async _copy() {
@@ -351,7 +381,7 @@ export class ComponentDocsView extends LitElement {
       this._copied = true
       setTimeout(() => (this._copied = false), 1500)
     } catch {
-      // Sem permissão de área de transferência: o código continua selecionável.
+      // Sem permissão de área de transferência
     }
   }
 
@@ -377,7 +407,8 @@ export class ComponentDocsView extends LitElement {
       <p class="status" role="status">${this._status}</p>
 
       <div class="controls">
-        ${this._controls.map((control) => this._renderControl(control))} ${this._renderSlotControl()}
+        ${this._controls.map((control) => this._renderControl(control))}
+        ${this.component?.slotText !== undefined ? this._renderSlotControl() : nothing}
         ${this._renderThemeControl()}
       </div>
 
@@ -402,7 +433,7 @@ export class ComponentDocsView extends LitElement {
   }
 
   _renderControl(control) {
-    const value = this._values[control.name] ?? control.default
+    const value = this._values[control.name] !== undefined ? this._values[control.name] : control.default
     if (control.kind === 'options') {
       return html`
         <fieldset>
@@ -498,7 +529,7 @@ export class ComponentDocsView extends LitElement {
         : nothing
     return html`
       <h2>API de <code>&lt;${impl.tag}&gt;</code></h2>
-      <p class="hint">Gerada do <code>custom-elements.json</code> de <code>${impl.packageName}</code>.</p>
+      <p class="hint">Informações técnicas de <code>${impl.packageName}</code>.</p>
       ${table(
         'Atributos',
         ['Nome', 'Tipo', 'Padrão', 'Descrição'],

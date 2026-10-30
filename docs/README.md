@@ -27,6 +27,11 @@ flowchart LR
 ### Architecture Decision Records (`docs/architecture/`)
 - [ADR-001: Monorepo Workspace & Multi-Engine Web Components](./architecture/001-monorepo-and-tech-stack.md)
 - [ADR-002: Design Tokens, Shadow DOM Encapsulation & Form Participation](./architecture/002-design-tokens-and-shadow-dom.md)
+- [ADR-003: Appshell Lit dentro do monorepo](./architecture/003-appshell-in-monorepo.md)
+- [ADR-004: Internationalization (i18n) & Localization (l10n) Architecture](./architecture/004-internationalization-and-localization.md)
+
+### Feature Roadmaps & Planning (`docs/roadmap/`)
+- [Internationalization (i18n) & Localization (l10n) Roadmap](./roadmap/i18n-roadmap.md)
 
 ### Integration Guides (`docs/guides/`)
 - [Consuming `<fzl-*>` Widgets in Host Applications (Angular, React, Vue, Plain HTML)](./guides/host-integration.md)

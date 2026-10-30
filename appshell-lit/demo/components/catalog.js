@@ -5,6 +5,7 @@ import { appshellManifest } from './manifest.js'
 
 import buttonDoc from '../../../docs/components/button.md?raw'
 import crumbDoc from '../../../docs/components/crumb.md?raw'
+import cardListDoc from '../../../docs/components/card-list.md?raw'
 import connectionStatusDoc from '../../../docs/components/connection-status.md?raw'
 import appClockDoc from '../../../docs/components/app-clock.md?raw'
 import appVersionDoc from '../../../docs/components/app-version.md?raw'
@@ -87,6 +88,95 @@ export const catalog = [
         id: 'angular',
         label: 'Angular',
         tag: 'fzl-ng-crumb',
+        packageName: '@fzl/webcomponents-angular',
+        manifest: angularManifest,
+        load: () => import('@fzl/webcomponents-angular'),
+      },
+    ],
+  },
+  {
+    id: 'card-list',
+    name: 'Card List',
+    icon: 'dashboard_customize',
+    summary:
+      'Lista interativa de cards estruturados com suporte a modos de layout (grid, vertical, horizontal), rolagem configurável, ordenação dinâmica por múltiplos campos (título, prazo, prioridade) e filtragem de busca.',
+    doc: cardListDoc,
+    slotText: '',
+    initialValues: {
+      layout: 'grid',
+      'max-height': '450px',
+      'allow-sort': true,
+      'allow-filter': true,
+      'sort-by': 'priority',
+      'sort-order': 'desc',
+      items: JSON.stringify([
+        {
+          id: 'task-1',
+          title: 'Revisar módulo de Arquitetura Apache Camel',
+          description: 'Concluir a refatoração das rotas e documentar parâmetros no Blueprint OSGi.',
+          category: 'Cursos',
+          priority: 'ALTA',
+          status: 'EM_ANDAMENTO',
+          date: '2026-10-31',
+          actionLabel: 'Concluir',
+          tags: ['camel', 'karaf']
+        },
+        {
+          id: 'task-2',
+          title: 'Pagamento da fatura de serviços Cloud',
+          description: 'Efetuar pagamento da mensalidade e conciliar notas fiscais no sistema.',
+          category: 'Financeiro',
+          priority: 'MEDIA',
+          status: 'PENDENTE',
+          date: '2026-11-05',
+          actionLabel: 'Pagar',
+          tags: ['financeiro', 'cloud']
+        },
+        {
+          id: 'task-3',
+          title: 'Comprar itens de mercado para a semana',
+          description: 'Frutas, verduras, café em grãos e itens essenciais de reposição.',
+          category: 'Pessoal',
+          priority: 'BAIXA',
+          status: 'PENDENTE',
+          date: '2026-11-02',
+          actionLabel: 'Ver lista',
+          tags: ['pessoal']
+        },
+        {
+          id: 'task-4',
+          title: 'Deploy da nova versão do Appshell',
+          description: 'Publicar bundle no GitHub Pages e notificar equipe via canal de DevOps.',
+          category: 'DevOps',
+          priority: 'URGENTE',
+          status: 'PENDENTE',
+          date: '2026-10-30',
+          actionLabel: 'Executar',
+          tags: ['deploy', 'release']
+        }
+      ]),
+    },
+    implementations: [
+      {
+        id: 'lit',
+        label: 'Lit',
+        tag: 'fzl-lit-card-list',
+        packageName: '@fzl/webcomponents-lit',
+        manifest: litManifest,
+        load: () => import('@fzl/webcomponents-lit/card-list'),
+      },
+      {
+        id: 'es6',
+        label: 'Vanilla ES6',
+        tag: 'fzl-es6-card-list',
+        packageName: '@fzl/webcomponents-es6',
+        manifest: es6Manifest,
+        load: () => import('@fzl/webcomponents-es6'),
+      },
+      {
+        id: 'angular',
+        label: 'Angular',
+        tag: 'fzl-ng-card-list',
         packageName: '@fzl/webcomponents-angular',
         manifest: angularManifest,
         load: () => import('@fzl/webcomponents-angular'),

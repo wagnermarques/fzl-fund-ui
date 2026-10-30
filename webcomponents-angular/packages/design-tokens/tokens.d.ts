@@ -55,6 +55,9 @@ export declare const fzlTokenGroups: {
         readonly 'focus-ring': "0 0 0 3px rgba(29, 78, 216, 0.3)";
         readonly 'transition-fast': "150ms cubic-bezier(0.4, 0, 0.2, 1)";
     };
+    readonly 'Direction & Layout': {
+        readonly direction: "ltr";
+    };
 };
 /** Flat map of every token name (without `--fzl-` prefix) to its default value. */
 export declare const fzlTokens: Record<string, string>;

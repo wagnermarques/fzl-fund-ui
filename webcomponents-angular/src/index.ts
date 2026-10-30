@@ -3,9 +3,11 @@ import { createApplication } from '@angular/platform-browser';
 import { createCustomElement } from '@angular/elements';
 import { FzlNgButtonComponent } from './components/button/button.component';
 import { FzlNgCrumbComponent } from './components/crumb/crumb.component';
+import { FzlNgCardListComponent } from './components/card-list/card-list.component';
 
 export * from './components/button/button.component';
 export * from './components/crumb/crumb.component';
+export * from './components/card-list/card-list.component';
 
 /**
  * Registers all Angular Elements Web Components into customElements registry
@@ -31,6 +33,13 @@ export async function registerFzlAngularElements(): Promise<void> {
       injector: app.injector
     });
     customElements.define('fzl-ng-crumb', CrumbElement);
+  }
+
+  if (!customElements.get('fzl-ng-card-list')) {
+    const CardListElement = createCustomElement(FzlNgCardListComponent, {
+      injector: app.injector
+    });
+    customElements.define('fzl-ng-card-list', CardListElement);
   }
 }
 

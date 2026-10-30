@@ -19,6 +19,10 @@
       "types": "./dist/crumb.d.ts",
       "import": "./dist/crumb.js"
     },
+    "./card-list": {
+      "types": "./dist/card-list.d.ts",
+      "import": "./dist/card-list.js"
+    },
     "./custom-elements.json": "./custom-elements.json"
   },
   "scripts": {

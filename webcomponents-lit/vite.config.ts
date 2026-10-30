@@ -10,7 +10,8 @@ export default defineConfig({
       entry: {
         'fzl-lit': resolve(__dirname, 'src/index.ts'),
         button: resolve(__dirname, 'src/components/button/button.component.ts'),
-        crumb: resolve(__dirname, 'src/components/crumb/crumb.component.ts')
+        crumb: resolve(__dirname, 'src/components/crumb/crumb.component.ts'),
+        'card-list': resolve(__dirname, 'src/components/card-list/card-list.component.ts')
       },
       formats: ['es']
     },

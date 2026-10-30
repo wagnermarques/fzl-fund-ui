@@ -82,6 +82,7 @@ describe('resolveRoute', () => {
     expect(resolveRoute('#/config/backend/servicos-rest').name).toBe('config-backend') // endereço antigo
     expect(resolveRoute('#/config/privacidade').name).toBe('config-privacidade')
     expect(resolveRoute('#/config/acessibilidade').name).toBe('config-acessibilidade')
+    expect(resolveRoute('#/config/idioma').name).toBe('config-idioma')
   })
 
   it('devolve not-found em vez de cair na home', () => {

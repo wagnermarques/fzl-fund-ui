@@ -4,6 +4,7 @@ import './config-accessibility-view.js'
 import './config-notifications-view.js'
 import './config-privacy-view.js'
 import './config-backend-view.js'
+import './config-language-view.js'
 import './consent-banner.js'
 import './nav-accordion.js'
 import './app-footer.js'
@@ -28,6 +29,7 @@ import {
   navigateToConfigNotifications,
   navigateToConfigPrivacy,
   navigateToConfigBackend,
+  navigateToConfigLanguage,
   navigateToLogin,
   navigateToSignup,
 } from '../router.js'
@@ -45,6 +47,7 @@ const SHELL_ROUTE_TITLES = {
   'config-acessibilidade': 'Acessibilidade',
   'config-privacidade': 'Privacidade',
   'config-notificacoes': 'Notificações',
+  'config-idioma': 'Idioma',
   [NOT_FOUND]: 'Página não encontrada',
 }
 
@@ -388,6 +391,10 @@ export class AppShell extends LitElement {
                       <md-icon slot="start">dns</md-icon>
                       Backend
                     </md-list-item>
+                    <md-list-item type="button" @click=${() => this._selectDrawerItem(navigateToConfigLanguage)}>
+                      <md-icon slot="start">language</md-icon>
+                      Idioma
+                    </md-list-item>
                     ${accessibilityService.config.enabled
                       ? html`
                           <md-list-item
@@ -679,6 +686,8 @@ export class AppShell extends LitElement {
         return html`<auth-view></auth-view>`
       case 'config-backend':
         return html`<config-backend-view></config-backend-view>`
+      case 'config-idioma':
+        return html`<config-language-view></config-language-view>`
       case 'config-acessibilidade':
         if (accessibilityService.config.enabled) {
           return html`<config-accessibility-view></config-accessibility-view>`

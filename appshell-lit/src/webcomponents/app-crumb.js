@@ -311,6 +311,7 @@ const SHELL_ROUTE_CRUMBS = {
   'config-acessibilidade': [{ label: 'Início', href: '#/' }, { label: 'Config' }, { label: 'Acessibilidade' }],
   'config-privacidade': [{ label: 'Início', href: '#/' }, { label: 'Config' }, { label: 'Privacidade' }],
   'config-notificacoes': [{ label: 'Início', href: '#/' }, { label: 'Config' }, { label: 'Notificações' }],
+  'config-idioma': [{ label: 'Início', href: '#/' }, { label: 'Config' }, { label: 'Idioma' }],
   [NOT_FOUND]: [{ label: 'Início', href: '#/' }, { label: 'Página não encontrada' }],
 }
 

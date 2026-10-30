@@ -72,6 +72,7 @@ export const shellRoutes = [
   { name: 'config-privacidade', match: pattern('config/privacidade') },
   { name: 'config-acessibilidade', match: pattern('config/acessibilidade') },
   { name: 'config-notificacoes', match: pattern('config/notificacoes') },
+  { name: 'config-idioma', match: pattern('config/idioma') },
 ]
 
 // Redirecionamentos de confirmação de e-mail/magic link/reset de senha de
@@ -190,4 +191,8 @@ export function navigateToConfigAccessibility() {
 
 export function navigateToConfigNotifications() {
   navigate('config/notificacoes')
+}
+
+export function navigateToConfigLanguage() {
+  navigate('config/idioma')
 }

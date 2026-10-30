@@ -1,6 +1,13 @@
 import { fzlTokens } from './tokens';
 
 export { fzlTokens, fzlTokenGroups } from './tokens';
+export {
+  DEFAULT_LOCALE,
+  FALLBACK_LOCALE,
+  SUPPORTED_LOCALES,
+  type LocaleMetadata,
+  type SupportedLocaleCode,
+} from './locales';
 
 /**
  * Shadow DOM stylesheet shared by Vanilla ES6, Lit, and Angular components.

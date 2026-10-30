@@ -207,3 +207,24 @@ describe('validateAppConfig — share', () => {
   })
 })
 
+describe('validateAppConfig — i18n', () => {
+  it('aceita configuração i18n válida', () => {
+    expect(() =>
+      validateAppConfig({
+        i18n: {
+          defaultLocale: 'pt-BR',
+          fallbackLocale: 'pt-BR',
+          supportedLocales: ['pt-BR', 'en-US'],
+          autoDetect: true,
+        },
+      }),
+    ).not.toThrow()
+  })
+
+  it('recusa tipo inválido e chaves desconhecidas em i18n', () => {
+    expect(() => validateAppConfig({ i18n: 'pt-BR' })).toThrow(/"i18n" deve ser um objeto/)
+    expect(() => validateAppConfig({ i18n: { unknown: 'val' } })).toThrow(/i18n: "unknown" não é uma opção conhecida/)
+    expect(() => validateAppConfig({ i18n: { autoDetect: 'sim' } })).toThrow(/"i18n.autoDetect" deve ser true ou false/)
+  })
+})
+

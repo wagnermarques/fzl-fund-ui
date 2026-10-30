@@ -65,16 +65,16 @@ flowchart TD
 ### Phase 1: Foundations & Design Tokens (RTL Readiness)
 > **Goal:** Ensure all styling in `@fzl/design-tokens` supports bidirectional layout (LTR/RTL) without hardcoded physical coordinates.
 
-- [ ] **Task 1.1 — CSS Logical Properties Audit:**
+- [x] **Task 1.1 — CSS Logical Properties Audit:**
   - Audit `packages/design-tokens/src/tokens.ts` and ensure properties prefer logical rules (e.g. `inset-inline-start`, `margin-inline-start`, `padding-inline-end`).
   - Add direction helper tokens if necessary (e.g., `--fzl-direction: ltr`).
-- [ ] **Task 1.2 — Define Supported Locales & BCP 47 Constants:**
+- [x] **Task 1.2 — Define Supported Locales & BCP 47 Constants:**
   - Establish initial supported languages:
     - `pt-BR` (Português - Brasil) — Primary default
     - `en-US` (English - United States)
     - `es-ES` (Español)
   - Create a shared constant list of supported locales with metadata (`code`, `label`, `dir`).
-- [ ] **Task 1.3 — Unit Tests for Token Integrity:**
+- [x] **Task 1.3 — Unit Tests for Token Integrity:**
   - Run `npm run check --workspace=@fzl/design-tokens` to guarantee zero regressions.
 
 ---
@@ -82,29 +82,29 @@ flowchart TD
 ### Phase 2: Appshell i18n Engine & Services (`appshell-lit`)
 > **Goal:** Build the reactive locale state manager, persistence layer, dynamic catalog loader, and formatting helpers.
 
-- [ ] **Task 2.1 — Storage Key Registration:**
+- [x] **Task 2.1 — Storage Key Registration:**
   - Add `'i18n:locale'` to `src/storage-keys.js` with application prefix isolation (`prefixKey(__APP_STORAGE_PREFIX__, 'i18n:locale')`).
-- [ ] **Task 2.2 — App Configuration Schema (`src/app-config.js`):**
+- [x] **Task 2.2 — App Configuration Schema (`src/app-config.js`):**
   - Add `i18n` section to `appshell.config.js` validation:
     - `defaultLocale` (default: `'pt-BR'`)
     - `fallbackLocale` (default: `'pt-BR'`)
     - `supportedLocales` (array of locale descriptors)
     - `autoDetect` (boolean, matches `navigator.languages`)
-- [ ] **Task 2.3 — Implement `i18nService` (`src/services/i18n-service.js`):**
+- [x] **Task 2.3 — Implement `i18nService` (`src/services/i18n-service.js`):**
   - Reactive state with `getLocale()`, `setLocale(code)`, `getSupportedLocales()`.
   - Browser detection fallback algorithm (`navigator.languages` -> `defaultLocale` -> `fallbackLocale`).
   - Automatic synchronization with `document.documentElement.lang` and `document.documentElement.dir`.
   - Dynamic asynchronous catalog loading (`loadCatalog(locale)`).
-- [ ] **Task 2.4 — Shell Events Integration (`src/services/shell-events.js`):**
+- [x] **Task 2.4 — Shell Events Integration (`src/services/shell-events.js`):**
   - Add `SHELL_EVENTS.LOCALE_CHANGED = 'shell:locale-changed'`.
   - Implement `bridgeLocale()` to broadcast changes.
   - Dispatch global window event `fzl:locale-change` for third-party custom elements.
-- [ ] **Task 2.5 — Translation & Formatting Utility (`t(key, params)`):**
+- [x] **Task 2.5 — Translation & Formatting Utility (`t(key, params)`):**
   - Dot-notation dictionary traversal (`t('auth.loginButton')`).
   - Parameter interpolation (`t('welcome', { user: 'Alice' })`).
   - Pluralization support using native `Intl.PluralRules`.
   - Formatters: `formatDate(date, options)`, `formatNumber(value, options)`, `formatCurrency(amount, currency)`.
-- [ ] **Task 2.6 — Unit Tests for `i18nService`:**
+- [x] **Task 2.6 — Unit Tests for `i18nService`:**
   - Full test coverage in `src/services/i18n-service.test.js` (locale switching, storage persistence, fallback handling, formatting).
 
 ---

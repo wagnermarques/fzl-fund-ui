@@ -9,6 +9,7 @@ import { accessibilityService } from './services/accessibility-service.js'
 import { authService, validateAuthProvider } from './services/auth-service.js'
 import { backend, backendService } from './services/backend-service.js'
 import { consentService } from './services/consent-service.js'
+import { i18nService } from './services/i18n-service.js'
 import { networkService } from './services/network-service.js'
 import { notificationService } from './services/notification-service.js'
 import { pushService, validatePushConfig } from './services/push-service.js'
@@ -270,7 +271,11 @@ function connectEvents({ on, debug }) {
     // 30 s — ver backend-service.js).
     shellEvents.on('network:online', () => backendService.checkAll({ force: true })),
     shellEvents.on('app:visible', () => backendService.checkAll()),
-    bridgePreferences(shellEvents, { consent: consentService, accessibility: accessibilityService }),
+    bridgePreferences(shellEvents, {
+      consent: consentService,
+      accessibility: accessibilityService,
+      i18n: i18nService,
+    }),
   )
   teardownEvents = () => offs.forEach((off) => off())
 }

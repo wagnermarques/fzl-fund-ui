@@ -49,6 +49,7 @@ export const SHELL_EVENTS = {
   'backend:unreachable': '{ backend, url, error } — o backend parou de responder (rede, tempo limite, 502/503/504)',
   'backend:unauthorized': '{ backend, url, status } — o backend respondeu 401 (sessão vencida ou ausente)',
   'share:click': '{ network, url } — o usuário clicou em uma opção de compartilhamento',
+  'i18n:locale-change': '{ locale, dir } — o idioma ou direção da escrita mudou',
 }
 
 function requireKnown(name, where) {
@@ -182,11 +183,19 @@ export function bridgeBackends(events, backends) {
 }
 
 /** consent:change e a11y:change (os dois serviços só avisam mudanças). */
-export function bridgePreferences(events, { consent, accessibility }) {
-  const offConsent = consent.subscribe((value) => events.emit('consent:change', { consent: value }))
-  const offA11y = accessibility.subscribe((preferences) => events.emit('a11y:change', { preferences }))
+export function bridgePreferences(events, { consent, accessibility, i18n }) {
+  const offConsent = consent?.subscribe ? consent.subscribe((value) => events.emit('consent:change', { consent: value })) : () => {}
+  const offA11y = accessibility?.subscribe ? accessibility.subscribe((preferences) => events.emit('a11y:change', { preferences })) : () => {}
+  const offI18n = i18n?.subscribe ? i18n.subscribe(({ locale, dir }) => events.emit('i18n:locale-change', { locale, dir })) : () => {}
   return () => {
     offConsent()
     offA11y()
+    offI18n()
   }
+}
+
+/** i18n:locale-change a partir do i18nService. */
+export function bridgeLocale(events, i18n) {
+  if (!i18n?.subscribe) return () => {}
+  return i18n.subscribe(({ locale, dir }) => events.emit('i18n:locale-change', { locale, dir }))
 }

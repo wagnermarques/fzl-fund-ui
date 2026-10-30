@@ -19,6 +19,7 @@ export { href, navigate, pattern } from './router.js'
 export { analyticsService, track } from './services/analytics-service.js'
 export { consentService } from './services/consent-service.js'
 export { accessibilityService }
+export { i18nService } from './services/i18n-service.js'
 export { authService, localProvider } from './services/auth-service.js'
 export { BackendError, backend, backendService } from './services/backend-service.js'
 export { networkService } from './services/network-service.js'

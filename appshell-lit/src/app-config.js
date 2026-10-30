@@ -46,6 +46,7 @@ const KNOWN_KEYS = [
   'backends',
   'share',
   'debug',
+  'i18n',
   'base',
   'manifest',
   'includeAssets',
@@ -56,6 +57,7 @@ const ANALYTICS_KEYS = ['provider', 'id', 'cookiePrefix', 'params', 'requireCons
 const PUSH_KEYS = ['vapidPublicKey', 'backend', 'path']
 const BACKEND_KEYS = ['url', 'auth', 'health', 'timeoutMs']
 const SHARE_KEYS = ['enabled', 'title', 'networks', 'text', 'url']
+const I18N_KEYS = ['defaultLocale', 'fallbackLocale', 'supportedLocales', 'autoDetect']
 export const SUPPORTED_SHARE_NETWORKS = [
   'whatsapp',
   'telegram',
@@ -83,6 +85,7 @@ export const OVERRIDABLE_PATHS = [
   'push.vapidPublicKey',
   'share.text',
   'share.url',
+  'i18n.defaultLocale',
 ]
 
 /** Nomes antigos, aceitos abaixo dos VITE_APPSHELL_*. */
@@ -209,6 +212,26 @@ function validateBackends(backends) {
   }
 }
 
+function validateI18n(i18n) {
+  if (!isPlainObject(i18n)) fail('"i18n" deve ser um objeto')
+  requireKnownKeys(i18n, I18N_KEYS, 'i18n: ')
+  const { defaultLocale, fallbackLocale, supportedLocales, autoDetect } = i18n
+  optionalString(defaultLocale, 'i18n.defaultLocale')
+  optionalString(fallbackLocale, 'i18n.fallbackLocale')
+  if (autoDetect !== undefined && typeof autoDetect !== 'boolean') {
+    fail('"i18n.autoDetect" deve ser true ou false')
+  }
+  if (supportedLocales !== undefined) {
+    if (!Array.isArray(supportedLocales)) fail('"i18n.supportedLocales" deve ser um array')
+    for (const loc of supportedLocales) {
+      if (typeof loc === 'string') continue
+      if (!isPlainObject(loc) || typeof loc.code !== 'string') {
+        fail('"i18n.supportedLocales" deve conter strings de locale ou objetos { code, label, dir? }')
+      }
+    }
+  }
+}
+
 /** Valida o appshell.config.js (as opções de acessibilidade ficam com
  *  resolveAccessibility, no defineAppShellConfig). Devolve a própria config. */
 export function validateAppConfig(config) {
@@ -246,6 +269,7 @@ export function validateAppConfig(config) {
   }
 
   if (backends !== undefined) validateBackends(backends)
+  if (config.i18n !== undefined) validateI18n(config.i18n)
 
   if (share !== undefined) {
     if (typeof share !== 'boolean') {
@@ -378,6 +402,9 @@ export function mergeAppConfig(config, file = appConfig.config) {
     }
   } else if (config.share === null) {
     merged.share = null
+  }
+  if (config.i18n !== null && (file.i18n || config.i18n)) {
+    merged.i18n = { ...file.i18n, ...config.i18n }
   }
   return merged
 }

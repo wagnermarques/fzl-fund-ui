@@ -57,6 +57,9 @@ export const fzlTokenGroups = {
     'focus-ring': '0 0 0 3px rgba(29, 78, 216, 0.3)',
     'transition-fast': '150ms cubic-bezier(0.4, 0, 0.2, 1)',
   },
+  'Direction & Layout': {
+    direction: 'ltr',
+  },
 } as const satisfies Record<string, Record<string, string>>;
 
 /** Flat map of every token name (without `--fzl-` prefix) to its default value. */

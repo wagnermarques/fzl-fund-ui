@@ -233,4 +233,16 @@ describe('bridgeNetwork e bridgePreferences', () => {
       ['a11y:change', { preferences: { theme: 'dark' } }],
     ])
   })
+
+  it('mudança de locale vira i18n:locale-change', () => {
+    const events = createShellEvents()
+    const i18n = fakeService()
+    const log = vi.fn()
+    events.onAny(log)
+    const off = bridgePreferences(events, { i18n })
+    i18n.push({ locale: 'en-US', dir: 'ltr' })
+    off()
+    expect(i18n.size).toBe(0)
+    expect(log.mock.calls).toEqual([['i18n:locale-change', { locale: 'en-US', dir: 'ltr' }]])
+  })
 })

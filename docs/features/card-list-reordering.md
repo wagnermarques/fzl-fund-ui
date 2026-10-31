@@ -110,15 +110,51 @@ Task management applications (such as `fzl-tasktodayapp`), workflow dashboards, 
   - Synchronized Custom Elements Manifests (`npm run docs:sync`).
   - Executed full production build (`npm run build:appshell`) successfully with 0 errors.
 
+### Task 7: Playground Event Feedback Loop & State Retention Fix
+- **Status**: [x] Completed
+- **Justification**: The showcase playground (`ComponentDocsView`) was catching `fzl-cards-reorder`, triggering an update, and re-applying initial unmodified attribute values (`element.setAttribute('items', ...)`), causing any reordering to be immediately reverted.
+- **Affected Files/Components**: `appshell-lit/demo/components/components-view.js`
+- **What Was Done**:
+  - In `_logEvent`, updated `this._values.items` with `JSON.stringify(event.detail.items)` upon receiving `fzl-cards-reorder`.
+  - In `_sync()`, prevented setting attributes if the current DOM attribute already matches the target value, avoiding DOM resets and infinite feedback loops.
+
+### Task 8: Vanilla ES6 Drag-and-Drop DOM Stability Fix
+- **Status**: [x] Completed
+- **Justification**: In `<fzl-es6-card-list>`, `dragstart`, `dragover`, and `dragend` listeners were calling `this._render()`, which destroyed and recreated all card DOM elements while dragging, immediately cancelling the browser's drag-and-drop operation.
+- **Affected Files/Components**: `webcomponents-es6/src/components/card-list/card-list.component.ts`
+- **What Was Done**:
+  - Refactored drag listeners to mutate `.dragging` and `.drag-over` CSS classes directly without re-rendering the feed DOM.
+  - In `attributeChangedCallback('items')`, added JSON equivalence check to avoid wiping out user reordering when parent passes identical items.
+  - Reordered cards only on `drop` event, calling `_reorderCards(from, to)` cleanly.
+
+### Task 9: Angular Elements Zoneless Change Detection & Draggable Fix
+- **Status**: [x] Completed
+- **Justification**: Under Zoneless Angular (`provideExperimentalZonelessChangeDetection`), custom element mutations and events do not trigger automatic zone-based change detection. Without explicit `ChangeDetectorRef.detectChanges()` and proper enumerated `draggable="true"` attributes, Angular Elements did not refresh or reorder cards.
+- **Affected Files/Components**: `webcomponents-angular/src/components/card-list/card-list.component.ts`
+- **What Was Done**:
+  - Injected `ChangeDetectorRef` and changed component change detection strategy to `ChangeDetectionStrategy.Default`.
+  - Converted `items` input to getter/setter that checks deep JSON equality before updating and calls `cdr.detectChanges()`.
+  - Set `[attr.draggable]="isAllowReorder ? 'true' : null"` (standard HTML5 enumerated attribute value).
+  - Called `this.cdr.detectChanges()` in `moveCard`, `reorderCards`, `onDragStart`, `onDragOver`, `onDragLeave`, `onDrop`, and `onDragEnd`.
+
+### Task 10: Lit Drag-and-Drop DataTransfer & Smoothness Fix
+- **Status**: [x] Completed
+- **Justification**: In `<fzl-lit-card-list>`, ensure dataTransfer `text/plain` payload retrieval on drop and prevent attribute reset loops.
+- **Affected Files/Components**: `webcomponents-lit/src/components/card-list/card-list.component.ts`
+- **What Was Done**:
+  - Updated `_handleDrop` to read source index from `event.dataTransfer.getData('text/plain')` with fallback to `_draggedIndex`.
+  - Added target boundary check on `_handleDragLeave`.
+  - Verified Lit reorder reactivity and event emission.
+
 ---
 
 ## 3. Verification & Validation
 - **Vitest Suite**: 260 tests passed across 25 test suites with 0 failures (`npm test`).
 - **Build Verification**:
   - `@fzl/design-tokens`: tokens generated (`tokens.css`).
-  - `@fzl/webcomponents-es6`: compiled to `dist/fzl-es6.js` (36.97 kB).
-  - `@fzl/webcomponents-lit`: compiled to `dist/card-list.js` (21.80 kB).
-  - `@fzl/webcomponents-angular`: compiled to `dist/fzl-angular.js` (455.91 kB).
+  - `@fzl/webcomponents-es6`: compiled to `dist/fzl-es6.js` (37.56 kB).
+  - `@fzl/webcomponents-lit`: compiled to `dist/card-list.js` (21.81 kB).
+  - `@fzl/webcomponents-angular`: compiled to `dist/fzl-angular.js` (456.47 kB).
   - `fzl-fund-appshell--lit`: production PWA bundle built in `dist/`.
 - **Docs & CEM**: Custom Elements Manifests and `docs/components/card-list.md` updated and in sync.
 

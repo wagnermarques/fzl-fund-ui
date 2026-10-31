@@ -587,9 +587,14 @@ export class FzlEs6CardList extends HTMLElement {
 
   attributeChangedCallback(name: string, _oldValue: string | null, newValue: string | null): void {
     switch (name) {
-      case 'items':
-        this._items = parseFzlCardItems(newValue);
-        break;
+      case 'items': {
+        const parsed = parseFzlCardItems(newValue);
+        if (JSON.stringify(parsed) !== JSON.stringify(this._items)) {
+          this._items = parsed;
+          this._render();
+        }
+        return;
+      }
       case 'layout':
         this._layout = (newValue as FzlCardLayout) || 'grid';
         this._updateLayoutClass();
@@ -798,45 +803,56 @@ export class FzlEs6CardList extends HTMLElement {
 
         cardLi.addEventListener('dragstart', (e: DragEvent) => {
           this._draggedIndex = index;
+          cardLi.classList.add('dragging');
           if (e.dataTransfer) {
             e.dataTransfer.effectAllowed = 'move';
             e.dataTransfer.setData('text/plain', String(index));
           }
-          this._render();
         });
 
         cardLi.addEventListener('dragover', (e: DragEvent) => {
-          if (this._draggedIndex === null) return;
+          if (this._draggedIndex === null && !e.dataTransfer?.types.includes('text/plain')) return;
           e.preventDefault();
           if (e.dataTransfer) {
             e.dataTransfer.dropEffect = 'move';
           }
-          if (this._dragOverIndex !== index) {
-            this._dragOverIndex = index;
-            this._render();
+          if (!cardLi.classList.contains('drag-over')) {
+            this._feedEl.querySelectorAll('.fzl-card.drag-over').forEach((el) => {
+              if (el !== cardLi) el.classList.remove('drag-over');
+            });
+            cardLi.classList.add('drag-over');
           }
         });
 
-        cardLi.addEventListener('dragleave', () => {
-          if (this._dragOverIndex === index) {
-            this._dragOverIndex = null;
+        cardLi.addEventListener('dragleave', (e: DragEvent) => {
+          if (!cardLi.contains(e.relatedTarget as Node)) {
+            cardLi.classList.remove('drag-over');
           }
         });
 
         cardLi.addEventListener('drop', (e: DragEvent) => {
-          if (this._draggedIndex === null) return;
           e.preventDefault();
           e.stopPropagation();
-          const from = this._draggedIndex;
+          this._feedEl.querySelectorAll('.fzl-card').forEach((el) => {
+            el.classList.remove('dragging', 'drag-over');
+          });
+
+          const data = e.dataTransfer?.getData('text/plain');
+          const from = data !== undefined && data !== '' ? parseInt(data, 10) : this._draggedIndex;
           this._draggedIndex = null;
           this._dragOverIndex = null;
-          this._reorderCards(from, index);
+
+          if (from !== null && !isNaN(from) && from !== index) {
+            this._reorderCards(from, index);
+          }
         });
 
         cardLi.addEventListener('dragend', () => {
           this._draggedIndex = null;
           this._dragOverIndex = null;
-          this._render();
+          this._feedEl.querySelectorAll('.fzl-card').forEach((el) => {
+            el.classList.remove('dragging', 'drag-over');
+          });
         });
       }
 

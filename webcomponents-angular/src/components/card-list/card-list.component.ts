@@ -5,6 +5,8 @@ import {
   EventEmitter,
   ViewEncapsulation,
   ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  inject,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { fzlDesignTokensCss } from '@fzl/design-tokens';
@@ -144,7 +146,7 @@ export function filterFzlCardItems(items: FzlCardItem[], query: string): FzlCard
   standalone: true,
   imports: [CommonModule],
   encapsulation: ViewEncapsulation.ShadowDom,
-  changeDetection: ChangeDetectionStrategy.OnPush,
+  changeDetection: ChangeDetectionStrategy.Default,
   template: `
     <div class="fzl-card-list-container" part="container" role="region" aria-label="Lista de Cards">
       <div class="fzl-toolbar" part="toolbar" *ngIf="isAllowSort || isAllowFilter">
@@ -205,10 +207,10 @@ export function filterFzlCardItems(items: FzlCardItem[], query: string): FzlCard
           *ngFor="let item of displayedItems; let idx = index"
           [class.dragging]="draggedIndex === idx"
           [class.drag-over]="dragOverIndex === idx"
-          [attr.draggable]="isAllowReorder ? true : null"
+          [attr.draggable]="isAllowReorder ? 'true' : null"
           (dragstart)="onDragStart(idx, $event)"
           (dragover)="onDragOver(idx, $event)"
-          (dragleave)="onDragLeave(idx)"
+          (dragleave)="onDragLeave(idx, $event)"
           (drop)="onDrop(idx, $event)"
           (dragend)="onDragEnd()"
           part="card"
@@ -613,7 +615,21 @@ export function filterFzlCardItems(items: FzlCardItem[], query: string): FzlCard
   ],
 })
 export class FzlNgCardListComponent {
-  @Input() items: FzlCardItem[] | string = [];
+  private _items: FzlCardItem[] | string = [];
+
+  @Input()
+  get items(): FzlCardItem[] | string {
+    return this._items;
+  }
+  set items(val: FzlCardItem[] | string) {
+    const parsedNew = parseFzlCardItems(val);
+    const parsedOld = parseFzlCardItems(this._items);
+    if (JSON.stringify(parsedNew) !== JSON.stringify(parsedOld)) {
+      this._items = val;
+      this.cdr?.detectChanges();
+    }
+  }
+
   @Input() layout: FzlCardLayout = 'grid';
   @Input('max-height') maxHeight: string = 'none';
   @Input('sort-by') sortBy: string = '';
@@ -657,6 +673,8 @@ export class FzlNgCardListComponent {
   currentSortOrder: FzlSortOrder = 'asc';
   draggedIndex: number | null = null;
   dragOverIndex: number | null = null;
+
+  private cdr = inject(ChangeDetectorRef);
 
   ngOnInit() {
     this.currentSortBy = this.sortBy;
@@ -735,7 +753,7 @@ export class FzlNgCardListComponent {
   }
 
   reorderCards(fromIndex: number, toIndex: number) {
-    const raw = parseFzlCardItems(this.items);
+    const raw = parseFzlCardItems(this._items);
     if (fromIndex < 0 || fromIndex >= raw.length) return;
     if (toIndex < 0 || toIndex >= raw.length) return;
     if (fromIndex === toIndex) return;
@@ -747,11 +765,7 @@ export class FzlNgCardListComponent {
     this.currentSortBy = '';
     this.sortBy = '';
 
-    if (typeof this.items === 'string') {
-      this.items = JSON.stringify(updated);
-    } else {
-      this.items = updated;
-    }
+    this._items = updated;
 
     this.fzlCardsReorder.emit({
       items: updated,
@@ -759,6 +773,7 @@ export class FzlNgCardListComponent {
       toIndex,
       item: moved,
     });
+    this.cdr.detectChanges();
   }
 
   onDragStart(idx: number, event: DragEvent) {
@@ -768,37 +783,48 @@ export class FzlNgCardListComponent {
       event.dataTransfer.effectAllowed = 'move';
       event.dataTransfer.setData('text/plain', String(idx));
     }
+    this.cdr.detectChanges();
   }
 
   onDragOver(idx: number, event: DragEvent) {
-    if (!this.isAllowReorder || this.draggedIndex === null) return;
+    if (!this.isAllowReorder) return;
     event.preventDefault();
     if (event.dataTransfer) {
       event.dataTransfer.dropEffect = 'move';
     }
     if (this.dragOverIndex !== idx) {
       this.dragOverIndex = idx;
+      this.cdr.detectChanges();
     }
   }
 
-  onDragLeave(idx: number) {
-    if (this.dragOverIndex === idx) {
-      this.dragOverIndex = null;
+  onDragLeave(idx: number, event: DragEvent) {
+    const target = event.currentTarget as HTMLElement;
+    if (target && !target.contains(event.relatedTarget as Node)) {
+      if (this.dragOverIndex === idx) {
+        this.dragOverIndex = null;
+        this.cdr.detectChanges();
+      }
     }
   }
 
   onDrop(idx: number, event: DragEvent) {
-    if (!this.isAllowReorder || this.draggedIndex === null) return;
+    if (!this.isAllowReorder) return;
     event.preventDefault();
     event.stopPropagation();
-    const from = this.draggedIndex;
+    const data = event.dataTransfer?.getData('text/plain');
+    const from = data !== undefined && data !== '' ? parseInt(data, 10) : this.draggedIndex;
     this.draggedIndex = null;
     this.dragOverIndex = null;
-    this.reorderCards(from, idx);
+    if (from !== null && !isNaN(from) && from !== idx) {
+      this.reorderCards(from, idx);
+    }
+    this.cdr.detectChanges();
   }
 
   onDragEnd() {
     this.draggedIndex = null;
     this.dragOverIndex = null;
+    this.cdr.detectChanges();
   }
 }

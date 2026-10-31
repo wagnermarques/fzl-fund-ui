@@ -227,657 +227,6 @@
     },
     {
       "kind": "javascript-module",
-      "path": "src/components/card-list/card-list.component.ts",
-      "declarations": [
-        {
-          "kind": "function",
-          "name": "parseFzlCardItems",
-          "return": {
-            "type": {
-              "text": "FzlCardItem[]"
-            }
-          },
-          "parameters": [
-            {
-              "name": "items",
-              "type": {
-                "text": "FzlCardItem[] | string | null | undefined"
-              }
-            }
-          ]
-        },
-        {
-          "kind": "function",
-          "name": "sortFzlCardItems",
-          "return": {
-            "type": {
-              "text": "FzlCardItem[]"
-            }
-          },
-          "parameters": [
-            {
-              "name": "items",
-              "type": {
-                "text": "FzlCardItem[]"
-              }
-            },
-            {
-              "name": "sortBy",
-              "type": {
-                "text": "string"
-              }
-            },
-            {
-              "name": "sortOrder",
-              "default": "'asc'",
-              "type": {
-                "text": "FzlSortOrder"
-              }
-            }
-          ]
-        },
-        {
-          "kind": "function",
-          "name": "filterFzlCardItems",
-          "return": {
-            "type": {
-              "text": "FzlCardItem[]"
-            }
-          },
-          "parameters": [
-            {
-              "name": "items",
-              "type": {
-                "text": "FzlCardItem[]"
-              }
-            },
-            {
-              "name": "query",
-              "type": {
-                "text": "string"
-              }
-            }
-          ]
-        },
-        {
-          "kind": "class",
-          "description": "Angular Elements Card List Custom Element (`fzl-ng-card-list`)\nDisplays structured cards with sorting, filtering, and responsive scrolling.",
-          "name": "FzlNgCardListComponent",
-          "cssParts": [
-            {
-              "description": "The outer root container",
-              "name": "container"
-            },
-            {
-              "description": "The top sorting and filtering toolbar",
-              "name": "toolbar"
-            },
-            {
-              "description": "The scrollable card container element",
-              "name": "list"
-            },
-            {
-              "description": "Each card element in the collection",
-              "name": "card"
-            },
-            {
-              "description": "Card header element",
-              "name": "card-header"
-            },
-            {
-              "description": "Card description/body element",
-              "name": "card-body"
-            },
-            {
-              "description": "Card footer containing tags and action",
-              "name": "card-footer"
-            },
-            {
-              "description": "Reordering buttons container on each card",
-              "name": "reorder-controls"
-            }
-          ],
-          "members": [
-            {
-              "kind": "field",
-              "name": "items",
-              "type": {
-                "text": "FzlCardItem[] | string"
-              },
-              "default": "[]"
-            },
-            {
-              "kind": "field",
-              "name": "layout",
-              "type": {
-                "text": "FzlCardLayout"
-              },
-              "default": "'grid'"
-            },
-            {
-              "kind": "field",
-              "name": "maxHeight",
-              "type": {
-                "text": "string"
-              },
-              "default": "'none'"
-            },
-            {
-              "kind": "field",
-              "name": "sortBy",
-              "type": {
-                "text": "string"
-              },
-              "default": "''"
-            },
-            {
-              "kind": "field",
-              "name": "sortOrder",
-              "type": {
-                "text": "FzlSortOrder"
-              },
-              "default": "'asc'"
-            },
-            {
-              "kind": "field",
-              "name": "allowSort",
-              "type": {
-                "text": "boolean | string"
-              },
-              "default": "false"
-            },
-            {
-              "kind": "field",
-              "name": "allowFilter",
-              "type": {
-                "text": "boolean | string"
-              },
-              "default": "false"
-            },
-            {
-              "kind": "field",
-              "name": "allowReorder",
-              "type": {
-                "text": "boolean | string"
-              },
-              "default": "false"
-            },
-            {
-              "kind": "field",
-              "name": "emptyText",
-              "type": {
-                "text": "string"
-              },
-              "default": "'Nenhum item encontrado'"
-            },
-            {
-              "kind": "field",
-              "name": "fzlCardClick",
-              "default": "new EventEmitter<{ item: FzlCardItem; index: number; originalEvent: MouseEvent; }>()"
-            },
-            {
-              "kind": "field",
-              "name": "fzlCardAction",
-              "default": "new EventEmitter<{ action: string; item: FzlCardItem; index: number; originalEvent: MouseEvent; }>()"
-            },
-            {
-              "kind": "field",
-              "name": "fzlSortChange",
-              "default": "new EventEmitter<{ sortBy: string; sortOrder: FzlSortOrder; }>()"
-            },
-            {
-              "kind": "field",
-              "name": "fzlFilterChange",
-              "default": "new EventEmitter<{ filter: string; }>()"
-            },
-            {
-              "kind": "field",
-              "name": "fzlCardsReorder",
-              "default": "new EventEmitter<{ items: FzlCardItem[]; fromIndex: number; toIndex: number; item: FzlCardItem; }>()"
-            },
-            {
-              "kind": "field",
-              "name": "filterQuery",
-              "type": {
-                "text": "string"
-              },
-              "default": "''"
-            },
-            {
-              "kind": "field",
-              "name": "currentSortBy",
-              "type": {
-                "text": "string"
-              },
-              "default": "''"
-            },
-            {
-              "kind": "field",
-              "name": "currentSortOrder",
-              "type": {
-                "text": "FzlSortOrder"
-              },
-              "default": "'asc'"
-            },
-            {
-              "kind": "field",
-              "name": "draggedIndex",
-              "type": {
-                "text": "number | null"
-              },
-              "default": "null"
-            },
-            {
-              "kind": "field",
-              "name": "dragOverIndex",
-              "type": {
-                "text": "number | null"
-              },
-              "default": "null"
-            },
-            {
-              "kind": "method",
-              "name": "ngOnInit"
-            },
-            {
-              "kind": "field",
-              "name": "isAllowSort",
-              "type": {
-                "text": "boolean"
-              },
-              "readonly": true
-            },
-            {
-              "kind": "field",
-              "name": "isAllowFilter",
-              "type": {
-                "text": "boolean"
-              },
-              "readonly": true
-            },
-            {
-              "kind": "field",
-              "name": "isAllowReorder",
-              "type": {
-                "text": "boolean"
-              },
-              "readonly": true
-            },
-            {
-              "kind": "field",
-              "name": "feedMaxHeight",
-              "type": {
-                "text": "string"
-              },
-              "readonly": true
-            },
-            {
-              "kind": "field",
-              "name": "displayedItems",
-              "type": {
-                "text": "FzlCardItem[]"
-              },
-              "readonly": true
-            },
-            {
-              "kind": "method",
-              "name": "getPriorityClass",
-              "return": {
-                "type": {
-                  "text": "string"
-                }
-              },
-              "parameters": [
-                {
-                  "name": "priority",
-                  "optional": true,
-                  "type": {
-                    "text": "string"
-                  }
-                }
-              ]
-            },
-            {
-              "kind": "method",
-              "name": "onFilterInput",
-              "parameters": [
-                {
-                  "name": "event",
-                  "type": {
-                    "text": "Event"
-                  }
-                }
-              ]
-            },
-            {
-              "kind": "method",
-              "name": "onSortFieldChange",
-              "parameters": [
-                {
-                  "name": "event",
-                  "type": {
-                    "text": "Event"
-                  }
-                }
-              ]
-            },
-            {
-              "kind": "method",
-              "name": "toggleSortOrder"
-            },
-            {
-              "kind": "method",
-              "name": "onCardClick",
-              "parameters": [
-                {
-                  "name": "event",
-                  "type": {
-                    "text": "MouseEvent"
-                  }
-                },
-                {
-                  "name": "item",
-                  "type": {
-                    "text": "FzlCardItem"
-                  }
-                },
-                {
-                  "name": "index",
-                  "type": {
-                    "text": "number"
-                  }
-                }
-              ]
-            },
-            {
-              "kind": "method",
-              "name": "onCardAction",
-              "parameters": [
-                {
-                  "name": "event",
-                  "type": {
-                    "text": "MouseEvent"
-                  }
-                },
-                {
-                  "name": "item",
-                  "type": {
-                    "text": "FzlCardItem"
-                  }
-                },
-                {
-                  "name": "index",
-                  "type": {
-                    "text": "number"
-                  }
-                }
-              ]
-            },
-            {
-              "kind": "method",
-              "name": "moveCard",
-              "parameters": [
-                {
-                  "name": "idx",
-                  "type": {
-                    "text": "number"
-                  }
-                },
-                {
-                  "name": "delta",
-                  "type": {
-                    "text": "number"
-                  }
-                },
-                {
-                  "name": "event",
-                  "type": {
-                    "text": "MouseEvent"
-                  }
-                }
-              ]
-            },
-            {
-              "kind": "method",
-              "name": "reorderCards",
-              "parameters": [
-                {
-                  "name": "fromIndex",
-                  "type": {
-                    "text": "number"
-                  }
-                },
-                {
-                  "name": "toIndex",
-                  "type": {
-                    "text": "number"
-                  }
-                }
-              ]
-            },
-            {
-              "kind": "method",
-              "name": "onDragStart",
-              "parameters": [
-                {
-                  "name": "idx",
-                  "type": {
-                    "text": "number"
-                  }
-                },
-                {
-                  "name": "event",
-                  "type": {
-                    "text": "DragEvent"
-                  }
-                }
-              ]
-            },
-            {
-              "kind": "method",
-              "name": "onDragOver",
-              "parameters": [
-                {
-                  "name": "idx",
-                  "type": {
-                    "text": "number"
-                  }
-                },
-                {
-                  "name": "event",
-                  "type": {
-                    "text": "DragEvent"
-                  }
-                }
-              ]
-            },
-            {
-              "kind": "method",
-              "name": "onDragLeave",
-              "parameters": [
-                {
-                  "name": "idx",
-                  "type": {
-                    "text": "number"
-                  }
-                }
-              ]
-            },
-            {
-              "kind": "method",
-              "name": "onDrop",
-              "parameters": [
-                {
-                  "name": "idx",
-                  "type": {
-                    "text": "number"
-                  }
-                },
-                {
-                  "name": "event",
-                  "type": {
-                    "text": "DragEvent"
-                  }
-                }
-              ]
-            },
-            {
-              "kind": "method",
-              "name": "onDragEnd"
-            }
-          ],
-          "events": [
-            {
-              "type": {
-                "text": "CustomEvent<{ item: FzlCardItem; index: number; originalEvent: MouseEvent }>"
-              },
-              "description": "Dispatched when a card is clicked",
-              "name": "fzl-card-click"
-            },
-            {
-              "type": {
-                "text": "CustomEvent<{ action: string; item: FzlCardItem; index: number; originalEvent: MouseEvent }>"
-              },
-              "description": "Dispatched when card action button is clicked",
-              "name": "fzl-card-action"
-            },
-            {
-              "type": {
-                "text": "CustomEvent<{ sortBy: string; sortOrder: FzlSortOrder }>"
-              },
-              "description": "Dispatched when sorting criteria changes",
-              "name": "fzl-sort-change"
-            },
-            {
-              "type": {
-                "text": "CustomEvent<{ filter: string }>"
-              },
-              "description": "Dispatched when search filter text changes",
-              "name": "fzl-filter-change"
-            },
-            {
-              "type": {
-                "text": "CustomEvent<{ items: FzlCardItem[]; fromIndex: number; toIndex: number; item: FzlCardItem }>"
-              },
-              "description": "Dispatched when cards are reordered",
-              "name": "fzl-cards-reorder"
-            }
-          ],
-          "attributes": [
-            {
-              "type": {
-                "text": "string"
-              },
-              "description": "Card items array or JSON string",
-              "name": "items",
-              "default": "'[]'"
-            },
-            {
-              "type": {
-                "text": "string"
-              },
-              "description": "Layout mode: 'vertical' | 'grid' | 'horizontal'",
-              "name": "layout",
-              "default": "'grid'"
-            },
-            {
-              "type": {
-                "text": "string"
-              },
-              "description": "Max height for scroll container (e.g. '500px')",
-              "name": "max-height",
-              "default": "'none'"
-            },
-            {
-              "type": {
-                "text": "string"
-              },
-              "description": "Field to sort by ('title', 'date', 'priority', 'status', 'category')",
-              "name": "sort-by",
-              "default": "''"
-            },
-            {
-              "type": {
-                "text": "string"
-              },
-              "description": "Sort order: 'asc' | 'desc'",
-              "name": "sort-order",
-              "default": "'asc'"
-            },
-            {
-              "type": {
-                "text": "boolean"
-              },
-              "description": "Whether to show the sorting toolbar",
-              "name": "allow-sort",
-              "default": "false"
-            },
-            {
-              "type": {
-                "text": "boolean"
-              },
-              "description": "Whether to show the filter search input",
-              "name": "allow-filter",
-              "default": "false"
-            },
-            {
-              "type": {
-                "text": "boolean"
-              },
-              "description": "Whether cards can be manually reordered",
-              "name": "allow-reorder",
-              "default": "false"
-            },
-            {
-              "type": {
-                "text": "string"
-              },
-              "description": "Text when list is empty",
-              "name": "empty-text",
-              "default": "'Nenhum item encontrado'"
-            }
-          ],
-          "tagName": "fzl-ng-card-list",
-          "customElement": true
-        }
-      ],
-      "exports": [
-        {
-          "kind": "js",
-          "name": "parseFzlCardItems",
-          "declaration": {
-            "name": "parseFzlCardItems",
-            "module": "src/components/card-list/card-list.component.ts"
-          }
-        },
-        {
-          "kind": "js",
-          "name": "sortFzlCardItems",
-          "declaration": {
-            "name": "sortFzlCardItems",
-            "module": "src/components/card-list/card-list.component.ts"
-          }
-        },
-        {
-          "kind": "js",
-          "name": "filterFzlCardItems",
-          "declaration": {
-            "name": "filterFzlCardItems",
-            "module": "src/components/card-list/card-list.component.ts"
-          }
-        },
-        {
-          "kind": "js",
-          "name": "FzlNgCardListComponent",
-          "declaration": {
-            "name": "FzlNgCardListComponent",
-            "module": "src/components/card-list/card-list.component.ts"
-          }
-        }
-      ]
-    },
-    {
-      "kind": "javascript-module",
       "path": "src/components/crumb/crumb.component.ts",
       "declarations": [
         {
@@ -1175,6 +524,676 @@
           "declaration": {
             "name": "FzlNgCrumbComponent",
             "module": "src/components/crumb/crumb.component.ts"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/components/card-list/card-list.component.ts",
+      "declarations": [
+        {
+          "kind": "function",
+          "name": "parseFzlCardItems",
+          "return": {
+            "type": {
+              "text": "FzlCardItem[]"
+            }
+          },
+          "parameters": [
+            {
+              "name": "items",
+              "type": {
+                "text": "FzlCardItem[] | string | null | undefined"
+              }
+            }
+          ]
+        },
+        {
+          "kind": "function",
+          "name": "sortFzlCardItems",
+          "return": {
+            "type": {
+              "text": "FzlCardItem[]"
+            }
+          },
+          "parameters": [
+            {
+              "name": "items",
+              "type": {
+                "text": "FzlCardItem[]"
+              }
+            },
+            {
+              "name": "sortBy",
+              "type": {
+                "text": "string"
+              }
+            },
+            {
+              "name": "sortOrder",
+              "default": "'asc'",
+              "type": {
+                "text": "FzlSortOrder"
+              }
+            }
+          ]
+        },
+        {
+          "kind": "function",
+          "name": "filterFzlCardItems",
+          "return": {
+            "type": {
+              "text": "FzlCardItem[]"
+            }
+          },
+          "parameters": [
+            {
+              "name": "items",
+              "type": {
+                "text": "FzlCardItem[]"
+              }
+            },
+            {
+              "name": "query",
+              "type": {
+                "text": "string"
+              }
+            }
+          ]
+        },
+        {
+          "kind": "class",
+          "description": "Angular Elements Card List Custom Element (`fzl-ng-card-list`)\nDisplays structured cards with sorting, filtering, and responsive scrolling.",
+          "name": "FzlNgCardListComponent",
+          "cssParts": [
+            {
+              "description": "The outer root container",
+              "name": "container"
+            },
+            {
+              "description": "The top sorting and filtering toolbar",
+              "name": "toolbar"
+            },
+            {
+              "description": "The scrollable card container element",
+              "name": "list"
+            },
+            {
+              "description": "Each card element in the collection",
+              "name": "card"
+            },
+            {
+              "description": "Card header element",
+              "name": "card-header"
+            },
+            {
+              "description": "Card description/body element",
+              "name": "card-body"
+            },
+            {
+              "description": "Card footer containing tags and action",
+              "name": "card-footer"
+            },
+            {
+              "description": "Reordering buttons container on each card",
+              "name": "reorder-controls"
+            }
+          ],
+          "members": [
+            {
+              "kind": "field",
+              "name": "_items",
+              "type": {
+                "text": "FzlCardItem[] | string"
+              },
+              "privacy": "private",
+              "default": "[]"
+            },
+            {
+              "kind": "field",
+              "name": "items",
+              "type": {
+                "text": "FzlCardItem[] | string"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "layout",
+              "type": {
+                "text": "FzlCardLayout"
+              },
+              "default": "'grid'"
+            },
+            {
+              "kind": "field",
+              "name": "maxHeight",
+              "type": {
+                "text": "string"
+              },
+              "default": "'none'"
+            },
+            {
+              "kind": "field",
+              "name": "sortBy",
+              "type": {
+                "text": "string"
+              },
+              "default": "''"
+            },
+            {
+              "kind": "field",
+              "name": "sortOrder",
+              "type": {
+                "text": "FzlSortOrder"
+              },
+              "default": "'asc'"
+            },
+            {
+              "kind": "field",
+              "name": "allowSort",
+              "type": {
+                "text": "boolean | string"
+              },
+              "default": "false"
+            },
+            {
+              "kind": "field",
+              "name": "allowFilter",
+              "type": {
+                "text": "boolean | string"
+              },
+              "default": "false"
+            },
+            {
+              "kind": "field",
+              "name": "allowReorder",
+              "type": {
+                "text": "boolean | string"
+              },
+              "default": "false"
+            },
+            {
+              "kind": "field",
+              "name": "emptyText",
+              "type": {
+                "text": "string"
+              },
+              "default": "'Nenhum item encontrado'"
+            },
+            {
+              "kind": "field",
+              "name": "fzlCardClick",
+              "default": "new EventEmitter<{ item: FzlCardItem; index: number; originalEvent: MouseEvent; }>()"
+            },
+            {
+              "kind": "field",
+              "name": "fzlCardAction",
+              "default": "new EventEmitter<{ action: string; item: FzlCardItem; index: number; originalEvent: MouseEvent; }>()"
+            },
+            {
+              "kind": "field",
+              "name": "fzlSortChange",
+              "default": "new EventEmitter<{ sortBy: string; sortOrder: FzlSortOrder; }>()"
+            },
+            {
+              "kind": "field",
+              "name": "fzlFilterChange",
+              "default": "new EventEmitter<{ filter: string; }>()"
+            },
+            {
+              "kind": "field",
+              "name": "fzlCardsReorder",
+              "default": "new EventEmitter<{ items: FzlCardItem[]; fromIndex: number; toIndex: number; item: FzlCardItem; }>()"
+            },
+            {
+              "kind": "field",
+              "name": "filterQuery",
+              "type": {
+                "text": "string"
+              },
+              "default": "''"
+            },
+            {
+              "kind": "field",
+              "name": "currentSortBy",
+              "type": {
+                "text": "string"
+              },
+              "default": "''"
+            },
+            {
+              "kind": "field",
+              "name": "currentSortOrder",
+              "type": {
+                "text": "FzlSortOrder"
+              },
+              "default": "'asc'"
+            },
+            {
+              "kind": "field",
+              "name": "draggedIndex",
+              "type": {
+                "text": "number | null"
+              },
+              "default": "null"
+            },
+            {
+              "kind": "field",
+              "name": "dragOverIndex",
+              "type": {
+                "text": "number | null"
+              },
+              "default": "null"
+            },
+            {
+              "kind": "field",
+              "name": "cdr",
+              "privacy": "private"
+            },
+            {
+              "kind": "method",
+              "name": "ngOnInit"
+            },
+            {
+              "kind": "field",
+              "name": "isAllowSort",
+              "type": {
+                "text": "boolean"
+              },
+              "readonly": true
+            },
+            {
+              "kind": "field",
+              "name": "isAllowFilter",
+              "type": {
+                "text": "boolean"
+              },
+              "readonly": true
+            },
+            {
+              "kind": "field",
+              "name": "isAllowReorder",
+              "type": {
+                "text": "boolean"
+              },
+              "readonly": true
+            },
+            {
+              "kind": "field",
+              "name": "feedMaxHeight",
+              "type": {
+                "text": "string"
+              },
+              "readonly": true
+            },
+            {
+              "kind": "field",
+              "name": "displayedItems",
+              "type": {
+                "text": "FzlCardItem[]"
+              },
+              "readonly": true
+            },
+            {
+              "kind": "method",
+              "name": "getPriorityClass",
+              "return": {
+                "type": {
+                  "text": "string"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "priority",
+                  "optional": true,
+                  "type": {
+                    "text": "string"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "onFilterInput",
+              "parameters": [
+                {
+                  "name": "event",
+                  "type": {
+                    "text": "Event"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "onSortFieldChange",
+              "parameters": [
+                {
+                  "name": "event",
+                  "type": {
+                    "text": "Event"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "toggleSortOrder"
+            },
+            {
+              "kind": "method",
+              "name": "onCardClick",
+              "parameters": [
+                {
+                  "name": "event",
+                  "type": {
+                    "text": "MouseEvent"
+                  }
+                },
+                {
+                  "name": "item",
+                  "type": {
+                    "text": "FzlCardItem"
+                  }
+                },
+                {
+                  "name": "index",
+                  "type": {
+                    "text": "number"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "onCardAction",
+              "parameters": [
+                {
+                  "name": "event",
+                  "type": {
+                    "text": "MouseEvent"
+                  }
+                },
+                {
+                  "name": "item",
+                  "type": {
+                    "text": "FzlCardItem"
+                  }
+                },
+                {
+                  "name": "index",
+                  "type": {
+                    "text": "number"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "moveCard",
+              "parameters": [
+                {
+                  "name": "idx",
+                  "type": {
+                    "text": "number"
+                  }
+                },
+                {
+                  "name": "delta",
+                  "type": {
+                    "text": "number"
+                  }
+                },
+                {
+                  "name": "event",
+                  "type": {
+                    "text": "MouseEvent"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "reorderCards",
+              "parameters": [
+                {
+                  "name": "fromIndex",
+                  "type": {
+                    "text": "number"
+                  }
+                },
+                {
+                  "name": "toIndex",
+                  "type": {
+                    "text": "number"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "onDragStart",
+              "parameters": [
+                {
+                  "name": "idx",
+                  "type": {
+                    "text": "number"
+                  }
+                },
+                {
+                  "name": "event",
+                  "type": {
+                    "text": "DragEvent"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "onDragOver",
+              "parameters": [
+                {
+                  "name": "idx",
+                  "type": {
+                    "text": "number"
+                  }
+                },
+                {
+                  "name": "event",
+                  "type": {
+                    "text": "DragEvent"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "onDragLeave",
+              "parameters": [
+                {
+                  "name": "idx",
+                  "type": {
+                    "text": "number"
+                  }
+                },
+                {
+                  "name": "event",
+                  "type": {
+                    "text": "DragEvent"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "onDrop",
+              "parameters": [
+                {
+                  "name": "idx",
+                  "type": {
+                    "text": "number"
+                  }
+                },
+                {
+                  "name": "event",
+                  "type": {
+                    "text": "DragEvent"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "onDragEnd"
+            }
+          ],
+          "events": [
+            {
+              "type": {
+                "text": "CustomEvent<{ item: FzlCardItem; index: number; originalEvent: MouseEvent }>"
+              },
+              "description": "Dispatched when a card is clicked",
+              "name": "fzl-card-click"
+            },
+            {
+              "type": {
+                "text": "CustomEvent<{ action: string; item: FzlCardItem; index: number; originalEvent: MouseEvent }>"
+              },
+              "description": "Dispatched when card action button is clicked",
+              "name": "fzl-card-action"
+            },
+            {
+              "type": {
+                "text": "CustomEvent<{ sortBy: string; sortOrder: FzlSortOrder }>"
+              },
+              "description": "Dispatched when sorting criteria changes",
+              "name": "fzl-sort-change"
+            },
+            {
+              "type": {
+                "text": "CustomEvent<{ filter: string }>"
+              },
+              "description": "Dispatched when search filter text changes",
+              "name": "fzl-filter-change"
+            },
+            {
+              "type": {
+                "text": "CustomEvent<{ items: FzlCardItem[]; fromIndex: number; toIndex: number; item: FzlCardItem }>"
+              },
+              "description": "Dispatched when cards are reordered",
+              "name": "fzl-cards-reorder"
+            }
+          ],
+          "attributes": [
+            {
+              "type": {
+                "text": "string"
+              },
+              "description": "Card items array or JSON string",
+              "name": "items",
+              "default": "'[]'"
+            },
+            {
+              "type": {
+                "text": "string"
+              },
+              "description": "Layout mode: 'vertical' | 'grid' | 'horizontal'",
+              "name": "layout",
+              "default": "'grid'"
+            },
+            {
+              "type": {
+                "text": "string"
+              },
+              "description": "Max height for scroll container (e.g. '500px')",
+              "name": "max-height",
+              "default": "'none'"
+            },
+            {
+              "type": {
+                "text": "string"
+              },
+              "description": "Field to sort by ('title', 'date', 'priority', 'status', 'category')",
+              "name": "sort-by",
+              "default": "''"
+            },
+            {
+              "type": {
+                "text": "string"
+              },
+              "description": "Sort order: 'asc' | 'desc'",
+              "name": "sort-order",
+              "default": "'asc'"
+            },
+            {
+              "type": {
+                "text": "boolean"
+              },
+              "description": "Whether to show the sorting toolbar",
+              "name": "allow-sort",
+              "default": "false"
+            },
+            {
+              "type": {
+                "text": "boolean"
+              },
+              "description": "Whether to show the filter search input",
+              "name": "allow-filter",
+              "default": "false"
+            },
+            {
+              "type": {
+                "text": "boolean"
+              },
+              "description": "Whether cards can be manually reordered",
+              "name": "allow-reorder",
+              "default": "false"
+            },
+            {
+              "type": {
+                "text": "string"
+              },
+              "description": "Text when list is empty",
+              "name": "empty-text",
+              "default": "'Nenhum item encontrado'"
+            }
+          ],
+          "tagName": "fzl-ng-card-list",
+          "customElement": true
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "parseFzlCardItems",
+          "declaration": {
+            "name": "parseFzlCardItems",
+            "module": "src/components/card-list/card-list.component.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "sortFzlCardItems",
+          "declaration": {
+            "name": "sortFzlCardItems",
+            "module": "src/components/card-list/card-list.component.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "filterFzlCardItems",
+          "declaration": {
+            "name": "filterFzlCardItems",
+            "module": "src/components/card-list/card-list.component.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "FzlNgCardListComponent",
+          "declaration": {
+            "name": "FzlNgCardListComponent",
+            "module": "src/components/card-list/card-list.component.ts"
           }
         }
       ]

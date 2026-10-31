@@ -548,7 +548,7 @@ export class FzlLitCardList extends LitElement {
   }
 
   private _handleDragOver(index: number, event: DragEvent) {
-    if (!this.allowReorder || this._draggedIndex === null) return;
+    if (!this.allowReorder) return;
     event.preventDefault();
     if (event.dataTransfer) {
       event.dataTransfer.dropEffect = 'move';
@@ -558,20 +558,21 @@ export class FzlLitCardList extends LitElement {
     }
   }
 
-  private _handleDragLeave(index: number) {
-    if (this._dragOverIndex === index) {
-      this._dragOverIndex = null;
-    }
+  private _handleDragLeave(_index: number) {
+    // Only clear if leaving outside
   }
 
   private _handleDrop(targetIndex: number, event: DragEvent) {
-    if (!this.allowReorder || this._draggedIndex === null) return;
+    if (!this.allowReorder) return;
     event.preventDefault();
     event.stopPropagation();
-    const sourceIndex = this._draggedIndex;
+    const data = event.dataTransfer?.getData('text/plain');
+    const sourceIndex = data !== undefined && data !== '' ? parseInt(data, 10) : this._draggedIndex;
     this._draggedIndex = null;
     this._dragOverIndex = null;
-    this._reorderCards(sourceIndex, targetIndex);
+    if (sourceIndex !== null && !isNaN(sourceIndex) && sourceIndex !== targetIndex) {
+      this._reorderCards(sourceIndex, targetIndex);
+    }
   }
 
   private _handleDragEnd() {

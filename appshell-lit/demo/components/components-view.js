@@ -339,9 +339,15 @@ export class ComponentDocsView extends LitElement {
     for (const control of this._controls) {
       const value = this._values[control.name] !== undefined ? this._values[control.name] : control.default
       if (control.kind === 'boolean') {
-        element.toggleAttribute(control.name, !!value)
+        const hasAttr = element.hasAttribute(control.name)
+        const shouldHave = !!value
+        if (hasAttr !== shouldHave) {
+          element.toggleAttribute(control.name, shouldHave)
+        }
       } else if (value !== undefined && value !== null) {
-        element.setAttribute(control.name, value)
+        if (element.getAttribute(control.name) !== String(value)) {
+          element.setAttribute(control.name, value)
+        }
       }
     }
     if (this._slotText !== undefined && element.textContent !== this._slotText) {
@@ -350,6 +356,9 @@ export class ComponentDocsView extends LitElement {
   }
 
   _logEvent(event) {
+    if (event.type === 'fzl-cards-reorder' && event.detail?.items) {
+      this._values = { ...this._values, items: JSON.stringify(event.detail.items) }
+    }
     const detail = event.detail ? Object.keys(event.detail).join(', ') : ''
     const time = new Date().toLocaleTimeString()
     const line = `${time}  <${event.currentTarget.localName}>  ${event.type}${detail ? `  { ${detail} }` : ''}`

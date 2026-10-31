@@ -235,6 +235,94 @@ export const appshellManifest = {
       ],
       exports: [{ kind: 'custom-element-definition', name: 'user-status', declaration: { name: 'UserStatus' } }],
     },
+    {
+      kind: 'javascript-module',
+      path: 'src/webcomponents/web-push.js',
+      declarations: [
+        {
+          kind: 'class',
+          description:
+            'Componente configurável de Web Push (<fzl-web-push> / <web-push-component>) com comportamento headless por padrão e exibição condicional (prompt de permissão, alertas e toasts de notificação).',
+          name: 'WebPushComponent',
+          tagName: 'fzl-web-push',
+          customElement: true,
+          attributes: [
+            {
+              name: 'display-mode',
+              description: "Modo visual de exibição: 'none' (headless), 'banner', 'badge' ou 'card'.",
+              type: { text: "'none' | 'banner' | 'badge' | 'card'" },
+              default: "'none'",
+            },
+            {
+              name: 'auto-prompt',
+              description: 'Solicita permissão ao usuário automaticamente exibindo o banner discreto caso ainda não concedida.',
+              type: { text: 'boolean' },
+              default: 'false',
+            },
+            {
+              name: 'topics',
+              description: 'Lista de tópicos/canais de notificação separados por vírgula.',
+              type: { text: 'string' },
+              default: "''",
+            },
+            {
+              name: 'vapid-key',
+              description: 'Chave pública VAPID (base64url) do servidor push.',
+              type: { text: 'string' },
+              default: "''",
+            },
+            {
+              name: 'endpoint-url',
+              description: 'URL do endpoint HTTP no backend para envio da inscrição (onSubscribe).',
+              type: { text: 'string' },
+              default: "''",
+            },
+          ],
+          events: [
+            {
+              name: 'fzl-push-subscribed',
+              type: { text: 'CustomEvent<{ subscription: object }>' },
+              description: 'Disparado quando a inscrição push é ativada.',
+            },
+            {
+              name: 'fzl-push-unsubscribed',
+              type: { text: 'CustomEvent<void>' },
+              description: 'Disparado quando a inscrição push é cancelada.',
+            },
+            {
+              name: 'fzl-push-received',
+              type: { text: 'CustomEvent<{ title: string, body: string, url?: string, data?: object }>' },
+              description: 'Disparado ao receber uma notificação push.',
+            },
+            {
+              name: 'fzl-push-clicked',
+              type: { text: 'CustomEvent<{ action?: string, url?: string, data?: object }>' },
+              description: 'Disparado ao clicar na notificação recebida.',
+            },
+            {
+              name: 'fzl-push-permission-change',
+              type: { text: 'CustomEvent<{ permission: string }>' },
+              description: 'Disparado quando a permissão no navegador muda.',
+            },
+            {
+              name: 'fzl-push-error',
+              type: { text: 'CustomEvent<{ error: Error, message: string }>' },
+              description: 'Disparado quando ocorre um erro na inscrição ou permissão.',
+            },
+          ],
+          slots: [
+            { name: 'prompt', description: 'Conteúdo customizado para o banner de solicitação de permissão.' },
+            { name: 'blocked', description: 'Conteúdo customizado exibido quando as notificações estão bloqueadas.' },
+            { name: 'message', description: 'Template para toast de notificação recebida.' },
+          ],
+          cssParts: [],
+        },
+      ],
+      exports: [
+        { kind: 'custom-element-definition', name: 'fzl-web-push', declaration: { name: 'WebPushComponent' } },
+        { kind: 'custom-element-definition', name: 'web-push-component', declaration: { name: 'WebPushComponent' } },
+      ],
+    },
   ],
 }
 

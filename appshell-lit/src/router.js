@@ -72,6 +72,7 @@ export const shellRoutes = [
   { name: 'config-privacidade', match: pattern('config/privacidade') },
   { name: 'config-acessibilidade', match: pattern('config/acessibilidade') },
   { name: 'config-notificacoes', match: pattern('config/notificacoes') },
+  { name: 'config-web-push', match: pattern('config/web-push') },
   { name: 'config-idioma', match: pattern('config/idioma') },
 ]
 
@@ -191,6 +192,10 @@ export function navigateToConfigAccessibility() {
 
 export function navigateToConfigNotifications() {
   navigate('config/notificacoes')
+}
+
+export function navigateToConfigWebPush() {
+  navigate('config/web-push')
 }
 
 export function navigateToConfigLanguage() {

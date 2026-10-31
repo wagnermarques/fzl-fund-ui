@@ -14,6 +14,7 @@ import appHeaderDoc from '../../../docs/components/app-header.md?raw'
 import appFooterDoc from '../../../docs/components/app-footer.md?raw'
 import consentBannerDoc from '../../../docs/components/consent-banner.md?raw'
 import userStatusDoc from '../../../docs/components/user-status.md?raw'
+import webPushDoc from '../../../docs/components/web-push.md?raw'
 
 /** Catálogo da documentação viva (#/componentes). Cada componente aponta
  *  para a sua especificação em docs/components/ (o texto) e para as
@@ -341,6 +342,30 @@ export const catalog = [
         packageName: 'fzl-fund-appshell--lit',
         manifest: appshellManifest,
         load: () => import('../../src/webcomponents/user-status.js'),
+      },
+    ],
+  },
+  {
+    id: 'web-push',
+    name: 'Web Push',
+    icon: 'send_to_mobile',
+    summary:
+      'Componente configurável de Web Push (<fzl-web-push> / <web-push-component>) com comportamento headless por padrão e exibição condicional (prompt de permissão, alertas e toasts de mensagens).',
+    doc: webPushDoc,
+    slotText: '',
+    initialValues: {
+      'display-mode': 'badge',
+      topics: 'alertas,processos',
+      'auto-prompt': false,
+    },
+    implementations: [
+      {
+        id: 'lit',
+        label: 'Lit',
+        tag: 'fzl-web-push',
+        packageName: 'fzl-fund-appshell--lit',
+        manifest: appshellManifest,
+        load: () => import('../../src/webcomponents/web-push.js'),
       },
     ],
   },

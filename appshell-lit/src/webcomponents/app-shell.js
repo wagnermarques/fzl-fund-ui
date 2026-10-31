@@ -2,6 +2,7 @@ import { LitElement, html, css } from 'lit'
 import { registerSW } from 'virtual:pwa-register'
 import './config-accessibility-view.js'
 import './config-notifications-view.js'
+import './config-web-push-view.js'
 import './config-privacy-view.js'
 import './config-backend-view.js'
 import './config-language-view.js'
@@ -27,6 +28,7 @@ import {
   navigateToAccount,
   navigateToConfigAccessibility,
   navigateToConfigNotifications,
+  navigateToConfigWebPush,
   navigateToConfigPrivacy,
   navigateToConfigBackend,
   navigateToConfigLanguage,
@@ -47,6 +49,7 @@ const SHELL_ROUTE_TITLES = {
   'config-acessibilidade': 'Acessibilidade',
   'config-privacidade': 'Privacidade',
   'config-notificacoes': 'Notificações',
+  'config-web-push': 'Web Push',
   'config-idioma': 'Idioma',
   [NOT_FOUND]: 'Página não encontrada',
 }
@@ -417,6 +420,13 @@ export class AppShell extends LitElement {
                           </md-list-item>
                         `
                       : ''}
+                    <md-list-item
+                      type="button"
+                      @click=${() => this._selectDrawerItem(navigateToConfigWebPush)}
+                    >
+                      <md-icon slot="start">send_to_mobile</md-icon>
+                      Web Push
+                    </md-list-item>
                     ${this._asksConsent()
                       ? html`
                           <md-list-item type="button" @click=${() => this._selectDrawerItem(navigateToConfigPrivacy)}>
@@ -707,6 +717,8 @@ export class AppShell extends LitElement {
           return html`<config-notifications-view></config-notifications-view>`
         }
         return html`<not-found-view .path=${this._route.segments.join('/')}></not-found-view>`
+      case 'config-web-push':
+        return html`<config-web-push-view></config-web-push-view>`
       case NOT_FOUND:
       default:
         return html`<not-found-view .path=${this._route.segments.join('/')}></not-found-view>`

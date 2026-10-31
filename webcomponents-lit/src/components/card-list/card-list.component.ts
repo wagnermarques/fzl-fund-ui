@@ -111,6 +111,7 @@ export function filterFzlCardItems(items: FzlCardItem[], query: string): FzlCard
  * @fires {CustomEvent<{ action: string; item: FzlCardItem; index: number; originalEvent: MouseEvent }>} fzl-card-action - Dispatched when card action button is clicked
  * @fires {CustomEvent<{ sortBy: string; sortOrder: FzlSortOrder }>} fzl-sort-change - Dispatched when sorting criteria changes
  * @fires {CustomEvent<{ filter: string }>} fzl-filter-change - Dispatched when search filter text changes
+ * @fires {CustomEvent<{ items: FzlCardItem[]; fromIndex: number; toIndex: number; item: FzlCardItem }>} fzl-cards-reorder - Dispatched when cards are reordered
  *
  * @csspart container - The outer root container
  * @csspart toolbar - The top sorting and filtering toolbar
@@ -119,6 +120,7 @@ export function filterFzlCardItems(items: FzlCardItem[], query: string): FzlCard
  * @csspart card-header - Card header element
  * @csspart card-body - Card description/body element
  * @csspart card-footer - Card footer containing tags and action
+ * @csspart reorder-controls - Reordering buttons container on each card
  */
 export class FzlLitCardList extends LitElement {
   static override styles = [
@@ -251,6 +253,22 @@ export class FzlLitCardList extends LitElement {
         box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.08);
       }
 
+      .fzl-card[draggable="true"] {
+        cursor: grab;
+      }
+
+      .fzl-card.dragging {
+        opacity: 0.45;
+        border-style: dashed;
+        border-color: var(--_fzl-color-primary);
+        cursor: grabbing;
+      }
+
+      .fzl-card.drag-over {
+        border-color: var(--_fzl-color-primary);
+        box-shadow: 0 -3px 0 0 var(--_fzl-color-primary);
+      }
+
       .fzl-card:focus-visible {
         box-shadow: var(--_fzl-focus-ring);
       }
@@ -261,6 +279,62 @@ export class FzlLitCardList extends LitElement {
         justify-content: space-between;
         gap: var(--_fzl-space-2);
         margin-bottom: var(--_fzl-space-2);
+      }
+
+      .fzl-card-header-actions {
+        display: flex;
+        align-items: center;
+        gap: var(--_fzl-space-1);
+      }
+
+      .fzl-card-reorder-controls {
+        display: inline-flex;
+        align-items: center;
+        gap: 2px;
+        background-color: var(--_fzl-color-surface-muted);
+        border: 1px solid var(--_fzl-color-border);
+        border-radius: var(--_fzl-radius-sm);
+        padding: 1px 3px;
+      }
+
+      .fzl-btn-reorder {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 20px;
+        height: 20px;
+        padding: 0;
+        font-size: 9px;
+        font-family: inherit;
+        border: 1px solid var(--_fzl-color-border);
+        background: var(--_fzl-color-surface);
+        color: var(--_fzl-color-text);
+        border-radius: var(--_fzl-radius-sm);
+        cursor: pointer;
+        line-height: 1;
+        transition: background-color var(--_fzl-transition-fast), color var(--_fzl-transition-fast);
+      }
+
+      .fzl-btn-reorder:disabled {
+        opacity: 0.35;
+        cursor: not-allowed;
+      }
+
+      .fzl-btn-reorder:not(:disabled):hover {
+        background: var(--_fzl-color-primary);
+        color: var(--_fzl-color-primary-contrast);
+        border-color: var(--_fzl-color-primary);
+      }
+
+      .fzl-drag-handle {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0 2px;
+        font-size: 13px;
+        color: var(--_fzl-color-text-muted);
+        cursor: grab;
+        user-select: none;
       }
 
       .fzl-card-title-group {
@@ -408,12 +482,102 @@ export class FzlLitCardList extends LitElement {
   @property({ type: Boolean, attribute: 'allow-filter' })
   allowFilter: boolean = false;
 
+  /** Whether cards can be manually reordered by the user */
+  @property({ type: Boolean, attribute: 'allow-reorder' })
+  allowReorder: boolean = false;
+
   /** Text displayed when list is empty */
   @property({ type: String, attribute: 'empty-text' })
   emptyText: string = 'Nenhum item encontrado';
 
   @state()
   private _filterQuery: string = '';
+
+  @state()
+  private _draggedIndex: number | null = null;
+
+  @state()
+  private _dragOverIndex: number | null = null;
+
+  private _reorderCards(fromIndex: number, toIndex: number) {
+    const rawItems = parseFzlCardItems(this.items);
+    if (fromIndex < 0 || fromIndex >= rawItems.length) return;
+    if (toIndex < 0 || toIndex >= rawItems.length) return;
+    if (fromIndex === toIndex) return;
+
+    const updated = [...rawItems];
+    const [moved] = updated.splice(fromIndex, 1);
+    updated.splice(toIndex, 0, moved);
+
+    // Reset automatic sortBy so user custom ordering takes precedence
+    this.sortBy = '';
+
+    if (typeof this.items === 'string') {
+      this.items = JSON.stringify(updated);
+    } else {
+      this.items = updated;
+    }
+
+    this.dispatchEvent(
+      new CustomEvent('fzl-cards-reorder', {
+        detail: {
+          items: updated,
+          fromIndex,
+          toIndex,
+          item: moved,
+        },
+        bubbles: true,
+        composed: true,
+      })
+    );
+  }
+
+  private _moveCard(fromIndex: number, delta: number, event: MouseEvent) {
+    event.stopPropagation();
+    const toIndex = fromIndex + delta;
+    this._reorderCards(fromIndex, toIndex);
+  }
+
+  private _handleDragStart(index: number, event: DragEvent) {
+    if (!this.allowReorder) return;
+    this._draggedIndex = index;
+    if (event.dataTransfer) {
+      event.dataTransfer.effectAllowed = 'move';
+      event.dataTransfer.setData('text/plain', String(index));
+    }
+  }
+
+  private _handleDragOver(index: number, event: DragEvent) {
+    if (!this.allowReorder || this._draggedIndex === null) return;
+    event.preventDefault();
+    if (event.dataTransfer) {
+      event.dataTransfer.dropEffect = 'move';
+    }
+    if (this._dragOverIndex !== index) {
+      this._dragOverIndex = index;
+    }
+  }
+
+  private _handleDragLeave(index: number) {
+    if (this._dragOverIndex === index) {
+      this._dragOverIndex = null;
+    }
+  }
+
+  private _handleDrop(targetIndex: number, event: DragEvent) {
+    if (!this.allowReorder || this._draggedIndex === null) return;
+    event.preventDefault();
+    event.stopPropagation();
+    const sourceIndex = this._draggedIndex;
+    this._draggedIndex = null;
+    this._dragOverIndex = null;
+    this._reorderCards(sourceIndex, targetIndex);
+  }
+
+  private _handleDragEnd() {
+    this._draggedIndex = null;
+    this._dragOverIndex = null;
+  }
 
   private _handleCardClick(item: FzlCardItem, index: number, event: MouseEvent) {
     this.dispatchEvent(
@@ -549,12 +713,20 @@ export class FzlLitCardList extends LitElement {
               `
             : displayedItems.map((item, index) => {
                 const priorityClass = item.priority ? `priority-${item.priority.toLowerCase()}` : '';
+                const isDragging = this._draggedIndex === index;
+                const isDragOver = this._dragOverIndex === index;
                 return html`
                   <li
-                    class="fzl-card"
+                    class="fzl-card ${isDragging ? 'dragging' : ''} ${isDragOver ? 'drag-over' : ''}"
                     part="card"
                     role="listitem"
                     tabindex="0"
+                    draggable=${this.allowReorder ? 'true' : 'false'}
+                    @dragstart=${(e: DragEvent) => this._handleDragStart(index, e)}
+                    @dragover=${(e: DragEvent) => this._handleDragOver(index, e)}
+                    @dragleave=${() => this._handleDragLeave(index)}
+                    @drop=${(e: DragEvent) => this._handleDrop(index, e)}
+                    @dragend=${() => this._handleDragEnd()}
                     @click=${(e: MouseEvent) => this._handleCardClick(item, index, e)}
                     @keydown=${(e: KeyboardEvent) => {
                       if (e.key === 'Enter' || e.key === ' ') {
@@ -568,13 +740,42 @@ export class FzlLitCardList extends LitElement {
                         <h3 class="fzl-card-title">${item.title}</h3>
                         ${item.subtitle ? html`<span class="fzl-card-subtitle">${item.subtitle}</span>` : ''}
                       </div>
-                      ${item.badge || item.priority
-                        ? html`
-                            <span class="fzl-badge ${priorityClass}">
-                              ${item.badge || item.priority}
-                            </span>
-                          `
-                        : ''}
+                      <div class="fzl-card-header-actions">
+                        ${this.allowReorder
+                          ? html`
+                              <div class="fzl-card-reorder-controls" part="reorder-controls">
+                                <span class="fzl-drag-handle" title="Arraste para reordenar" aria-hidden="true">⠿</span>
+                                <button
+                                  type="button"
+                                  class="fzl-btn-reorder"
+                                  ?disabled=${index === 0}
+                                  @click=${(e: MouseEvent) => this._moveCard(index, -1, e)}
+                                  aria-label="Mover card para cima"
+                                  title="Mover para cima"
+                                >
+                                  ▲
+                                </button>
+                                <button
+                                  type="button"
+                                  class="fzl-btn-reorder"
+                                  ?disabled=${index === displayedItems.length - 1}
+                                  @click=${(e: MouseEvent) => this._moveCard(index, 1, e)}
+                                  aria-label="Mover card para baixo"
+                                  title="Mover para baixo"
+                                >
+                                  ▼
+                                </button>
+                              </div>
+                            `
+                          : ''}
+                        ${item.badge || item.priority
+                          ? html`
+                              <span class="fzl-badge ${priorityClass}">
+                                ${item.badge || item.priority}
+                              </span>
+                            `
+                          : ''}
+                      </div>
                     </div>
 
                     ${item.description

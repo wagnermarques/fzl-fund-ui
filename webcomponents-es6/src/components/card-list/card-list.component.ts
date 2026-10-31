@@ -227,6 +227,22 @@ template.innerHTML = `
       box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.08);
     }
 
+    .fzl-card[draggable="true"] {
+      cursor: grab;
+    }
+
+    .fzl-card.dragging {
+      opacity: 0.45;
+      border-style: dashed;
+      border-color: var(--_fzl-color-primary);
+      cursor: grabbing;
+    }
+
+    .fzl-card.drag-over {
+      border-color: var(--_fzl-color-primary);
+      box-shadow: 0 -3px 0 0 var(--_fzl-color-primary);
+    }
+
     .fzl-card:focus-visible {
       box-shadow: var(--_fzl-focus-ring);
     }
@@ -237,6 +253,62 @@ template.innerHTML = `
       justify-content: space-between;
       gap: var(--_fzl-space-2);
       margin-bottom: var(--_fzl-space-2);
+    }
+
+    .fzl-card-header-actions {
+      display: flex;
+      align-items: center;
+      gap: var(--_fzl-space-1);
+    }
+
+    .fzl-card-reorder-controls {
+      display: inline-flex;
+      align-items: center;
+      gap: 2px;
+      background-color: var(--_fzl-color-surface-muted);
+      border: 1px solid var(--_fzl-color-border);
+      border-radius: var(--_fzl-radius-sm);
+      padding: 1px 3px;
+    }
+
+    .fzl-btn-reorder {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 20px;
+      height: 20px;
+      padding: 0;
+      font-size: 9px;
+      font-family: inherit;
+      border: 1px solid var(--_fzl-color-border);
+      background: var(--_fzl-color-surface);
+      color: var(--_fzl-color-text);
+      border-radius: var(--_fzl-radius-sm);
+      cursor: pointer;
+      line-height: 1;
+      transition: background-color var(--_fzl-transition-fast), color var(--_fzl-transition-fast);
+    }
+
+    .fzl-btn-reorder:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+    }
+
+    .fzl-btn-reorder:not(:disabled):hover {
+      background: var(--_fzl-color-primary);
+      color: var(--_fzl-color-primary-contrast);
+      border-color: var(--_fzl-color-primary);
+    }
+
+    .fzl-drag-handle {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 2px;
+      font-size: 13px;
+      color: var(--_fzl-color-text-muted);
+      cursor: grab;
+      user-select: none;
     }
 
     .fzl-card-title-group {
@@ -371,6 +443,7 @@ template.innerHTML = `
  * @fires {CustomEvent<{ action: string; item: FzlCardItem; index: number; originalEvent: MouseEvent }>} fzl-card-action - Dispatched when card action button is clicked
  * @fires {CustomEvent<{ sortBy: string; sortOrder: FzlSortOrder }>} fzl-sort-change - Dispatched when sorting criteria changes
  * @fires {CustomEvent<{ filter: string }>} fzl-filter-change - Dispatched when search filter text changes
+ * @fires {CustomEvent<{ items: FzlCardItem[]; fromIndex: number; toIndex: number; item: FzlCardItem }>} fzl-cards-reorder - Dispatched when cards are reordered
  *
  * @csspart container - The outer root container
  * @csspart toolbar - The top sorting and filtering toolbar
@@ -379,6 +452,7 @@ template.innerHTML = `
  * @csspart card-header - Card header element
  * @csspart card-body - Card description/body element
  * @csspart card-footer - Card footer containing tags and action
+ * @csspart reorder-controls - Reordering buttons container on each card
  */
 export class FzlEs6CardList extends HTMLElement {
   static get observedAttributes(): string[] {
@@ -390,6 +464,7 @@ export class FzlEs6CardList extends HTMLElement {
       'sort-order',
       'allow-sort',
       'allow-filter',
+      'allow-reorder',
       'empty-text',
     ];
   }
@@ -401,8 +476,11 @@ export class FzlEs6CardList extends HTMLElement {
   private _sortOrder: FzlSortOrder = 'asc';
   private _allowSort: boolean = false;
   private _allowFilter: boolean = false;
+  private _allowReorder: boolean = false;
   private _emptyText: string = 'Nenhum item encontrado';
   private _filterQuery: string = '';
+  private _draggedIndex: number | null = null;
+  private _dragOverIndex: number | null = null;
 
   private readonly _root: ShadowRoot;
   private readonly _toolbarEl: HTMLDivElement;
@@ -482,6 +560,15 @@ export class FzlEs6CardList extends HTMLElement {
     this._render();
   }
 
+  get allowReorder(): boolean {
+    return this._allowReorder;
+  }
+
+  set allowReorder(val: boolean) {
+    this._allowReorder = Boolean(val);
+    this._render();
+  }
+
   get emptyText(): string {
     return this._emptyText;
   }
@@ -525,10 +612,41 @@ export class FzlEs6CardList extends HTMLElement {
         this._allowFilter = newValue !== null && newValue !== 'false';
         this._renderToolbar();
         break;
+      case 'allow-reorder':
+        this._allowReorder = newValue !== null && newValue !== 'false';
+        break;
       case 'empty-text':
         this._emptyText = newValue || 'Nenhum item encontrado';
         break;
     }
+    this._render();
+  }
+
+  private _reorderCards(fromIndex: number, toIndex: number): void {
+    if (fromIndex < 0 || fromIndex >= this._items.length) return;
+    if (toIndex < 0 || toIndex >= this._items.length) return;
+    if (fromIndex === toIndex) return;
+
+    const updated = [...this._items];
+    const [moved] = updated.splice(fromIndex, 1);
+    updated.splice(toIndex, 0, moved);
+
+    this._sortBy = '';
+    this._items = updated;
+
+    this.dispatchEvent(
+      new CustomEvent('fzl-cards-reorder', {
+        detail: {
+          items: updated,
+          fromIndex,
+          toIndex,
+          item: moved,
+        },
+        bubbles: true,
+        composed: true,
+      })
+    );
+
     this._render();
   }
 
@@ -668,10 +786,59 @@ export class FzlEs6CardList extends HTMLElement {
 
     displayed.forEach((item, index) => {
       const cardLi = document.createElement('li');
-      cardLi.className = 'fzl-card';
+      const isDragging = this._draggedIndex === index;
+      const isDragOver = this._dragOverIndex === index;
+      cardLi.className = `fzl-card ${isDragging ? 'dragging' : ''} ${isDragOver ? 'drag-over' : ''}`.trim();
       cardLi.setAttribute('part', 'card');
       cardLi.setAttribute('role', 'listitem');
       cardLi.tabIndex = 0;
+
+      if (this._allowReorder) {
+        cardLi.draggable = true;
+
+        cardLi.addEventListener('dragstart', (e: DragEvent) => {
+          this._draggedIndex = index;
+          if (e.dataTransfer) {
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/plain', String(index));
+          }
+          this._render();
+        });
+
+        cardLi.addEventListener('dragover', (e: DragEvent) => {
+          if (this._draggedIndex === null) return;
+          e.preventDefault();
+          if (e.dataTransfer) {
+            e.dataTransfer.dropEffect = 'move';
+          }
+          if (this._dragOverIndex !== index) {
+            this._dragOverIndex = index;
+            this._render();
+          }
+        });
+
+        cardLi.addEventListener('dragleave', () => {
+          if (this._dragOverIndex === index) {
+            this._dragOverIndex = null;
+          }
+        });
+
+        cardLi.addEventListener('drop', (e: DragEvent) => {
+          if (this._draggedIndex === null) return;
+          e.preventDefault();
+          e.stopPropagation();
+          const from = this._draggedIndex;
+          this._draggedIndex = null;
+          this._dragOverIndex = null;
+          this._reorderCards(from, index);
+        });
+
+        cardLi.addEventListener('dragend', () => {
+          this._draggedIndex = null;
+          this._dragOverIndex = null;
+          this._render();
+        });
+      }
 
       cardLi.addEventListener('click', (e) => {
         this.dispatchEvent(
@@ -717,13 +884,58 @@ export class FzlEs6CardList extends HTMLElement {
       }
       header.appendChild(titleGroup);
 
+      const headerActions = document.createElement('div');
+      headerActions.className = 'fzl-card-header-actions';
+
+      if (this._allowReorder) {
+        const reorderControls = document.createElement('div');
+        reorderControls.className = 'fzl-card-reorder-controls';
+        reorderControls.setAttribute('part', 'reorder-controls');
+
+        const dragHandle = document.createElement('span');
+        dragHandle.className = 'fzl-drag-handle';
+        dragHandle.title = 'Arraste para reordenar';
+        dragHandle.setAttribute('aria-hidden', 'true');
+        dragHandle.textContent = '⠿';
+        reorderControls.appendChild(dragHandle);
+
+        const upBtn = document.createElement('button');
+        upBtn.type = 'button';
+        upBtn.className = 'fzl-btn-reorder';
+        upBtn.textContent = '▲';
+        upBtn.title = 'Mover para cima';
+        upBtn.setAttribute('aria-label', 'Mover card para cima');
+        if (index === 0) upBtn.disabled = true;
+        upBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          this._reorderCards(index, index - 1);
+        });
+        reorderControls.appendChild(upBtn);
+
+        const downBtn = document.createElement('button');
+        downBtn.type = 'button';
+        downBtn.className = 'fzl-btn-reorder';
+        downBtn.textContent = '▼';
+        downBtn.title = 'Mover para baixo';
+        downBtn.setAttribute('aria-label', 'Mover card para baixo');
+        if (index === displayed.length - 1) downBtn.disabled = true;
+        downBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          this._reorderCards(index, index + 1);
+        });
+        reorderControls.appendChild(downBtn);
+
+        headerActions.appendChild(reorderControls);
+      }
+
       if (item.badge || item.priority) {
         const badge = document.createElement('span');
         const prioClass = item.priority ? `priority-${item.priority.toLowerCase()}` : '';
         badge.className = `fzl-badge ${prioClass}`.trim();
         badge.textContent = item.badge || item.priority || '';
-        header.appendChild(badge);
+        headerActions.appendChild(badge);
       }
+      header.appendChild(headerActions);
       cardLi.appendChild(header);
 
       // Body

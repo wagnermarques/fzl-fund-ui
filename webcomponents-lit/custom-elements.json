@@ -296,6 +296,10 @@
             {
               "description": "Card footer containing tags and action",
               "name": "card-footer"
+            },
+            {
+              "description": "Reordering buttons container on each card",
+              "name": "reorder-controls"
             }
           ],
           "members": [
@@ -372,6 +376,16 @@
             },
             {
               "kind": "field",
+              "name": "allowReorder",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false",
+              "description": "Whether cards can be manually reordered by the user",
+              "attribute": "allow-reorder"
+            },
+            {
+              "kind": "field",
               "name": "emptyText",
               "type": {
                 "text": "string"
@@ -388,6 +402,143 @@
               },
               "privacy": "private",
               "default": "''"
+            },
+            {
+              "kind": "field",
+              "name": "_draggedIndex",
+              "type": {
+                "text": "number | null"
+              },
+              "privacy": "private",
+              "default": "null"
+            },
+            {
+              "kind": "field",
+              "name": "_dragOverIndex",
+              "type": {
+                "text": "number | null"
+              },
+              "privacy": "private",
+              "default": "null"
+            },
+            {
+              "kind": "method",
+              "name": "_reorderCards",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "fromIndex",
+                  "type": {
+                    "text": "number"
+                  }
+                },
+                {
+                  "name": "toIndex",
+                  "type": {
+                    "text": "number"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "_moveCard",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "fromIndex",
+                  "type": {
+                    "text": "number"
+                  }
+                },
+                {
+                  "name": "delta",
+                  "type": {
+                    "text": "number"
+                  }
+                },
+                {
+                  "name": "event",
+                  "type": {
+                    "text": "MouseEvent"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "_handleDragStart",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "index",
+                  "type": {
+                    "text": "number"
+                  }
+                },
+                {
+                  "name": "event",
+                  "type": {
+                    "text": "DragEvent"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "_handleDragOver",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "index",
+                  "type": {
+                    "text": "number"
+                  }
+                },
+                {
+                  "name": "event",
+                  "type": {
+                    "text": "DragEvent"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "_handleDragLeave",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "index",
+                  "type": {
+                    "text": "number"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "_handleDrop",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "targetIndex",
+                  "type": {
+                    "text": "number"
+                  }
+                },
+                {
+                  "name": "event",
+                  "type": {
+                    "text": "DragEvent"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "_handleDragEnd",
+              "privacy": "private"
             },
             {
               "kind": "method",
@@ -472,6 +623,13 @@
             }
           ],
           "events": [
+            {
+              "name": "fzl-cards-reorder",
+              "type": {
+                "text": "CustomEvent<{ items: FzlCardItem[]; fromIndex: number; toIndex: number; item: FzlCardItem }>"
+              },
+              "description": "Dispatched when cards are reordered"
+            },
             {
               "name": "fzl-card-click",
               "type": {
@@ -564,6 +722,15 @@
               "default": "false",
               "description": "Whether to display the search filter input",
               "fieldName": "allowFilter"
+            },
+            {
+              "name": "allow-reorder",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false",
+              "description": "Whether cards can be manually reordered by the user",
+              "fieldName": "allowReorder"
             },
             {
               "name": "empty-text",

@@ -121,12 +121,14 @@ export function filterFzlCardItems(items: FzlCardItem[], query: string): FzlCard
  * @attr {string} [sort-order='asc'] - Sort order: 'asc' | 'desc'
  * @attr {boolean} [allow-sort=false] - Whether to show the sorting toolbar
  * @attr {boolean} [allow-filter=false] - Whether to show the filter search input
+ * @attr {boolean} [allow-reorder=false] - Whether cards can be manually reordered
  * @attr {string} [empty-text='Nenhum item encontrado'] - Text when list is empty
  *
  * @fires {CustomEvent<{ item: FzlCardItem; index: number; originalEvent: MouseEvent }>} fzl-card-click - Dispatched when a card is clicked
  * @fires {CustomEvent<{ action: string; item: FzlCardItem; index: number; originalEvent: MouseEvent }>} fzl-card-action - Dispatched when card action button is clicked
  * @fires {CustomEvent<{ sortBy: string; sortOrder: FzlSortOrder }>} fzl-sort-change - Dispatched when sorting criteria changes
  * @fires {CustomEvent<{ filter: string }>} fzl-filter-change - Dispatched when search filter text changes
+ * @fires {CustomEvent<{ items: FzlCardItem[]; fromIndex: number; toIndex: number; item: FzlCardItem }>} fzl-cards-reorder - Dispatched when cards are reordered
  *
  * @csspart container - The outer root container
  * @csspart toolbar - The top sorting and filtering toolbar
@@ -135,6 +137,7 @@ export function filterFzlCardItems(items: FzlCardItem[], query: string): FzlCard
  * @csspart card-header - Card header element
  * @csspart card-body - Card description/body element
  * @csspart card-footer - Card footer containing tags and action
+ * @csspart reorder-controls - Reordering buttons container on each card
  */
 @Component({
   selector: 'fzl-ng-card-list',
@@ -200,6 +203,14 @@ export function filterFzlCardItems(items: FzlCardItem[], query: string): FzlCard
         <li
           class="fzl-card"
           *ngFor="let item of displayedItems; let idx = index"
+          [class.dragging]="draggedIndex === idx"
+          [class.drag-over]="dragOverIndex === idx"
+          [attr.draggable]="isAllowReorder ? true : null"
+          (dragstart)="onDragStart(idx, $event)"
+          (dragover)="onDragOver(idx, $event)"
+          (dragleave)="onDragLeave(idx)"
+          (drop)="onDrop(idx, $event)"
+          (dragend)="onDragEnd()"
           part="card"
           role="listitem"
           tabindex="0"
@@ -212,13 +223,38 @@ export function filterFzlCardItems(items: FzlCardItem[], query: string): FzlCard
               <h3 class="fzl-card-title">{{ item.title }}</h3>
               <span class="fzl-card-subtitle" *ngIf="item.subtitle">{{ item.subtitle }}</span>
             </div>
-            <span
-              class="fzl-badge"
-              *ngIf="item.badge || item.priority"
-              [ngClass]="getPriorityClass(item.priority)"
-            >
-              {{ item.badge || item.priority }}
-            </span>
+            <div class="fzl-card-header-actions">
+              <div class="fzl-card-reorder-controls" part="reorder-controls" *ngIf="isAllowReorder">
+                <span class="fzl-drag-handle" title="Arraste para reordenar" aria-hidden="true">⠿</span>
+                <button
+                  type="button"
+                  class="fzl-btn-reorder"
+                  [disabled]="idx === 0"
+                  (click)="moveCard(idx, -1, $event)"
+                  title="Mover para cima"
+                  aria-label="Mover card para cima"
+                >
+                  ▲
+                </button>
+                <button
+                  type="button"
+                  class="fzl-btn-reorder"
+                  [disabled]="idx === displayedItems.length - 1"
+                  (click)="moveCard(idx, 1, $event)"
+                  title="Mover para baixo"
+                  aria-label="Mover card para baixo"
+                >
+                  ▼
+                </button>
+              </div>
+              <span
+                class="fzl-badge"
+                *ngIf="item.badge || item.priority"
+                [ngClass]="getPriorityClass(item.priority)"
+              >
+                {{ item.badge || item.priority }}
+              </span>
+            </div>
           </div>
 
           <div class="fzl-card-body" part="card-body" *ngIf="item.description">
@@ -376,6 +412,22 @@ export function filterFzlCardItems(items: FzlCardItem[], query: string): FzlCard
         box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.08);
       }
 
+      .fzl-card[draggable="true"] {
+        cursor: grab;
+      }
+
+      .fzl-card.dragging {
+        opacity: 0.45;
+        border-style: dashed;
+        border-color: var(--_fzl-color-primary);
+        cursor: grabbing;
+      }
+
+      .fzl-card.drag-over {
+        border-color: var(--_fzl-color-primary);
+        box-shadow: 0 -3px 0 0 var(--_fzl-color-primary);
+      }
+
       .fzl-card:focus-visible {
         box-shadow: var(--_fzl-focus-ring);
       }
@@ -386,6 +438,62 @@ export function filterFzlCardItems(items: FzlCardItem[], query: string): FzlCard
         justify-content: space-between;
         gap: var(--_fzl-space-2);
         margin-bottom: var(--_fzl-space-2);
+      }
+
+      .fzl-card-header-actions {
+        display: flex;
+        align-items: center;
+        gap: var(--_fzl-space-1);
+      }
+
+      .fzl-card-reorder-controls {
+        display: inline-flex;
+        align-items: center;
+        gap: 2px;
+        background-color: var(--_fzl-color-surface-muted);
+        border: 1px solid var(--_fzl-color-border);
+        border-radius: var(--_fzl-radius-sm);
+        padding: 1px 3px;
+      }
+
+      .fzl-btn-reorder {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 20px;
+        height: 20px;
+        padding: 0;
+        font-size: 9px;
+        font-family: inherit;
+        border: 1px solid var(--_fzl-color-border);
+        background: var(--_fzl-color-surface);
+        color: var(--_fzl-color-text);
+        border-radius: var(--_fzl-radius-sm);
+        cursor: pointer;
+        line-height: 1;
+        transition: background-color var(--_fzl-transition-fast), color var(--_fzl-transition-fast);
+      }
+
+      .fzl-btn-reorder:disabled {
+        opacity: 0.35;
+        cursor: not-allowed;
+      }
+
+      .fzl-btn-reorder:not(:disabled):hover {
+        background: var(--_fzl-color-primary);
+        color: var(--_fzl-color-primary-contrast);
+        border-color: var(--_fzl-color-primary);
+      }
+
+      .fzl-drag-handle {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0 2px;
+        font-size: 13px;
+        color: var(--_fzl-color-text-muted);
+        cursor: grab;
+        user-select: none;
       }
 
       .fzl-card-title-group {
@@ -512,6 +620,7 @@ export class FzlNgCardListComponent {
   @Input('sort-order') sortOrder: FzlSortOrder = 'asc';
   @Input('allow-sort') allowSort: boolean | string = false;
   @Input('allow-filter') allowFilter: boolean | string = false;
+  @Input('allow-reorder') allowReorder: boolean | string = false;
   @Input('empty-text') emptyText: string = 'Nenhum item encontrado';
 
   @Output('fzl-card-click') fzlCardClick = new EventEmitter<{
@@ -536,9 +645,18 @@ export class FzlNgCardListComponent {
     filter: string;
   }>();
 
+  @Output('fzl-cards-reorder') fzlCardsReorder = new EventEmitter<{
+    items: FzlCardItem[];
+    fromIndex: number;
+    toIndex: number;
+    item: FzlCardItem;
+  }>();
+
   filterQuery: string = '';
   currentSortBy: string = '';
   currentSortOrder: FzlSortOrder = 'asc';
+  draggedIndex: number | null = null;
+  dragOverIndex: number | null = null;
 
   ngOnInit() {
     this.currentSortBy = this.sortBy;
@@ -553,6 +671,11 @@ export class FzlNgCardListComponent {
   get isAllowFilter(): boolean {
     if (typeof this.allowFilter === 'string') return this.allowFilter !== 'false';
     return Boolean(this.allowFilter);
+  }
+
+  get isAllowReorder(): boolean {
+    if (typeof this.allowReorder === 'string') return this.allowReorder !== 'false';
+    return Boolean(this.allowReorder);
   }
 
   get feedMaxHeight(): string {
@@ -604,5 +727,78 @@ export class FzlNgCardListComponent {
       index,
       originalEvent: event,
     });
+  }
+
+  moveCard(idx: number, delta: number, event: MouseEvent) {
+    event.stopPropagation();
+    this.reorderCards(idx, idx + delta);
+  }
+
+  reorderCards(fromIndex: number, toIndex: number) {
+    const raw = parseFzlCardItems(this.items);
+    if (fromIndex < 0 || fromIndex >= raw.length) return;
+    if (toIndex < 0 || toIndex >= raw.length) return;
+    if (fromIndex === toIndex) return;
+
+    const updated = [...raw];
+    const [moved] = updated.splice(fromIndex, 1);
+    updated.splice(toIndex, 0, moved);
+
+    this.currentSortBy = '';
+    this.sortBy = '';
+
+    if (typeof this.items === 'string') {
+      this.items = JSON.stringify(updated);
+    } else {
+      this.items = updated;
+    }
+
+    this.fzlCardsReorder.emit({
+      items: updated,
+      fromIndex,
+      toIndex,
+      item: moved,
+    });
+  }
+
+  onDragStart(idx: number, event: DragEvent) {
+    if (!this.isAllowReorder) return;
+    this.draggedIndex = idx;
+    if (event.dataTransfer) {
+      event.dataTransfer.effectAllowed = 'move';
+      event.dataTransfer.setData('text/plain', String(idx));
+    }
+  }
+
+  onDragOver(idx: number, event: DragEvent) {
+    if (!this.isAllowReorder || this.draggedIndex === null) return;
+    event.preventDefault();
+    if (event.dataTransfer) {
+      event.dataTransfer.dropEffect = 'move';
+    }
+    if (this.dragOverIndex !== idx) {
+      this.dragOverIndex = idx;
+    }
+  }
+
+  onDragLeave(idx: number) {
+    if (this.dragOverIndex === idx) {
+      this.dragOverIndex = null;
+    }
+  }
+
+  onDrop(idx: number, event: DragEvent) {
+    if (!this.isAllowReorder || this.draggedIndex === null) return;
+    event.preventDefault();
+    event.stopPropagation();
+    const from = this.draggedIndex;
+    this.draggedIndex = null;
+    this.dragOverIndex = null;
+    this.reorderCards(from, idx);
+  }
+
+  onDragEnd() {
+    this.draggedIndex = null;
+    this.dragOverIndex = null;
   }
 }

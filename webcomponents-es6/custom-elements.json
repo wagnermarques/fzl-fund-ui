@@ -600,6 +600,10 @@
             {
               "description": "Card footer containing tags and action",
               "name": "card-footer"
+            },
+            {
+              "description": "Reordering buttons container on each card",
+              "name": "reorder-controls"
             }
           ],
           "members": [
@@ -668,6 +672,15 @@
             },
             {
               "kind": "field",
+              "name": "_allowReorder",
+              "type": {
+                "text": "boolean"
+              },
+              "privacy": "private",
+              "default": "false"
+            },
+            {
+              "kind": "field",
               "name": "_emptyText",
               "type": {
                 "text": "string"
@@ -683,6 +696,24 @@
               },
               "privacy": "private",
               "default": "''"
+            },
+            {
+              "kind": "field",
+              "name": "_draggedIndex",
+              "type": {
+                "text": "number | null"
+              },
+              "privacy": "private",
+              "default": "null"
+            },
+            {
+              "kind": "field",
+              "name": "_dragOverIndex",
+              "type": {
+                "text": "number | null"
+              },
+              "privacy": "private",
+              "default": "null"
             },
             {
               "kind": "field",
@@ -764,10 +795,41 @@
             },
             {
               "kind": "field",
+              "name": "allowReorder",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
+              "kind": "field",
               "name": "emptyText",
               "type": {
                 "text": "string"
               }
+            },
+            {
+              "kind": "method",
+              "name": "_reorderCards",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "fromIndex",
+                  "type": {
+                    "text": "number"
+                  }
+                },
+                {
+                  "name": "toIndex",
+                  "type": {
+                    "text": "number"
+                  }
+                }
+              ]
             },
             {
               "kind": "method",
@@ -811,6 +873,13 @@
             }
           ],
           "events": [
+            {
+              "name": "fzl-cards-reorder",
+              "type": {
+                "text": "CustomEvent<{ items: FzlCardItem[]; fromIndex: number; toIndex: number; item: FzlCardItem }>"
+              },
+              "description": "Dispatched when cards are reordered"
+            },
             {
               "name": "fzl-filter-change",
               "type": {
@@ -861,6 +930,9 @@
             },
             {
               "name": "allow-filter"
+            },
+            {
+              "name": "allow-reorder"
             },
             {
               "name": "empty-text"

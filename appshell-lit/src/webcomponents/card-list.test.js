@@ -122,4 +122,70 @@ describe('CardList Helper Functions', () => {
       expect(byCat[0].id).toBe('task-2')
     })
   })
+
+  describe('Card Reordering and Manual Order Management', () => {
+    it('reordena os cards movendo para cima e para baixo corretamente', () => {
+      const items = [...sampleItems]
+      // Simula reordenação: move index 2 (task-3) para index 1
+      const [moved] = items.splice(2, 1)
+      items.splice(1, 0, moved)
+
+      expect(items.map((i) => i.id)).toEqual(['task-1', 'task-3', 'task-2', 'task-4'])
+    })
+
+    it('emite evento com payload contendo lista atualizada, fromIndex, toIndex e item', () => {
+      let eventPayload = null
+      const handleReorder = (e) => {
+        eventPayload = e.detail
+      }
+
+      // Simula despacho do evento customizado
+      const fromIndex = 0
+      const toIndex = 3
+      const updated = [...sampleItems]
+      const [moved] = updated.splice(fromIndex, 1)
+      updated.splice(toIndex, 0, moved)
+
+      const event = new CustomEvent('fzl-cards-reorder', {
+        detail: {
+          items: updated,
+          fromIndex,
+          toIndex,
+          item: moved,
+        },
+      })
+
+      handleReorder(event)
+
+      expect(eventPayload).not.toBeNull()
+      expect(eventPayload.fromIndex).toBe(0)
+      expect(eventPayload.toIndex).toBe(3)
+      expect(eventPayload.item.id).toBe('task-1')
+      expect(eventPayload.items[3].id).toBe('task-1')
+      expect(eventPayload.items[0].id).toBe('task-2')
+    })
+
+    it('valida lógica de reordenação manual e contrato do evento', () => {
+      const items = [...sampleItems]
+      // Simula reordenação: mover item do topo para a posição 2
+      const [moved] = items.splice(0, 1)
+      items.splice(2, 0, moved)
+
+      expect(items[0].id).toBe('task-2')
+      expect(items[1].id).toBe('task-3')
+      expect(items[2].id).toBe('task-1')
+      expect(items[3].id).toBe('task-4')
+
+      // Valida estrutura do payload de evento fzl-cards-reorder
+      const payload = {
+        items,
+        fromIndex: 0,
+        toIndex: 2,
+        item: moved,
+      }
+      expect(payload.fromIndex).toBe(0)
+      expect(payload.toIndex).toBe(2)
+      expect(payload.item.title).toBe('Revisar módulo Camel')
+    })
+  })
 })

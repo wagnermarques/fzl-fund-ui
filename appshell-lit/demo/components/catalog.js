@@ -99,7 +99,7 @@ export const catalog = [
     name: 'Card List',
     icon: 'dashboard_customize',
     summary:
-      'Lista interativa de cards estruturados com suporte a modos de layout (grid, vertical, horizontal), rolagem configurável, ordenação dinâmica por múltiplos campos (título, prazo, prioridade) e filtragem de busca.',
+      'Lista interativa de cards estruturados com suporte a modos de layout (grid, vertical, horizontal), rolagem configurável, ordenação dinâmica por múltiplos campos, reordenação manual por arrastar-e-soltar / botões acessíveis e filtragem de busca.',
     doc: cardListDoc,
     slotText: '',
     initialValues: {
@@ -107,8 +107,9 @@ export const catalog = [
       'max-height': '450px',
       'allow-sort': true,
       'allow-filter': true,
-      'sort-by': 'priority',
-      'sort-order': 'desc',
+      'allow-reorder': true,
+      'sort-by': '',
+      'sort-order': 'asc',
       items: JSON.stringify([
         {
           id: 'task-1',

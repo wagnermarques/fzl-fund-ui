@@ -17,8 +17,9 @@ It supports:
 - **Layout modes**: `'vertical'` (list/feed), `'grid'` (responsive multi-column grid), and `'horizontal'` (horizontal scroll carousel).
 - **Customizable Scrolling**: Controlled via `max-height` (e.g. `'480px'`, `'100%'`).
 - **Interactive Sorting**: Sort cards by fields (`title`, `date`, `priority`, `status`, `category`) in ascending (`asc`) or descending (`desc`) order, with an optional user-facing toolbar (`allow-sort`).
+- **Manual Reordering**: Reorder and organize cards via HTML5 drag-and-drop and accessible move buttons (▲ / ▼) (`allow-reorder`).
 - **Quick Filtering**: Optional search filter bar (`allow-filter`).
-- **Card Actions & Selection**: Custom events for card click (`fzl-card-click`) and primary action button (`fzl-card-action`).
+- **Card Actions & Selection**: Custom events for card click (`fzl-card-click`), primary action button (`fzl-card-action`), and card reordering (`fzl-cards-reorder`).
 - **Design Tokens & Accessibility**: Themed via `@fzl/design-tokens`, WCAG compliant with `role="region"`, `role="list"`, `role="listitem"`, and keyboard navigation.
 
 ---
@@ -31,6 +32,7 @@ It supports:
   layout="grid"
   allow-sort
   allow-filter
+  allow-reorder
   max-height="500px"
   items='[
     {"id":"t-1","title":"Revisar módulo de Arquitetura Apache Camel","description":"Concluir refatoração de rotas","category":"Cursos","priority":"ALTA","status":"EM_ANDAMENTO","date":"2026-10-31"},
@@ -47,10 +49,10 @@ html`
     layout="grid"
     allow-sort
     allow-filter
-    sort-by="priority"
-    sort-order="desc"
+    allow-reorder
     @fzl-card-click=${(e) => openTask(e.detail.item)}
     @fzl-card-action=${(e) => toggleStatus(e.detail.item)}
+    @fzl-cards-reorder=${(e) => saveTaskSequence(e.detail.items)}
     @fzl-sort-change=${(e) => console.log('Sorted by', e.detail)}
   ></fzl-lit-card-list>
 `
@@ -91,11 +93,13 @@ Displays structured cards with sorting, filtering, and responsive scrolling.
 | `sort-order` | `sort-order` | `string` | - |  |
 | `allow-sort` | `allow-sort` | `string` | - |  |
 | `allow-filter` | `allow-filter` | `string` | - |  |
+| `allow-reorder` | `allow-reorder` | `string` | - |  |
 | `empty-text` | `empty-text` | `string` | - |  |
 
 #### Events
 | Event Name | Detail Type | Description |
 | :--- | :--- | :--- |
+| `fzl-cards-reorder` | `CustomEvent<{ items: FzlCardItem[]; fromIndex: number; toIndex: number; item: FzlCardItem }>` | Dispatched when cards are reordered |
 | `fzl-filter-change` | `CustomEvent<{ filter: string }>` | Dispatched when search filter text changes |
 | `fzl-sort-change` | `CustomEvent<{ sortBy: string; sortOrder: FzlSortOrder }>` | Dispatched when sorting criteria changes |
 | `fzl-card-click` | `CustomEvent<{ item: FzlCardItem; index: number; originalEvent: MouseEvent }>` | Dispatched when a card is clicked |
@@ -111,6 +115,7 @@ Displays structured cards with sorting, filtering, and responsive scrolling.
 | `card-header` | Card header element |
 | `card-body` | Card description/body element |
 | `card-footer` | Card footer containing tags and action |
+| `reorder-controls` | Reordering buttons container on each card |
 
 ---
 
@@ -129,11 +134,13 @@ Displays structured cards with responsive layouts, sorting, filtering and scroll
 | `sort-order` | `sortOrder` | `FzlSortOrder` | `'asc'` | Sorting order: 'asc' \| 'desc' |
 | `allow-sort` | `allowSort` | `boolean` | `false` | Whether to display the built-in sorting toolbar |
 | `allow-filter` | `allowFilter` | `boolean` | `false` | Whether to display the search filter input |
+| `allow-reorder` | `allowReorder` | `boolean` | `false` | Whether cards can be manually reordered by the user |
 | `empty-text` | `emptyText` | `string` | `'Nenhum item encontrado'` | Text displayed when list is empty |
 
 #### Events
 | Event Name | Detail Type | Description |
 | :--- | :--- | :--- |
+| `fzl-cards-reorder` | `CustomEvent<{ items: FzlCardItem[]; fromIndex: number; toIndex: number; item: FzlCardItem }>` | Dispatched when cards are reordered |
 | `fzl-card-click` | `CustomEvent<{ item: FzlCardItem; index: number; originalEvent: MouseEvent }>` | Dispatched when a card is clicked |
 | `fzl-card-action` | `CustomEvent<{ action: string; item: FzlCardItem; index: number; originalEvent: MouseEvent }>` | Dispatched when card action button is clicked |
 | `fzl-sort-change` | `CustomEvent<{ sortBy: string; sortOrder: FzlSortOrder }>` | Dispatched when sorting criteria changes |
@@ -149,6 +156,7 @@ Displays structured cards with responsive layouts, sorting, filtering and scroll
 | `card-header` | Card header element |
 | `card-body` | Card description/body element |
 | `card-footer` | Card footer containing tags and action |
+| `reorder-controls` | Reordering buttons container on each card |
 
 ---
 
@@ -167,6 +175,7 @@ Displays structured cards with sorting, filtering, and responsive scrolling.
 | `sort-order` | `sort-order` | `string` | `'asc'` | Sort order: 'asc' \| 'desc' |
 | `allow-sort` | `allow-sort` | `boolean` | `false` | Whether to show the sorting toolbar |
 | `allow-filter` | `allow-filter` | `boolean` | `false` | Whether to show the filter search input |
+| `allow-reorder` | `allow-reorder` | `boolean` | `false` | Whether cards can be manually reordered |
 | `empty-text` | `empty-text` | `string` | `'Nenhum item encontrado'` | Text when list is empty |
 
 #### Events
@@ -176,6 +185,7 @@ Displays structured cards with sorting, filtering, and responsive scrolling.
 | `fzl-card-action` | `CustomEvent<{ action: string; item: FzlCardItem; index: number; originalEvent: MouseEvent }>` | Dispatched when card action button is clicked |
 | `fzl-sort-change` | `CustomEvent<{ sortBy: string; sortOrder: FzlSortOrder }>` | Dispatched when sorting criteria changes |
 | `fzl-filter-change` | `CustomEvent<{ filter: string }>` | Dispatched when search filter text changes |
+| `fzl-cards-reorder` | `CustomEvent<{ items: FzlCardItem[]; fromIndex: number; toIndex: number; item: FzlCardItem }>` | Dispatched when cards are reordered |
 
 #### CSS Shadow Parts (`::part`)
 | Part Name | Description |
@@ -187,5 +197,6 @@ Displays structured cards with sorting, filtering, and responsive scrolling.
 | `card-header` | Card header element |
 | `card-body` | Card description/body element |
 | `card-footer` | Card footer containing tags and action |
+| `reorder-controls` | Reordering buttons container on each card |
 
 <!-- CEM:END -->

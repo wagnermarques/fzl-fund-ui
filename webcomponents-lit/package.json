@@ -31,6 +31,10 @@
       "types": "./dist/reader-chapterview.d.ts",
       "import": "./dist/reader-chapterview.js"
     },
+    "./availability-grid": {
+      "types": "./dist/availability-grid.d.ts",
+      "import": "./dist/availability-grid.js"
+    },
     "./custom-elements.json": "./custom-elements.json"
   },
   "scripts": {

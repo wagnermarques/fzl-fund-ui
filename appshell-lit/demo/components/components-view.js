@@ -2,6 +2,9 @@ import { LitElement, html, css, nothing } from 'lit'
 import { unsafeHTML } from 'lit/directives/unsafe-html.js'
 import { marked } from 'marked'
 import { fzlTokens } from '@fzl/design-tokens'
+import { fzlRegistry, fzlFocus } from '@fzl/webcomponents-lit'
+import '@fzl/webcomponents-lit/button'
+import '@fzl/webcomponents-lit/crumb'
 import { catalog } from './catalog.js'
 import { controlsFor, findDeclaration } from './manifest.js'
 
@@ -47,6 +50,18 @@ const sharedStyles = css`
 
 /** #/componentes — a lista do catálogo. */
 export class ComponentsView extends LitElement {
+  static properties = {
+    _labHc: { state: true },
+    _labRm: { state: true },
+    _labRtl: { state: true },
+    _labTypematicCount: { state: true },
+    _labActiveNode: { state: true },
+    _labActiveStack: { state: true },
+    _labHoveredId: { state: true },
+    _labFocusedId: { state: true },
+    _labActiveId: { state: true },
+  }
+
   static styles = [
     sharedStyles,
     css`
@@ -151,10 +166,157 @@ export class ComponentsView extends LitElement {
       .infra-list li + li {
         margin-top: 4px;
       }
+      .lab-box {
+        margin-top: 24px;
+        padding: 20px;
+        border: 1px solid var(--md-sys-color-outline);
+        border-radius: 12px;
+        background: var(--md-sys-color-surface-container-low, var(--md-sys-color-surface));
+      }
+      .lab-title {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin: 0 0 6px;
+        font-size: 1.1rem;
+      }
+      .lab-desc {
+        margin: 0 0 16px;
+        font-size: 0.9rem;
+        color: var(--md-sys-color-on-surface-variant);
+      }
+      .lab-toggles {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-bottom: 16px;
+      }
+      .lab-toggle {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 12px;
+        border: 1px solid var(--md-sys-color-outline-variant);
+        border-radius: 999px;
+        background: var(--md-sys-color-surface);
+        font-size: 0.85rem;
+        cursor: pointer;
+        user-select: none;
+      }
+      .lab-toggle.active {
+        border-color: var(--md-sys-color-primary);
+        background: var(--md-sys-color-primary-container);
+        color: var(--md-sys-color-on-primary-container);
+        font-weight: 600;
+      }
+      .lab-stage {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        padding: 20px;
+        border: 2px dashed var(--md-sys-color-outline);
+        border-radius: 10px;
+        background: var(--md-sys-color-surface);
+        transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+      }
+      .lab-stage.hc-mode {
+        background: #000000;
+        color: #ffffff;
+        border: 2px solid #ffff00;
+      }
+      .lab-stage-row {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 12px;
+      }
+      .lab-telemetry {
+        margin-top: 16px;
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+        gap: 10px;
+      }
+      .telemetry-item {
+        padding: 10px 12px;
+        border-radius: 8px;
+        border: 1px solid var(--md-sys-color-outline-variant);
+        background: var(--md-sys-color-surface);
+        font-size: 0.8rem;
+      }
+      .telemetry-label {
+        display: block;
+        color: var(--md-sys-color-on-surface-variant);
+        font-size: 0.72rem;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        margin-bottom: 4px;
+      }
+      .telemetry-value {
+        font-family: monospace;
+        font-weight: 600;
+        word-break: break-word;
+      }
+      .state-pills {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+      .state-pill {
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-family: monospace;
+        font-size: 0.72rem;
+        background: var(--md-sys-color-surface-variant);
+        color: var(--md-sys-color-on-surface-variant);
+        opacity: 0.55;
+      }
+      .state-pill.on {
+        opacity: 1;
+        background: var(--md-sys-color-primary);
+        color: var(--md-sys-color-on-primary);
+        font-weight: 600;
+      }
     `,
   ]
 
+  constructor() {
+    super()
+    this._labHc = false
+    this._labRm = false
+    this._labRtl = false
+    this._labTypematicCount = 0
+    this._labActiveNode = '—'
+    this._labActiveStack = '—'
+    this._labHoveredId = ''
+    this._labFocusedId = ''
+    this._labActiveId = ''
+    this._unsubFocus = null
+  }
+
+  connectedCallback() {
+    super.connectedCallback()
+    this._unsubFocus = fzlFocus.subscribe((activeNode, activeStack) => {
+      this._labActiveNode = activeNode ? `<${activeNode.tagName.toLowerCase()}>` : '—'
+      this._labActiveStack = activeStack.length ? activeStack.map((w) => w.widgetId).join(' › ') : '—'
+    })
+  }
+
+  disconnectedCallback() {
+    this._unsubFocus?.()
+    this._unsubFocus = null
+    super.disconnectedCallback()
+  }
+
+  _onLabPointer(e) {
+    const widget = fzlRegistry.getEnclosingWidget(e.target)
+    const host = widget?.hostElement
+    this._labHoveredId = host?.hasAttribute('data-fzl-hovered') ? widget.widgetId : ''
+    this._labFocusedId = host?.hasAttribute('data-fzl-focused') ? widget.widgetId : ''
+    this._labActiveId = host?.hasAttribute('data-fzl-active') ? widget.widgetId : ''
+  }
+
   render() {
+    const registeredCount = fzlRegistry.length
     return html`
       <h1>Componentes</h1>
       <p class="subtitle">
@@ -228,6 +390,120 @@ export class ComponentsView extends LitElement {
             </ul>
           </article>
         </div>
+
+        <div class="lab-box">
+          <h3 class="lab-title">
+            <md-icon aria-hidden="true">science</md-icon>
+            Laboratório Visual Interativo: Accessibility (a11y), High Contrast &amp; Dijit Mixins
+          </h3>
+          <p class="lab-desc">
+            Experimente ao vivo os recursos herdados de <code>@fzl/core</code>: ative o <strong>Alto Contraste (<code>data-fzl-hc</code>)</strong>,
+            inverta a direção para <strong>RTL (<code>dir="rtl"</code>)</strong>, navegue com as setas do teclado (<code>←</code> <code>→</code> <code>Home</code> <code>End</code>)
+            na trilha e segure o botão <strong>Typematic</strong> pressionado para ver a aceleração contínua.
+          </p>
+
+          <div class="lab-toggles" role="group" aria-label="Simulador de Acessibilidade e Infraestrutura">
+            <button
+              type="button"
+              class="lab-toggle ${this._labHc ? 'active' : ''}"
+              aria-pressed=${this._labHc ? 'true' : 'false'}
+              @click=${() => (this._labHc = !this._labHc)}
+            >
+              <md-icon aria-hidden="true">contrast</md-icon>
+              High Contrast (<code>data-fzl-hc</code>)
+            </button>
+
+            <button
+              type="button"
+              class="lab-toggle ${this._labRm ? 'active' : ''}"
+              aria-pressed=${this._labRm ? 'true' : 'false'}
+              @click=${() => (this._labRm = !this._labRm)}
+            >
+              <md-icon aria-hidden="true">motion_photos_off</md-icon>
+              Reduced Motion (<code>data-fzl-reduced-motion</code>)
+            </button>
+
+            <button
+              type="button"
+              class="lab-toggle ${this._labRtl ? 'active' : ''}"
+              aria-pressed=${this._labRtl ? 'true' : 'false'}
+              @click=${() => (this._labRtl = !this._labRtl)}
+            >
+              <md-icon aria-hidden="true">format_textdirection_r_to_l</md-icon>
+              Direção RTL (<code>dir="rtl"</code>)
+            </button>
+          </div>
+
+          <div
+            class="lab-stage ${this._labHc ? 'hc-mode' : ''}"
+            dir=${this._labRtl ? 'rtl' : 'ltr'}
+            @pointerover=${this._onLabPointer}
+            @pointerout=${this._onLabPointer}
+            @pointerdown=${this._onLabPointer}
+            @pointerup=${this._onLabPointer}
+            @focusin=${this._onLabPointer}
+            @focusout=${this._onLabPointer}
+          >
+            <fzl-lit-crumb
+              id="lab-crumb"
+              path="Início / Infraestrutura / Dijit A11y"
+              back-label="Voltar"
+              ?data-fzl-hc=${this._labHc}
+              ?data-fzl-reduced-motion=${this._labRm}
+            ></fzl-lit-crumb>
+
+            <div class="lab-stage-row">
+              <fzl-lit-button
+                id="lab-btn-typematic"
+                variant="primary"
+                typematic
+                ?data-fzl-hc=${this._labHc}
+                ?data-fzl-reduced-motion=${this._labRm}
+                @fzl-click=${() => {
+                  this._labTypematicCount += 1
+                }}
+              >
+                Segure Pressionado (Typematic: ${this._labTypematicCount})
+              </fzl-lit-button>
+
+              <fzl-lit-button
+                id="lab-btn-reset"
+                variant="secondary"
+                ?data-fzl-hc=${this._labHc}
+                ?data-fzl-reduced-motion=${this._labRm}
+                @fzl-click=${() => {
+                  this._labTypematicCount = 0
+                }}
+              >
+                Zerar Contador
+              </fzl-lit-button>
+            </div>
+          </div>
+
+          <div class="lab-telemetry" aria-live="polite">
+            <div class="telemetry-item">
+              <span class="telemetry-label">fzlRegistry (Instâncias Ativas)</span>
+              <span class="telemetry-value">${registeredCount} widget(s) registrado(s)</span>
+            </div>
+            <div class="telemetry-item">
+              <span class="telemetry-label">fzlFocus.activeStack (Shadow DOM)</span>
+              <span class="telemetry-value">${this._labActiveStack} (${this._labActiveNode})</span>
+            </div>
+            <div class="telemetry-item">
+              <span class="telemetry-label">_CssStateMixin (:host attributes)</span>
+              <div class="state-pills">
+                <span class="state-pill ${this._labHoveredId ? 'on' : ''}">[data-fzl-hovered]</span>
+                <span class="state-pill ${this._labFocusedId ? 'on' : ''}">[data-fzl-focused]</span>
+                <span class="state-pill ${this._labActiveId ? 'on' : ''}">[data-fzl-active]</span>
+                <span class="state-pill ${this._labHc ? 'on' : ''}">[data-fzl-hc]</span>
+              </div>
+            </div>
+            <div class="telemetry-item">
+              <span class="telemetry-label">_KeyNavContainer &amp; Typematic</span>
+              <span class="telemetry-value">Setas ← → Home/End • Disparo: ${this._labTypematicCount}x</span>
+            </div>
+          </div>
+        </div>
       </section>
     `
   }
@@ -244,6 +520,11 @@ export class ComponentDocsView extends LitElement {
     _events: { state: true },
     _status: { state: true },
     _copied: { state: true },
+    _stageHc: { state: true },
+    _stageRm: { state: true },
+    _stageRtl: { state: true },
+    _widgetId: { state: true },
+    _hostStates: { state: true },
   }
 
   static styles = [
@@ -255,6 +536,64 @@ export class ComponentDocsView extends LitElement {
         gap: 8px;
         margin-bottom: 16px;
       }
+      .a11y-bar {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 10px 14px;
+        margin-bottom: 10px;
+        border: 1px solid var(--md-sys-color-outline-variant);
+        border-radius: 10px;
+        background: var(--md-sys-color-surface-container-low, var(--md-sys-color-surface));
+        font-size: 0.82rem;
+      }
+      .a11y-toggles {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 8px;
+      }
+      .a11y-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 10px;
+        border-radius: 999px;
+        border: 1px solid var(--md-sys-color-outline-variant);
+        background: var(--md-sys-color-surface);
+        color: inherit;
+        font-size: 0.78rem;
+        cursor: pointer;
+      }
+      .a11y-chip.active {
+        border-color: var(--md-sys-color-primary);
+        background: var(--md-sys-color-primary-container);
+        color: var(--md-sys-color-on-primary-container);
+        font-weight: 600;
+      }
+      .a11y-inspector {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 6px;
+        font-family: monospace;
+        font-size: 0.75rem;
+      }
+      .a11y-badge {
+        padding: 2px 6px;
+        border-radius: 4px;
+        background: var(--md-sys-color-surface-variant);
+        color: var(--md-sys-color-on-surface-variant);
+        opacity: 0.55;
+      }
+      .a11y-badge.on {
+        opacity: 1;
+        background: var(--md-sys-color-primary);
+        color: var(--md-sys-color-on-primary);
+        font-weight: 600;
+      }
       .stage {
         display: flex;
         align-items: center;
@@ -265,6 +604,12 @@ export class ComponentDocsView extends LitElement {
         border-radius: 12px;
         background: var(--md-sys-color-surface);
         box-sizing: border-box;
+        transition: background-color 0.15s ease, border-color 0.15s ease;
+      }
+      .stage.hc-mode {
+        background: #000000;
+        color: #ffffff;
+        border: 2px solid #ffff00;
       }
       .stage > * {
         max-width: 100%;
@@ -381,6 +726,11 @@ export class ComponentDocsView extends LitElement {
     this._events = []
     this._status = ''
     this._copied = false
+    this._stageHc = false
+    this._stageRm = false
+    this._stageRtl = false
+    this._widgetId = ''
+    this._hostStates = { hovered: false, focused: false, active: false }
     this._element = null
     this._loadToken = 0
   }
@@ -440,6 +790,18 @@ export class ComponentDocsView extends LitElement {
     // projeta (<ng-content>) os filhos que o elemento já tem ao ser criado.
     this._sync()
     stage.append(element)
+    requestAnimationFrame(() => this._refreshHostInspector())
+  }
+
+  _refreshHostInspector() {
+    const el = this._element
+    if (!el) return
+    this._widgetId = el.getAttribute('data-fzl-widget-id') || el.id || el.tagName.toLowerCase()
+    this._hostStates = {
+      hovered: el.hasAttribute('data-fzl-hovered'),
+      focused: el.hasAttribute('data-fzl-focused'),
+      active: el.hasAttribute('data-fzl-active'),
+    }
   }
 
   /** Aplica os controles ao elemento do palco — no lugar, sem recriá-lo,
@@ -447,6 +809,13 @@ export class ComponentDocsView extends LitElement {
   _sync() {
     const element = this._element
     if (!element) return
+    element.toggleAttribute('data-fzl-hc', !!this._stageHc)
+    element.toggleAttribute('data-fzl-reduced-motion', !!this._stageRm)
+    if (this._stageRtl) {
+      element.setAttribute('dir', 'rtl')
+    } else {
+      element.removeAttribute('dir')
+    }
     for (const control of this._controls) {
       const value = this._values[control.name] !== undefined ? this._values[control.name] : control.default
       if (control.kind === 'boolean') {
@@ -522,8 +891,56 @@ export class ComponentDocsView extends LitElement {
         )}
       </nav>
 
+      <div class="a11y-bar" role="region" aria-label="Inspeção de Acessibilidade e Infraestrutura (@fzl/core)">
+        <div class="a11y-toggles">
+          <button
+            type="button"
+            class="a11y-chip ${this._stageHc ? 'active' : ''}"
+            aria-pressed=${this._stageHc ? 'true' : 'false'}
+            @click=${() => (this._stageHc = !this._stageHc)}
+          >
+            <md-icon aria-hidden="true">contrast</md-icon>
+            High Contrast (<code>data-fzl-hc</code>)
+          </button>
+          <button
+            type="button"
+            class="a11y-chip ${this._stageRm ? 'active' : ''}"
+            aria-pressed=${this._stageRm ? 'true' : 'false'}
+            @click=${() => (this._stageRm = !this._stageRm)}
+          >
+            <md-icon aria-hidden="true">motion_photos_off</md-icon>
+            Reduced Motion
+          </button>
+          <button
+            type="button"
+            class="a11y-chip ${this._stageRtl ? 'active' : ''}"
+            aria-pressed=${this._stageRtl ? 'true' : 'false'}
+            @click=${() => (this._stageRtl = !this._stageRtl)}
+          >
+            <md-icon aria-hidden="true">format_textdirection_r_to_l</md-icon>
+            RTL (<code>dir="rtl"</code>)
+          </button>
+        </div>
+        <div class="a11y-inspector" aria-live="polite">
+          <span>id: <strong>${this._widgetId || '—'}</strong></span>
+          <span class="a11y-badge ${this._hostStates.hovered ? 'on' : ''}">[data-fzl-hovered]</span>
+          <span class="a11y-badge ${this._hostStates.focused ? 'on' : ''}">[data-fzl-focused]</span>
+          <span class="a11y-badge ${this._hostStates.active ? 'on' : ''}">[data-fzl-active]</span>
+        </div>
+      </div>
+
       <!-- O palco é preenchido por _mount() (DOM direto): sem conteúdo do Lit aqui dentro. -->
-      <div class="stage" style=${this._primary ? `--fzl-color-primary: ${this._primary}` : ''}></div>
+      <div
+        class="stage ${this._stageHc ? 'hc-mode' : ''}"
+        dir=${this._stageRtl ? 'rtl' : 'ltr'}
+        style=${this._primary ? `--fzl-color-primary: ${this._primary}` : ''}
+        @pointerover=${() => this._refreshHostInspector()}
+        @pointerout=${() => this._refreshHostInspector()}
+        @pointerdown=${() => this._refreshHostInspector()}
+        @pointerup=${() => this._refreshHostInspector()}
+        @focusin=${() => this._refreshHostInspector()}
+        @focusout=${() => this._refreshHostInspector()}
+      ></div>
       <p class="status" role="status">${this._status}</p>
 
       <div class="controls">

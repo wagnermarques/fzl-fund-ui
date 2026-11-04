@@ -89,8 +89,8 @@ class FzlA11yManager {
    * on a widget host element.
    */
   syncHostA11yState(host: HTMLElement): FzlA11yEnvironment {
-    const highContrast = this.isHighContrast();
-    const reducedMotion = this.prefersReducedMotion();
+    const highContrast = this.isHighContrast() || host.hasAttribute('data-fzl-hc');
+    const reducedMotion = this.prefersReducedMotion() || host.hasAttribute('data-fzl-reduced-motion');
     const dir = this.getEffectiveDir(host);
 
     if (highContrast) {

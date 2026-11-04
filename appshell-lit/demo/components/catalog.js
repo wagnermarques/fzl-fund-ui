@@ -6,6 +6,7 @@ import { appshellManifest } from './manifest.js'
 import buttonDoc from '../../../docs/components/button.md?raw'
 import crumbDoc from '../../../docs/components/crumb.md?raw'
 import cardListDoc from '../../../docs/components/card-list.md?raw'
+import readerChapterviewDoc from '../../../docs/components/reader-chapterview.md?raw'
 import connectionStatusDoc from '../../../docs/components/connection-status.md?raw'
 import appClockDoc from '../../../docs/components/app-clock.md?raw'
 import appVersionDoc from '../../../docs/components/app-version.md?raw'
@@ -182,6 +183,24 @@ export const catalog = [
         packageName: '@fzl/webcomponents-angular',
         manifest: angularManifest,
         load: () => import('@fzl/webcomponents-angular'),
+      },
+    ],
+  },
+  {
+    id: 'reader-chapterview',
+    name: 'Reader ChapterView (Chip)',
+    icon: 'label',
+    summary:
+      'Componente padronizado de chip / tag / badge para leitores, barras de filtros, seleção de capítulos e categorização.',
+    doc: readerChapterviewDoc,
+    implementations: [
+      {
+        id: 'lit',
+        label: 'Lit',
+        tag: 'fzl-reader-chapterview',
+        packageName: '@fzl/webcomponents-lit',
+        manifest: litManifest,
+        load: () => import('@fzl/webcomponents-lit/reader-chapterview'),
       },
     ],
   },

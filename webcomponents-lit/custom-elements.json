@@ -38,6 +38,390 @@
             "name": "*",
             "module": "src/components/card-list/card-list.component"
           }
+        },
+        {
+          "kind": "js",
+          "name": "*",
+          "declaration": {
+            "name": "*",
+            "module": "src/components/reader-chapterview/reader-chapterview.component"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/components/crumb/crumb.component.ts",
+      "declarations": [
+        {
+          "kind": "function",
+          "name": "parseFzlCrumbItems",
+          "return": {
+            "type": {
+              "text": "FzlCrumbItem[]"
+            }
+          },
+          "parameters": [
+            {
+              "name": "items",
+              "type": {
+                "text": "FzlCrumbItem[] | string | null | undefined"
+              }
+            },
+            {
+              "name": "pathStr",
+              "optional": true,
+              "type": {
+                "text": "string"
+              }
+            }
+          ]
+        },
+        {
+          "kind": "class",
+          "description": "Reactive Lit-based Breadcrumb (\"Crumb\") Custom Element showing current navigation path\nand providing back navigation to the previous view.",
+          "name": "FzlLitCrumb",
+          "cssParts": [
+            {
+              "description": "The outer `<nav>` landmark element",
+              "name": "nav"
+            },
+            {
+              "description": "The back navigation `<button>` element",
+              "name": "back-button"
+            },
+            {
+              "description": "The `<ol>` breadcrumb trail list",
+              "name": "list"
+            },
+            {
+              "description": "Each `<li>` breadcrumb item",
+              "name": "item"
+            },
+            {
+              "description": "Interactive `<a>` link for ancestor items",
+              "name": "link"
+            },
+            {
+              "description": "Visual separator `<span>` between items",
+              "name": "separator"
+            },
+            {
+              "description": "The `<span aria-current=\"page\">` active view label",
+              "name": "current"
+            }
+          ],
+          "members": [
+            {
+              "kind": "field",
+              "name": "items",
+              "type": {
+                "text": "FzlCrumbItem[]"
+              },
+              "default": "[]",
+              "description": "Breadcrumb items array or JSON/delimited string",
+              "attribute": "items"
+            },
+            {
+              "kind": "field",
+              "name": "path",
+              "type": {
+                "text": "string"
+              },
+              "default": "''",
+              "description": "Path string shorthand (e.g. \"Início / Config / Backend\")",
+              "attribute": "path",
+              "reflects": true
+            },
+            {
+              "kind": "field",
+              "name": "separator",
+              "type": {
+                "text": "string"
+              },
+              "default": "'›'",
+              "description": "Visual separator between breadcrumb items",
+              "attribute": "separator",
+              "reflects": true
+            },
+            {
+              "kind": "field",
+              "name": "showBack",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "true",
+              "description": "Whether to display the back button",
+              "attribute": "show-back",
+              "reflects": true
+            },
+            {
+              "kind": "field",
+              "name": "backDisabled",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false",
+              "description": "Whether the back button is disabled",
+              "attribute": "back-disabled",
+              "reflects": true
+            },
+            {
+              "kind": "field",
+              "name": "backLabel",
+              "type": {
+                "text": "string"
+              },
+              "default": "'Voltar'",
+              "description": "Label for the back navigation button",
+              "attribute": "back-label",
+              "reflects": true
+            },
+            {
+              "kind": "field",
+              "name": "backHref",
+              "type": {
+                "text": "string"
+              },
+              "default": "''",
+              "description": "Optional explicit target URL/hash for the back button",
+              "attribute": "back-href",
+              "reflects": true
+            },
+            {
+              "kind": "field",
+              "name": "ariaLabel",
+              "type": {
+                "text": "string"
+              },
+              "default": "'Navegação estrutural'",
+              "description": "Accessible label for the `<nav>` landmark",
+              "attribute": "aria-label",
+              "reflects": true
+            },
+            {
+              "kind": "field",
+              "name": "_keyNav",
+              "privacy": "private",
+              "default": "new FzlKeyNavController(this, { orientation: 'horizontal', rovingTabIndex: true, getItems: () => Array.from( this.renderRoot.querySelectorAll<HTMLElement>( '.back-btn:not([disabled]):not([hidden]), a.crumb-link' ) ), })"
+            },
+            {
+              "kind": "method",
+              "name": "_handleKeyDown",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "event",
+                  "type": {
+                    "text": "KeyboardEvent"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "_resolvedItems",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "FzlCrumbItem[]"
+                }
+              }
+            },
+            {
+              "kind": "method",
+              "name": "_handleBack",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "event",
+                  "type": {
+                    "text": "MouseEvent"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "_handleItemClick",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "event",
+                  "type": {
+                    "text": "MouseEvent"
+                  }
+                },
+                {
+                  "name": "item",
+                  "type": {
+                    "text": "FzlCrumbItem"
+                  }
+                },
+                {
+                  "name": "index",
+                  "type": {
+                    "text": "number"
+                  }
+                }
+              ]
+            }
+          ],
+          "events": [
+            {
+              "type": {
+                "text": "CustomEvent<{ backHref: string; originalEvent: MouseEvent }>"
+              },
+              "description": "Dispatched when the back button is activated",
+              "name": "fzl-back"
+            },
+            {
+              "type": {
+                "text": "CustomEvent<{ item: FzlCrumbItem; index: number; href?: string; originalEvent: MouseEvent }>"
+              },
+              "description": "Dispatched when a breadcrumb link item is clicked",
+              "name": "fzl-navigate"
+            },
+            {
+              "type": {
+                "text": "CustomEvent<{ widgetId: string; originalEvent: FocusEvent }>"
+              },
+              "description": "Dispatched when the widget gains focus",
+              "name": "fzl-focus"
+            },
+            {
+              "type": {
+                "text": "CustomEvent<{ widgetId: string; originalEvent: FocusEvent }>"
+              },
+              "description": "Dispatched when the widget loses focus",
+              "name": "fzl-blur"
+            }
+          ],
+          "attributes": [
+            {
+              "name": "items",
+              "type": {
+                "text": "FzlCrumbItem[]"
+              },
+              "default": "[]",
+              "description": "Breadcrumb items array or JSON/delimited string",
+              "fieldName": "items",
+              "attribute": "items"
+            },
+            {
+              "name": "path",
+              "type": {
+                "text": "string"
+              },
+              "default": "''",
+              "description": "Path string shorthand (e.g. \"Início / Config / Backend\")",
+              "fieldName": "path",
+              "attribute": "path"
+            },
+            {
+              "name": "separator",
+              "type": {
+                "text": "string"
+              },
+              "default": "'›'",
+              "description": "Visual separator between breadcrumb items",
+              "fieldName": "separator",
+              "attribute": "separator"
+            },
+            {
+              "name": "show-back",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "true",
+              "description": "Whether to display the back button",
+              "fieldName": "showBack",
+              "attribute": "show-back"
+            },
+            {
+              "name": "back-disabled",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false",
+              "description": "Whether the back button is disabled",
+              "fieldName": "backDisabled",
+              "attribute": "back-disabled"
+            },
+            {
+              "name": "back-label",
+              "type": {
+                "text": "string"
+              },
+              "default": "'Voltar'",
+              "description": "Label for the back navigation button",
+              "fieldName": "backLabel",
+              "attribute": "back-label"
+            },
+            {
+              "name": "back-href",
+              "type": {
+                "text": "string"
+              },
+              "default": "''",
+              "description": "Optional explicit target URL/hash for the back button",
+              "fieldName": "backHref",
+              "attribute": "back-href"
+            },
+            {
+              "name": "aria-label",
+              "type": {
+                "text": "string"
+              },
+              "default": "'Navegação estrutural'",
+              "description": "Accessible label for the `<nav>` landmark",
+              "fieldName": "ariaLabel",
+              "attribute": "aria-label"
+            }
+          ],
+          "mixins": [
+            {
+              "name": "FzlWidgetMixin",
+              "package": "@fzl/core"
+            }
+          ],
+          "superclass": {
+            "name": "LitElement",
+            "package": "lit"
+          },
+          "tagName": "fzl-lit-crumb",
+          "customElement": true
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "parseFzlCrumbItems",
+          "declaration": {
+            "name": "parseFzlCrumbItems",
+            "module": "src/components/crumb/crumb.component.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "FzlLitCrumb",
+          "declaration": {
+            "name": "FzlLitCrumb",
+            "module": "src/components/crumb/crumb.component.ts"
+          }
+        },
+        {
+          "kind": "custom-element-definition",
+          "name": "fzl-lit-crumb",
+          "declaration": {
+            "name": "FzlLitCrumb",
+            "module": "src/components/crumb/crumb.component.ts"
+          }
         }
       ]
     },
@@ -282,6 +666,1140 @@
           "declaration": {
             "name": "FzlLitButton",
             "module": "src/components/button/button.component.ts"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/components/reader-chapterview/reader-chapterview.component.ts",
+      "declarations": [
+        {
+          "kind": "class",
+          "description": "Reactive Lit-based Custom Element representing a Chip / Tag / Badge for readers,\nfilter bars, category pickers, and chapter views.",
+          "name": "FzlReaderChapterView",
+          "cssParts": [
+            {
+              "description": "The main chip button container",
+              "name": "chip"
+            },
+            {
+              "description": "The label text span",
+              "name": "label"
+            },
+            {
+              "description": "The numeric count badge",
+              "name": "count"
+            },
+            {
+              "description": "The removal button",
+              "name": "remove"
+            }
+          ],
+          "slots": [
+            {
+              "description": "Content to be displayed inside the chip (defaults to `label`)",
+              "name": ""
+            },
+            {
+              "description": "Optional leading icon",
+              "name": "icon"
+            }
+          ],
+          "members": [
+            {
+              "kind": "field",
+              "name": "shadowRootOptions",
+              "type": {
+                "text": "ShadowRootInit"
+              },
+              "static": true,
+              "default": "{ ...LitElement.shadowRootOptions, delegatesFocus: true, }"
+            },
+            {
+              "kind": "field",
+              "name": "label",
+              "type": {
+                "text": "string"
+              },
+              "default": "''",
+              "description": "Chip text label",
+              "attribute": "label"
+            },
+            {
+              "kind": "field",
+              "name": "value",
+              "type": {
+                "text": "string"
+              },
+              "default": "''",
+              "description": "Identifier value for events and selection",
+              "attribute": "value"
+            },
+            {
+              "kind": "field",
+              "name": "selected",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false",
+              "description": "Whether the chip is active/selected",
+              "attribute": "selected",
+              "reflects": true
+            },
+            {
+              "kind": "field",
+              "name": "count",
+              "type": {
+                "text": "number | undefined"
+              },
+              "description": "Optional count badge to display next to the label",
+              "attribute": "count"
+            },
+            {
+              "kind": "field",
+              "name": "removable",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false",
+              "description": "Whether to show a removal button (×)",
+              "attribute": "removable",
+              "reflects": true
+            },
+            {
+              "kind": "field",
+              "name": "disabled",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false",
+              "description": "Disabled state",
+              "attribute": "disabled",
+              "reflects": true
+            },
+            {
+              "kind": "field",
+              "name": "variant",
+              "type": {
+                "text": "FzlChipVariant"
+              },
+              "default": "'default'",
+              "description": "Style variant",
+              "attribute": "variant",
+              "reflects": true
+            },
+            {
+              "kind": "field",
+              "name": "color",
+              "type": {
+                "text": "string"
+              },
+              "default": "''",
+              "description": "Optional custom background or accent color",
+              "attribute": "color"
+            },
+            {
+              "kind": "field",
+              "name": "removeAriaLabel",
+              "type": {
+                "text": "string"
+              },
+              "default": "'Remover'",
+              "description": "Accessible label for the remove button",
+              "attribute": "remove-aria-label"
+            },
+            {
+              "kind": "method",
+              "name": "_handleClick",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "event",
+                  "type": {
+                    "text": "MouseEvent"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "_handleKeydown",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "event",
+                  "type": {
+                    "text": "KeyboardEvent"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "_handleRemove",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "event",
+                  "type": {
+                    "text": "MouseEvent"
+                  }
+                }
+              ]
+            }
+          ],
+          "events": [
+            {
+              "type": {
+                "text": "CustomEvent<{ originalEvent: Event; value: string; label: string; selected: boolean }>"
+              },
+              "description": "Dispatched when the chip is activated",
+              "name": "fzl-click"
+            },
+            {
+              "type": {
+                "text": "CustomEvent<{ originalEvent: Event; value: string; label: string }>"
+              },
+              "description": "Dispatched when the removal button is clicked",
+              "name": "fzl-remove"
+            }
+          ],
+          "attributes": [
+            {
+              "name": "label",
+              "type": {
+                "text": "string"
+              },
+              "default": "''",
+              "description": "Chip text label",
+              "fieldName": "label"
+            },
+            {
+              "name": "value",
+              "type": {
+                "text": "string"
+              },
+              "default": "''",
+              "description": "Identifier value for events and selection",
+              "fieldName": "value"
+            },
+            {
+              "name": "selected",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false",
+              "description": "Whether the chip is active/selected",
+              "fieldName": "selected"
+            },
+            {
+              "name": "count",
+              "type": {
+                "text": "number | undefined"
+              },
+              "description": "Optional count badge to display next to the label",
+              "fieldName": "count"
+            },
+            {
+              "name": "removable",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false",
+              "description": "Whether to show a removal button (×)",
+              "fieldName": "removable"
+            },
+            {
+              "name": "disabled",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false",
+              "description": "Disabled state",
+              "fieldName": "disabled"
+            },
+            {
+              "name": "variant",
+              "type": {
+                "text": "FzlChipVariant"
+              },
+              "default": "'default'",
+              "description": "Style variant",
+              "fieldName": "variant"
+            },
+            {
+              "name": "color",
+              "type": {
+                "text": "string"
+              },
+              "default": "''",
+              "description": "Optional custom background or accent color",
+              "fieldName": "color"
+            },
+            {
+              "name": "remove-aria-label",
+              "type": {
+                "text": "string"
+              },
+              "default": "'Remover'",
+              "description": "Accessible label for the remove button",
+              "fieldName": "removeAriaLabel"
+            }
+          ],
+          "mixins": [
+            {
+              "name": "FzlWidgetMixin",
+              "package": "@fzl/core"
+            }
+          ],
+          "superclass": {
+            "name": "LitElement",
+            "package": "lit"
+          },
+          "tagName": "fzl-reader-chapterview",
+          "customElement": true
+        },
+        {
+          "kind": "class",
+          "description": "Group container for FzlReaderChapterView chips with support for single or\nmultiple selection, wrapping, and keyboard roving navigation.",
+          "name": "FzlReaderChapterViewGroup",
+          "slots": [
+            {
+              "description": "Child chips or other content",
+              "name": ""
+            }
+          ],
+          "members": [
+            {
+              "kind": "field",
+              "name": "items",
+              "type": {
+                "text": "FzlChipItem[]"
+              },
+              "default": "[]",
+              "description": "Array of items when configured declaratively",
+              "attribute": "items"
+            },
+            {
+              "kind": "field",
+              "name": "selectionMode",
+              "type": {
+                "text": "FzlChipSelectionMode"
+              },
+              "default": "'single'",
+              "description": "Selection behavior",
+              "attribute": "selection-mode"
+            },
+            {
+              "kind": "field",
+              "name": "selected",
+              "type": {
+                "text": "string | string[]"
+              },
+              "default": "''",
+              "description": "Selected value (string for single, array for multiple)",
+              "attribute": "selected"
+            },
+            {
+              "kind": "field",
+              "name": "wrap",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "true",
+              "description": "Whether chips wrap to multiple lines",
+              "attribute": "wrap",
+              "reflects": true
+            },
+            {
+              "kind": "field",
+              "name": "ariaLabel",
+              "type": {
+                "text": "string | null"
+              },
+              "default": "'Grupo de opções'",
+              "description": "Accessible label for the group",
+              "attribute": "aria-label"
+            },
+            {
+              "kind": "field",
+              "name": "_keyNav",
+              "privacy": "private",
+              "default": "new FzlKeyNavController(this, { orientation: 'both', wrap: true, getItems: () => Array.from( this.renderRoot.querySelectorAll('fzl-reader-chapterview, button.chip, [part=\"chip\"]') as NodeListOf<HTMLElement> ), })"
+            },
+            {
+              "kind": "method",
+              "name": "_onItemClick",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "item",
+                  "type": {
+                    "text": "FzlChipItem"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "_isItemSelected",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "boolean"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "item",
+                  "type": {
+                    "text": "FzlChipItem"
+                  }
+                }
+              ]
+            }
+          ],
+          "events": [
+            {
+              "type": {
+                "text": "CustomEvent<{ selected: string | string[]; item?: FzlChipItem; value: string }>"
+              },
+              "description": "Dispatched when selection changes",
+              "name": "fzl-change"
+            }
+          ],
+          "attributes": [
+            {
+              "name": "items",
+              "type": {
+                "text": "FzlChipItem[]"
+              },
+              "default": "[]",
+              "description": "Array of items when configured declaratively",
+              "fieldName": "items"
+            },
+            {
+              "name": "selection-mode",
+              "type": {
+                "text": "FzlChipSelectionMode"
+              },
+              "default": "'single'",
+              "description": "Selection behavior",
+              "fieldName": "selectionMode"
+            },
+            {
+              "name": "selected",
+              "type": {
+                "text": "string | string[]"
+              },
+              "default": "''",
+              "description": "Selected value (string for single, array for multiple)",
+              "fieldName": "selected"
+            },
+            {
+              "name": "wrap",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "true",
+              "description": "Whether chips wrap to multiple lines",
+              "fieldName": "wrap"
+            },
+            {
+              "name": "aria-label",
+              "type": {
+                "text": "string | null"
+              },
+              "default": "'Grupo de opções'",
+              "description": "Accessible label for the group",
+              "fieldName": "ariaLabel"
+            }
+          ],
+          "mixins": [
+            {
+              "name": "FzlWidgetMixin",
+              "package": "@fzl/core"
+            }
+          ],
+          "superclass": {
+            "name": "LitElement",
+            "package": "lit"
+          },
+          "tagName": "fzl-reader-chapterview-group",
+          "customElement": true
+        },
+        {
+          "kind": "class",
+          "description": "",
+          "name": "anonymous_0",
+          "superclass": {
+            "name": "FzlReaderChapterView",
+            "module": "src/components/reader-chapterview/reader-chapterview.component.ts"
+          },
+          "tagName": "fzl-chip",
+          "customElement": true,
+          "slots": [
+            {
+              "description": "Content to be displayed inside the chip (defaults to `label`)",
+              "name": "",
+              "inheritedFrom": {
+                "name": "FzlReaderChapterView",
+                "module": "src/components/reader-chapterview/reader-chapterview.component.ts"
+              }
+            },
+            {
+              "description": "Optional leading icon",
+              "name": "icon",
+              "inheritedFrom": {
+                "name": "FzlReaderChapterView",
+                "module": "src/components/reader-chapterview/reader-chapterview.component.ts"
+              }
+            }
+          ],
+          "cssParts": [
+            {
+              "description": "The main chip button container",
+              "name": "chip",
+              "inheritedFrom": {
+                "name": "FzlReaderChapterView",
+                "module": "src/components/reader-chapterview/reader-chapterview.component.ts"
+              }
+            },
+            {
+              "description": "The label text span",
+              "name": "label",
+              "inheritedFrom": {
+                "name": "FzlReaderChapterView",
+                "module": "src/components/reader-chapterview/reader-chapterview.component.ts"
+              }
+            },
+            {
+              "description": "The numeric count badge",
+              "name": "count",
+              "inheritedFrom": {
+                "name": "FzlReaderChapterView",
+                "module": "src/components/reader-chapterview/reader-chapterview.component.ts"
+              }
+            },
+            {
+              "description": "The removal button",
+              "name": "remove",
+              "inheritedFrom": {
+                "name": "FzlReaderChapterView",
+                "module": "src/components/reader-chapterview/reader-chapterview.component.ts"
+              }
+            }
+          ],
+          "attributes": [
+            {
+              "name": "label",
+              "type": {
+                "text": "string"
+              },
+              "default": "''",
+              "description": "Chip text label",
+              "fieldName": "label",
+              "inheritedFrom": {
+                "name": "FzlReaderChapterView",
+                "module": "src/components/reader-chapterview/reader-chapterview.component.ts"
+              }
+            },
+            {
+              "name": "value",
+              "type": {
+                "text": "string"
+              },
+              "default": "''",
+              "description": "Identifier value for events and selection",
+              "fieldName": "value",
+              "inheritedFrom": {
+                "name": "FzlReaderChapterView",
+                "module": "src/components/reader-chapterview/reader-chapterview.component.ts"
+              }
+            },
+            {
+              "name": "selected",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false",
+              "description": "Whether the chip is active/selected",
+              "fieldName": "selected",
+              "inheritedFrom": {
+                "name": "FzlReaderChapterView",
+                "module": "src/components/reader-chapterview/reader-chapterview.component.ts"
+              }
+            },
+            {
+              "name": "count",
+              "type": {
+                "text": "number | undefined"
+              },
+              "description": "Optional count badge to display next to the label",
+              "fieldName": "count",
+              "inheritedFrom": {
+                "name": "FzlReaderChapterView",
+                "module": "src/components/reader-chapterview/reader-chapterview.component.ts"
+              }
+            },
+            {
+              "name": "removable",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false",
+              "description": "Whether to show a removal button (×)",
+              "fieldName": "removable",
+              "inheritedFrom": {
+                "name": "FzlReaderChapterView",
+                "module": "src/components/reader-chapterview/reader-chapterview.component.ts"
+              }
+            },
+            {
+              "name": "disabled",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false",
+              "description": "Disabled state",
+              "fieldName": "disabled",
+              "inheritedFrom": {
+                "name": "FzlReaderChapterView",
+                "module": "src/components/reader-chapterview/reader-chapterview.component.ts"
+              }
+            },
+            {
+              "name": "variant",
+              "type": {
+                "text": "FzlChipVariant"
+              },
+              "default": "'default'",
+              "description": "Style variant",
+              "fieldName": "variant",
+              "inheritedFrom": {
+                "name": "FzlReaderChapterView",
+                "module": "src/components/reader-chapterview/reader-chapterview.component.ts"
+              }
+            },
+            {
+              "name": "color",
+              "type": {
+                "text": "string"
+              },
+              "default": "''",
+              "description": "Optional custom background or accent color",
+              "fieldName": "color",
+              "inheritedFrom": {
+                "name": "FzlReaderChapterView",
+                "module": "src/components/reader-chapterview/reader-chapterview.component.ts"
+              }
+            },
+            {
+              "name": "remove-aria-label",
+              "type": {
+                "text": "string"
+              },
+              "default": "'Remover'",
+              "description": "Accessible label for the remove button",
+              "fieldName": "removeAriaLabel",
+              "inheritedFrom": {
+                "name": "FzlReaderChapterView",
+                "module": "src/components/reader-chapterview/reader-chapterview.component.ts"
+              }
+            }
+          ],
+          "members": [
+            {
+              "kind": "field",
+              "name": "shadowRootOptions",
+              "type": {
+                "text": "ShadowRootInit"
+              },
+              "static": true,
+              "default": "{ ...LitElement.shadowRootOptions, delegatesFocus: true, }",
+              "inheritedFrom": {
+                "name": "FzlReaderChapterView",
+                "module": "src/components/reader-chapterview/reader-chapterview.component.ts"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "label",
+              "type": {
+                "text": "string"
+              },
+              "default": "''",
+              "description": "Chip text label",
+              "attribute": "label",
+              "inheritedFrom": {
+                "name": "FzlReaderChapterView",
+                "module": "src/components/reader-chapterview/reader-chapterview.component.ts"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "value",
+              "type": {
+                "text": "string"
+              },
+              "default": "''",
+              "description": "Identifier value for events and selection",
+              "attribute": "value",
+              "inheritedFrom": {
+                "name": "FzlReaderChapterView",
+                "module": "src/components/reader-chapterview/reader-chapterview.component.ts"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "selected",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false",
+              "description": "Whether the chip is active/selected",
+              "attribute": "selected",
+              "reflects": true,
+              "inheritedFrom": {
+                "name": "FzlReaderChapterView",
+                "module": "src/components/reader-chapterview/reader-chapterview.component.ts"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "count",
+              "type": {
+                "text": "number | undefined"
+              },
+              "description": "Optional count badge to display next to the label",
+              "attribute": "count",
+              "inheritedFrom": {
+                "name": "FzlReaderChapterView",
+                "module": "src/components/reader-chapterview/reader-chapterview.component.ts"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "removable",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false",
+              "description": "Whether to show a removal button (×)",
+              "attribute": "removable",
+              "reflects": true,
+              "inheritedFrom": {
+                "name": "FzlReaderChapterView",
+                "module": "src/components/reader-chapterview/reader-chapterview.component.ts"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "disabled",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false",
+              "description": "Disabled state",
+              "attribute": "disabled",
+              "reflects": true,
+              "inheritedFrom": {
+                "name": "FzlReaderChapterView",
+                "module": "src/components/reader-chapterview/reader-chapterview.component.ts"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "variant",
+              "type": {
+                "text": "FzlChipVariant"
+              },
+              "default": "'default'",
+              "description": "Style variant",
+              "attribute": "variant",
+              "reflects": true,
+              "inheritedFrom": {
+                "name": "FzlReaderChapterView",
+                "module": "src/components/reader-chapterview/reader-chapterview.component.ts"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "color",
+              "type": {
+                "text": "string"
+              },
+              "default": "''",
+              "description": "Optional custom background or accent color",
+              "attribute": "color",
+              "inheritedFrom": {
+                "name": "FzlReaderChapterView",
+                "module": "src/components/reader-chapterview/reader-chapterview.component.ts"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "removeAriaLabel",
+              "type": {
+                "text": "string"
+              },
+              "default": "'Remover'",
+              "description": "Accessible label for the remove button",
+              "attribute": "remove-aria-label",
+              "inheritedFrom": {
+                "name": "FzlReaderChapterView",
+                "module": "src/components/reader-chapterview/reader-chapterview.component.ts"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "_handleClick",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "event",
+                  "type": {
+                    "text": "MouseEvent"
+                  }
+                }
+              ],
+              "inheritedFrom": {
+                "name": "FzlReaderChapterView",
+                "module": "src/components/reader-chapterview/reader-chapterview.component.ts"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "_handleKeydown",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "event",
+                  "type": {
+                    "text": "KeyboardEvent"
+                  }
+                }
+              ],
+              "inheritedFrom": {
+                "name": "FzlReaderChapterView",
+                "module": "src/components/reader-chapterview/reader-chapterview.component.ts"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "_handleRemove",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "event",
+                  "type": {
+                    "text": "MouseEvent"
+                  }
+                }
+              ],
+              "inheritedFrom": {
+                "name": "FzlReaderChapterView",
+                "module": "src/components/reader-chapterview/reader-chapterview.component.ts"
+              }
+            }
+          ],
+          "events": [
+            {
+              "type": {
+                "text": "CustomEvent<{ originalEvent: Event; value: string; label: string; selected: boolean }>"
+              },
+              "description": "Dispatched when the chip is activated",
+              "name": "fzl-click",
+              "inheritedFrom": {
+                "name": "FzlReaderChapterView",
+                "module": "src/components/reader-chapterview/reader-chapterview.component.ts"
+              }
+            },
+            {
+              "type": {
+                "text": "CustomEvent<{ originalEvent: Event; value: string; label: string }>"
+              },
+              "description": "Dispatched when the removal button is clicked",
+              "name": "fzl-remove",
+              "inheritedFrom": {
+                "name": "FzlReaderChapterView",
+                "module": "src/components/reader-chapterview/reader-chapterview.component.ts"
+              }
+            }
+          ]
+        },
+        {
+          "kind": "class",
+          "description": "",
+          "name": "anonymous_1",
+          "superclass": {
+            "name": "FzlReaderChapterViewGroup",
+            "module": "src/components/reader-chapterview/reader-chapterview.component.ts"
+          },
+          "tagName": "fzl-chip-group",
+          "customElement": true,
+          "slots": [
+            {
+              "description": "Child chips or other content",
+              "name": "",
+              "inheritedFrom": {
+                "name": "FzlReaderChapterViewGroup",
+                "module": "src/components/reader-chapterview/reader-chapterview.component.ts"
+              }
+            }
+          ],
+          "attributes": [
+            {
+              "name": "items",
+              "type": {
+                "text": "FzlChipItem[]"
+              },
+              "default": "[]",
+              "description": "Array of items when configured declaratively",
+              "fieldName": "items",
+              "inheritedFrom": {
+                "name": "FzlReaderChapterViewGroup",
+                "module": "src/components/reader-chapterview/reader-chapterview.component.ts"
+              }
+            },
+            {
+              "name": "selection-mode",
+              "type": {
+                "text": "FzlChipSelectionMode"
+              },
+              "default": "'single'",
+              "description": "Selection behavior",
+              "fieldName": "selectionMode",
+              "inheritedFrom": {
+                "name": "FzlReaderChapterViewGroup",
+                "module": "src/components/reader-chapterview/reader-chapterview.component.ts"
+              }
+            },
+            {
+              "name": "selected",
+              "type": {
+                "text": "string | string[]"
+              },
+              "default": "''",
+              "description": "Selected value (string for single, array for multiple)",
+              "fieldName": "selected",
+              "inheritedFrom": {
+                "name": "FzlReaderChapterViewGroup",
+                "module": "src/components/reader-chapterview/reader-chapterview.component.ts"
+              }
+            },
+            {
+              "name": "wrap",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "true",
+              "description": "Whether chips wrap to multiple lines",
+              "fieldName": "wrap",
+              "inheritedFrom": {
+                "name": "FzlReaderChapterViewGroup",
+                "module": "src/components/reader-chapterview/reader-chapterview.component.ts"
+              }
+            },
+            {
+              "name": "aria-label",
+              "type": {
+                "text": "string | null"
+              },
+              "default": "'Grupo de opções'",
+              "description": "Accessible label for the group",
+              "fieldName": "ariaLabel",
+              "inheritedFrom": {
+                "name": "FzlReaderChapterViewGroup",
+                "module": "src/components/reader-chapterview/reader-chapterview.component.ts"
+              }
+            }
+          ],
+          "members": [
+            {
+              "kind": "field",
+              "name": "items",
+              "type": {
+                "text": "FzlChipItem[]"
+              },
+              "default": "[]",
+              "description": "Array of items when configured declaratively",
+              "attribute": "items",
+              "inheritedFrom": {
+                "name": "FzlReaderChapterViewGroup",
+                "module": "src/components/reader-chapterview/reader-chapterview.component.ts"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "selectionMode",
+              "type": {
+                "text": "FzlChipSelectionMode"
+              },
+              "default": "'single'",
+              "description": "Selection behavior",
+              "attribute": "selection-mode",
+              "inheritedFrom": {
+                "name": "FzlReaderChapterViewGroup",
+                "module": "src/components/reader-chapterview/reader-chapterview.component.ts"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "selected",
+              "type": {
+                "text": "string | string[]"
+              },
+              "default": "''",
+              "description": "Selected value (string for single, array for multiple)",
+              "attribute": "selected",
+              "inheritedFrom": {
+                "name": "FzlReaderChapterViewGroup",
+                "module": "src/components/reader-chapterview/reader-chapterview.component.ts"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "wrap",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "true",
+              "description": "Whether chips wrap to multiple lines",
+              "attribute": "wrap",
+              "reflects": true,
+              "inheritedFrom": {
+                "name": "FzlReaderChapterViewGroup",
+                "module": "src/components/reader-chapterview/reader-chapterview.component.ts"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "ariaLabel",
+              "type": {
+                "text": "string | null"
+              },
+              "default": "'Grupo de opções'",
+              "description": "Accessible label for the group",
+              "attribute": "aria-label",
+              "inheritedFrom": {
+                "name": "FzlReaderChapterViewGroup",
+                "module": "src/components/reader-chapterview/reader-chapterview.component.ts"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "_keyNav",
+              "privacy": "private",
+              "default": "new FzlKeyNavController(this, { orientation: 'both', wrap: true, getItems: () => Array.from( this.renderRoot.querySelectorAll('fzl-reader-chapterview, button.chip, [part=\"chip\"]') as NodeListOf<HTMLElement> ), })",
+              "inheritedFrom": {
+                "name": "FzlReaderChapterViewGroup",
+                "module": "src/components/reader-chapterview/reader-chapterview.component.ts"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "_onItemClick",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "item",
+                  "type": {
+                    "text": "FzlChipItem"
+                  }
+                }
+              ],
+              "inheritedFrom": {
+                "name": "FzlReaderChapterViewGroup",
+                "module": "src/components/reader-chapterview/reader-chapterview.component.ts"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "_isItemSelected",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "boolean"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "item",
+                  "type": {
+                    "text": "FzlChipItem"
+                  }
+                }
+              ],
+              "inheritedFrom": {
+                "name": "FzlReaderChapterViewGroup",
+                "module": "src/components/reader-chapterview/reader-chapterview.component.ts"
+              }
+            }
+          ],
+          "events": [
+            {
+              "type": {
+                "text": "CustomEvent<{ selected: string | string[]; item?: FzlChipItem; value: string }>"
+              },
+              "description": "Dispatched when selection changes",
+              "name": "fzl-change",
+              "inheritedFrom": {
+                "name": "FzlReaderChapterViewGroup",
+                "module": "src/components/reader-chapterview/reader-chapterview.component.ts"
+              }
+            }
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "FzlReaderChapterView",
+          "declaration": {
+            "name": "FzlReaderChapterView",
+            "module": "src/components/reader-chapterview/reader-chapterview.component.ts"
+          }
+        },
+        {
+          "kind": "custom-element-definition",
+          "name": "fzl-reader-chapterview",
+          "declaration": {
+            "name": "FzlReaderChapterView",
+            "module": "src/components/reader-chapterview/reader-chapterview.component.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "FzlReaderChapterViewGroup",
+          "declaration": {
+            "name": "FzlReaderChapterViewGroup",
+            "module": "src/components/reader-chapterview/reader-chapterview.component.ts"
+          }
+        },
+        {
+          "kind": "custom-element-definition",
+          "name": "fzl-reader-chapterview-group",
+          "declaration": {
+            "name": "FzlReaderChapterViewGroup",
+            "module": "src/components/reader-chapterview/reader-chapterview.component.ts"
+          }
+        },
+        {
+          "kind": "custom-element-definition",
+          "name": "fzl-chip",
+          "declaration": {
+            "name": "anonymous_0",
+            "module": "src/components/reader-chapterview/reader-chapterview.component.ts"
+          }
+        },
+        {
+          "kind": "custom-element-definition",
+          "name": "fzl-chip-group",
+          "declaration": {
+            "name": "anonymous_1",
+            "module": "src/components/reader-chapterview/reader-chapterview.component.ts"
           }
         }
       ]
@@ -938,382 +2456,6 @@
           "declaration": {
             "name": "FzlLitCardList",
             "module": "src/components/card-list/card-list.component.ts"
-          }
-        }
-      ]
-    },
-    {
-      "kind": "javascript-module",
-      "path": "src/components/crumb/crumb.component.ts",
-      "declarations": [
-        {
-          "kind": "function",
-          "name": "parseFzlCrumbItems",
-          "return": {
-            "type": {
-              "text": "FzlCrumbItem[]"
-            }
-          },
-          "parameters": [
-            {
-              "name": "items",
-              "type": {
-                "text": "FzlCrumbItem[] | string | null | undefined"
-              }
-            },
-            {
-              "name": "pathStr",
-              "optional": true,
-              "type": {
-                "text": "string"
-              }
-            }
-          ]
-        },
-        {
-          "kind": "class",
-          "description": "Reactive Lit-based Breadcrumb (\"Crumb\") Custom Element showing current navigation path\nand providing back navigation to the previous view.",
-          "name": "FzlLitCrumb",
-          "cssParts": [
-            {
-              "description": "The outer `<nav>` landmark element",
-              "name": "nav"
-            },
-            {
-              "description": "The back navigation `<button>` element",
-              "name": "back-button"
-            },
-            {
-              "description": "The `<ol>` breadcrumb trail list",
-              "name": "list"
-            },
-            {
-              "description": "Each `<li>` breadcrumb item",
-              "name": "item"
-            },
-            {
-              "description": "Interactive `<a>` link for ancestor items",
-              "name": "link"
-            },
-            {
-              "description": "Visual separator `<span>` between items",
-              "name": "separator"
-            },
-            {
-              "description": "The `<span aria-current=\"page\">` active view label",
-              "name": "current"
-            }
-          ],
-          "members": [
-            {
-              "kind": "field",
-              "name": "items",
-              "type": {
-                "text": "FzlCrumbItem[]"
-              },
-              "default": "[]",
-              "description": "Breadcrumb items array or JSON/delimited string",
-              "attribute": "items"
-            },
-            {
-              "kind": "field",
-              "name": "path",
-              "type": {
-                "text": "string"
-              },
-              "default": "''",
-              "description": "Path string shorthand (e.g. \"Início / Config / Backend\")",
-              "attribute": "path",
-              "reflects": true
-            },
-            {
-              "kind": "field",
-              "name": "separator",
-              "type": {
-                "text": "string"
-              },
-              "default": "'›'",
-              "description": "Visual separator between breadcrumb items",
-              "attribute": "separator",
-              "reflects": true
-            },
-            {
-              "kind": "field",
-              "name": "showBack",
-              "type": {
-                "text": "boolean"
-              },
-              "default": "true",
-              "description": "Whether to display the back button",
-              "attribute": "show-back",
-              "reflects": true
-            },
-            {
-              "kind": "field",
-              "name": "backDisabled",
-              "type": {
-                "text": "boolean"
-              },
-              "default": "false",
-              "description": "Whether the back button is disabled",
-              "attribute": "back-disabled",
-              "reflects": true
-            },
-            {
-              "kind": "field",
-              "name": "backLabel",
-              "type": {
-                "text": "string"
-              },
-              "default": "'Voltar'",
-              "description": "Label for the back navigation button",
-              "attribute": "back-label",
-              "reflects": true
-            },
-            {
-              "kind": "field",
-              "name": "backHref",
-              "type": {
-                "text": "string"
-              },
-              "default": "''",
-              "description": "Optional explicit target URL/hash for the back button",
-              "attribute": "back-href",
-              "reflects": true
-            },
-            {
-              "kind": "field",
-              "name": "ariaLabel",
-              "type": {
-                "text": "string"
-              },
-              "default": "'Navegação estrutural'",
-              "description": "Accessible label for the `<nav>` landmark",
-              "attribute": "aria-label",
-              "reflects": true
-            },
-            {
-              "kind": "field",
-              "name": "_keyNav",
-              "privacy": "private",
-              "default": "new FzlKeyNavController(this, { orientation: 'horizontal', rovingTabIndex: true, getItems: () => Array.from( this.renderRoot.querySelectorAll<HTMLElement>( '.back-btn:not([disabled]):not([hidden]), a.crumb-link' ) ), })"
-            },
-            {
-              "kind": "method",
-              "name": "_handleKeyDown",
-              "privacy": "private",
-              "return": {
-                "type": {
-                  "text": "void"
-                }
-              },
-              "parameters": [
-                {
-                  "name": "event",
-                  "type": {
-                    "text": "KeyboardEvent"
-                  }
-                }
-              ]
-            },
-            {
-              "kind": "method",
-              "name": "_resolvedItems",
-              "privacy": "private",
-              "return": {
-                "type": {
-                  "text": "FzlCrumbItem[]"
-                }
-              }
-            },
-            {
-              "kind": "method",
-              "name": "_handleBack",
-              "privacy": "private",
-              "parameters": [
-                {
-                  "name": "event",
-                  "type": {
-                    "text": "MouseEvent"
-                  }
-                }
-              ]
-            },
-            {
-              "kind": "method",
-              "name": "_handleItemClick",
-              "privacy": "private",
-              "parameters": [
-                {
-                  "name": "event",
-                  "type": {
-                    "text": "MouseEvent"
-                  }
-                },
-                {
-                  "name": "item",
-                  "type": {
-                    "text": "FzlCrumbItem"
-                  }
-                },
-                {
-                  "name": "index",
-                  "type": {
-                    "text": "number"
-                  }
-                }
-              ]
-            }
-          ],
-          "events": [
-            {
-              "type": {
-                "text": "CustomEvent<{ backHref: string; originalEvent: MouseEvent }>"
-              },
-              "description": "Dispatched when the back button is activated",
-              "name": "fzl-back"
-            },
-            {
-              "type": {
-                "text": "CustomEvent<{ item: FzlCrumbItem; index: number; href?: string; originalEvent: MouseEvent }>"
-              },
-              "description": "Dispatched when a breadcrumb link item is clicked",
-              "name": "fzl-navigate"
-            },
-            {
-              "type": {
-                "text": "CustomEvent<{ widgetId: string; originalEvent: FocusEvent }>"
-              },
-              "description": "Dispatched when the widget gains focus",
-              "name": "fzl-focus"
-            },
-            {
-              "type": {
-                "text": "CustomEvent<{ widgetId: string; originalEvent: FocusEvent }>"
-              },
-              "description": "Dispatched when the widget loses focus",
-              "name": "fzl-blur"
-            }
-          ],
-          "attributes": [
-            {
-              "name": "items",
-              "type": {
-                "text": "FzlCrumbItem[]"
-              },
-              "default": "[]",
-              "description": "Breadcrumb items array or JSON/delimited string",
-              "fieldName": "items",
-              "attribute": "items"
-            },
-            {
-              "name": "path",
-              "type": {
-                "text": "string"
-              },
-              "default": "''",
-              "description": "Path string shorthand (e.g. \"Início / Config / Backend\")",
-              "fieldName": "path",
-              "attribute": "path"
-            },
-            {
-              "name": "separator",
-              "type": {
-                "text": "string"
-              },
-              "default": "'›'",
-              "description": "Visual separator between breadcrumb items",
-              "fieldName": "separator",
-              "attribute": "separator"
-            },
-            {
-              "name": "show-back",
-              "type": {
-                "text": "boolean"
-              },
-              "default": "true",
-              "description": "Whether to display the back button",
-              "fieldName": "showBack",
-              "attribute": "show-back"
-            },
-            {
-              "name": "back-disabled",
-              "type": {
-                "text": "boolean"
-              },
-              "default": "false",
-              "description": "Whether the back button is disabled",
-              "fieldName": "backDisabled",
-              "attribute": "back-disabled"
-            },
-            {
-              "name": "back-label",
-              "type": {
-                "text": "string"
-              },
-              "default": "'Voltar'",
-              "description": "Label for the back navigation button",
-              "fieldName": "backLabel",
-              "attribute": "back-label"
-            },
-            {
-              "name": "back-href",
-              "type": {
-                "text": "string"
-              },
-              "default": "''",
-              "description": "Optional explicit target URL/hash for the back button",
-              "fieldName": "backHref",
-              "attribute": "back-href"
-            },
-            {
-              "name": "aria-label",
-              "type": {
-                "text": "string"
-              },
-              "default": "'Navegação estrutural'",
-              "description": "Accessible label for the `<nav>` landmark",
-              "fieldName": "ariaLabel",
-              "attribute": "aria-label"
-            }
-          ],
-          "mixins": [
-            {
-              "name": "FzlWidgetMixin",
-              "package": "@fzl/core"
-            }
-          ],
-          "superclass": {
-            "name": "LitElement",
-            "package": "lit"
-          },
-          "tagName": "fzl-lit-crumb",
-          "customElement": true
-        }
-      ],
-      "exports": [
-        {
-          "kind": "js",
-          "name": "parseFzlCrumbItems",
-          "declaration": {
-            "name": "parseFzlCrumbItems",
-            "module": "src/components/crumb/crumb.component.ts"
-          }
-        },
-        {
-          "kind": "js",
-          "name": "FzlLitCrumb",
-          "declaration": {
-            "name": "FzlLitCrumb",
-            "module": "src/components/crumb/crumb.component.ts"
-          }
-        },
-        {
-          "kind": "custom-element-definition",
-          "name": "fzl-lit-crumb",
-          "declaration": {
-            "name": "FzlLitCrumb",
-            "module": "src/components/crumb/crumb.component.ts"
           }
         }
       ]

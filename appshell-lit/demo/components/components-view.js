@@ -95,6 +95,62 @@ export class ComponentsView extends LitElement {
         font-weight: 500;
         width: fit-content;
       }
+      .infra-section {
+        margin-top: 40px;
+        padding-top: 24px;
+        border-top: 1px solid var(--md-sys-color-outline-variant);
+      }
+      .infra-header {
+        margin: 0 0 8px;
+        font-size: 1.35rem;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .infra-lead {
+        margin: 0 0 20px;
+        line-height: 1.55;
+        color: var(--md-sys-color-on-surface-variant);
+      }
+      .infra-lead a {
+        color: var(--md-sys-color-primary);
+      }
+      .infra-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 16px;
+      }
+      .infra-card {
+        display: flex;
+        flex-direction: column;
+        padding: 16px;
+        border: 1px solid var(--md-sys-color-outline-variant);
+        border-radius: 12px;
+        background: var(--md-sys-color-surface);
+      }
+      .infra-card h3 {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin: 0 0 8px;
+        font-size: 1.05rem;
+      }
+      .infra-card p {
+        margin: 0 0 12px;
+        font-size: 0.9rem;
+        line-height: 1.45;
+        color: var(--md-sys-color-on-surface-variant);
+      }
+      .infra-list {
+        margin: 0;
+        padding-left: 18px;
+        font-size: 0.85rem;
+        line-height: 1.55;
+        color: var(--md-sys-color-on-surface);
+      }
+      .infra-list li + li {
+        margin-top: 4px;
+      }
     `,
   ]
 
@@ -118,6 +174,61 @@ export class ComponentsView extends LitElement {
           `,
         )}
       </div>
+
+      <section class="infra-section" aria-labelledby="components-infra-heading">
+        <h2 id="components-infra-heading" class="infra-header">
+          <md-icon aria-hidden="true">architecture</md-icon>
+          Components Infrastructure (<code>@fzl/core</code>)
+        </h2>
+        <p class="infra-lead">
+          Nossa infraestrutura base de Web Components (<code>@fzl/core</code>) foi arquiteturalmente inspirada no sistema de widgets
+          <a href="https://dojotoolkit.org/reference-guide/1.7/dijit/info.html" target="_blank" rel="noopener">Dojo Toolkit Dijit (1.7)</a>
+          (<a href="https://dojotoolkit.org/reference-guide/1.7/dijit/index.html" target="_blank" rel="noopener">Dijit Overview</a>),
+          adaptando seus quatro pilares clássicos — <strong>Accessibility (a11y)</strong>, <strong>Base Utilities</strong>,
+          <strong>Utility Classes</strong> e <strong>Infrastructure Widgets / Mixins</strong> — para <strong>Custom Elements v1</strong>,
+          <strong>Shadow DOM</strong> e os três motores do monorepo (<strong>Lit</strong>, <strong>Vanilla ES6</strong> e <strong>Angular Elements</strong>)
+          sob licença <code>GPL-3.0-or-later</code> (ADR-005).
+        </p>
+
+        <div class="infra-grid">
+          <article class="infra-card">
+            <h3><md-icon aria-hidden="true">accessibility_new</md-icon>Accessibility (a11y) &amp; High Contrast</h3>
+            <p>
+              Inspirado em <code>dijit/a11y</code> e <code>dijit/hccss</code>, garante acessibilidade nativa e detecção de preferências visuais do sistema.
+            </p>
+            <ul class="infra-list">
+              <li><code>fzlA11y</code>: detecta alto contraste (<code>forced-colors: active</code>, <code>prefers-contrast: more</code>) e movimento reduzido (<code>prefers-reduced-motion</code>).</li>
+              <li>Reflete automaticamente <code>data-fzl-hc</code>, <code>data-fzl-reduced-motion</code> e direção efetiva <code>dir="ltr|rtl"</code> no <code>:host</code>.</li>
+              <li>Utilitários de inspeção de elementos focáveis (<code>getFocusableElements</code>, <code>getFirstFocusable</code>, <code>getLastFocusable</code>).</li>
+            </ul>
+          </article>
+
+          <article class="infra-card">
+            <h3><md-icon aria-hidden="true">hub</md-icon>Base Utilities &amp; Utility Classes</h3>
+            <p>
+              Inspirado em <code>dijit/registry</code>, <code>dijit/focus</code>, <code>dijit/typematic</code>, <code>dijit/place</code> e <code>dijit/popup</code>.
+            </p>
+            <ul class="infra-list">
+              <li><code>fzlRegistry</code>: registro central de instâncias (<code>byId</code>, <code>byNode</code>, <code>getEnclosingWidget</code>, <code>findWidgets</code>) atravessando fronteiras de Shadow DOM.</li>
+              <li><code>fzlFocus</code>: rastreamento do elemento profundo ativo (<code>curNode</code>), pilha de widgets ativos (<code>activeStack</code>) e restauração de foco (<code>bookmarkFocus</code>).</li>
+              <li><code>fzlTypematic</code>: disparo repetitivo acelerado ao manter botão ou tecla pressionados (suportado via atributo <code>typematic</code> em botões).</li>
+              <li><code>fzlPlace</code> &amp; <code>fzlPopup</code>: posicionamento ancorado com colisão de viewport e gerenciamento de pilha de <code>z-index</code>.</li>
+            </ul>
+          </article>
+
+          <article class="infra-card">
+            <h3><md-icon aria-hidden="true">extension</md-icon>Infrastructure Widgets &amp; Mixins</h3>
+            <p>
+              Inspirado em <code>dijit/_WidgetBase</code>, <code>_CssStateMixin</code>, <code>_FocusMixin</code> e <code>_KeyNavContainer</code>.
+            </p>
+            <ul class="infra-list">
+              <li><code>FzlWidgetMixin</code> &amp; <code>FzlWidgetController</code>: ciclo de vida padronizado com auto-registro no <code>fzlRegistry</code>, limpeza automática de recursos via <code>own()</code> e emissão padronizada de eventos (<code>emit()</code>).</li>
+              <li><strong>CSS &amp; Focus States</strong>: reflexão automática de <code>data-fzl-hovered</code>, <code>data-fzl-active</code>, <code>data-fzl-focused</code> e eventos <code>fzl-focus</code> / <code>fzl-blur</code>.</li>
+              <li><code>FzlKeyNavController</code>: navegação por teclado WAI-ARIA com <em>roving tabindex</em> (<code>ArrowLeft</code>, <code>ArrowRight</code>, <code>ArrowUp</code>, <code>ArrowDown</code>, <code>Home</code>, <code>End</code>) aplicada em <code>crumb</code> e <code>card-list</code>.</li>
+            </ul>
+          </article>
+        </div>
+      </section>
     `
   }
 }

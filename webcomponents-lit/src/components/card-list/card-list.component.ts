@@ -1,6 +1,7 @@
-import { LitElement, html, css, unsafeCSS } from 'lit';
+import { LitElement, html, css, unsafeCSS, type PropertyValues } from 'lit';
 import { property, state } from 'lit/decorators.js';
 import { fzlDesignTokensCss } from '@fzl/design-tokens';
+import { FzlWidgetMixin, FzlKeyNavController, fzlFocus } from '@fzl/core';
 
 export interface FzlCardItem {
   id: string;
@@ -112,6 +113,8 @@ export function filterFzlCardItems(items: FzlCardItem[], query: string): FzlCard
  * @fires {CustomEvent<{ sortBy: string; sortOrder: FzlSortOrder }>} fzl-sort-change - Dispatched when sorting criteria changes
  * @fires {CustomEvent<{ filter: string }>} fzl-filter-change - Dispatched when search filter text changes
  * @fires {CustomEvent<{ items: FzlCardItem[]; fromIndex: number; toIndex: number; item: FzlCardItem }>} fzl-cards-reorder - Dispatched when cards are reordered
+ * @fires {CustomEvent<{ widgetId: string; originalEvent: FocusEvent }>} fzl-focus - Dispatched when the widget gains focus
+ * @fires {CustomEvent<{ widgetId: string; originalEvent: FocusEvent }>} fzl-blur - Dispatched when the widget loses focus
  *
  * @csspart container - The outer root container
  * @csspart toolbar - The top sorting and filtering toolbar
@@ -122,7 +125,7 @@ export function filterFzlCardItems(items: FzlCardItem[], query: string): FzlCard
  * @csspart card-footer - Card footer containing tags and action
  * @csspart reorder-controls - Reordering buttons container on each card
  */
-export class FzlLitCardList extends LitElement {
+export class FzlLitCardList extends FzlWidgetMixin(LitElement) {
   static override styles = [
     unsafeCSS(fzlDesignTokensCss),
     css`
@@ -499,6 +502,28 @@ export class FzlLitCardList extends LitElement {
   @state()
   private _dragOverIndex: number | null = null;
 
+  private _pendingFocusIndex: number | null = null;
+
+  private _keyNav = new FzlKeyNavController(this, {
+    orientation: 'both',
+    rovingTabIndex: true,
+    getItems: () => Array.from(this.renderRoot.querySelectorAll<HTMLElement>('.fzl-card')),
+  });
+
+  override updated(_changedProperties: PropertyValues): void {
+    super.updated(_changedProperties);
+    this._keyNav.syncTabIndices();
+    if (this._pendingFocusIndex !== null) {
+      const targetIdx = this._pendingFocusIndex;
+      this._pendingFocusIndex = null;
+      this._keyNav.focusItem(targetIdx);
+    }
+  }
+
+  private _handleFeedKeyDown(event: KeyboardEvent): void {
+    this._keyNav.handleKeyDown(event);
+  }
+
   private _reorderCards(fromIndex: number, toIndex: number) {
     const rawItems = parseFzlCardItems(this.items);
     if (fromIndex < 0 || fromIndex >= rawItems.length) return;
@@ -511,6 +536,8 @@ export class FzlLitCardList extends LitElement {
 
     // Reset automatic sortBy so user custom ordering takes precedence
     this.sortBy = '';
+    this._pendingFocusIndex = toIndex;
+    this._keyNav.focusedIndex = toIndex;
 
     if (typeof this.items === 'string') {
       this.items = JSON.stringify(updated);
@@ -518,18 +545,12 @@ export class FzlLitCardList extends LitElement {
       this.items = updated;
     }
 
-    this.dispatchEvent(
-      new CustomEvent('fzl-cards-reorder', {
-        detail: {
-          items: updated,
-          fromIndex,
-          toIndex,
-          item: moved,
-        },
-        bubbles: true,
-        composed: true,
-      })
-    );
+    this.emit('fzl-cards-reorder', {
+      items: updated,
+      fromIndex,
+      toIndex,
+      item: moved,
+    });
   }
 
   private _moveCard(fromIndex: number, delta: number, event: MouseEvent) {
@@ -705,6 +726,7 @@ export class FzlLitCardList extends LitElement {
           part="list"
           style=${feedStyles}
           role="list"
+          @keydown=${this._handleFeedKeyDown}
         >
           ${displayedItems.length === 0
             ? html`
@@ -730,6 +752,9 @@ export class FzlLitCardList extends LitElement {
                     @dragend=${() => this._handleDragEnd()}
                     @click=${(e: MouseEvent) => this._handleCardClick(item, index, e)}
                     @keydown=${(e: KeyboardEvent) => {
+                      if (e.target !== e.currentTarget && fzlFocus.getDeepActiveElement() !== e.currentTarget) {
+                        return;
+                      }
                       if (e.key === 'Enter' || e.key === ' ') {
                         e.preventDefault();
                         this._handleCardClick(item, index, e as unknown as MouseEvent);

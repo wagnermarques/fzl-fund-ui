@@ -35,6 +35,14 @@
           "name": "*",
           "declaration": {
             "name": "*",
+            "package": "@fzl/core"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "*",
+          "declaration": {
+            "name": "*",
             "module": "src/components/button/button.component"
           }
         },
@@ -111,6 +119,33 @@
           "members": [
             {
               "kind": "field",
+              "name": "fzlWidget",
+              "type": {
+                "text": "FzlWidgetController"
+              },
+              "readonly": true,
+              "default": "new FzlWidgetController(_host.nativeElement)"
+            },
+            {
+              "kind": "field",
+              "name": "_typematicCleanup",
+              "type": {
+                "text": "(() => void) | null"
+              },
+              "privacy": "private",
+              "default": "null"
+            },
+            {
+              "kind": "field",
+              "name": "_lastTypematicTick",
+              "type": {
+                "text": "boolean"
+              },
+              "privacy": "private",
+              "default": "false"
+            },
+            {
+              "kind": "field",
               "name": "variant",
               "type": {
                 "text": "FzlButtonVariant"
@@ -143,8 +178,69 @@
             },
             {
               "kind": "field",
+              "name": "typematic",
+              "type": {
+                "text": "boolean | string"
+              },
+              "default": "false"
+            },
+            {
+              "kind": "field",
               "name": "fzlClick",
-              "default": "new EventEmitter<{ originalEvent: MouseEvent }>()"
+              "default": "new EventEmitter<{ originalEvent: MouseEvent | KeyboardEvent; repeatCount?: number }>()"
+            },
+            {
+              "kind": "field",
+              "name": "isTypematic",
+              "type": {
+                "text": "boolean"
+              },
+              "readonly": true
+            },
+            {
+              "kind": "method",
+              "name": "ngOnInit",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              }
+            },
+            {
+              "kind": "method",
+              "name": "ngOnChanges",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "changes",
+                  "type": {
+                    "text": "SimpleChanges"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "ngOnDestroy",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              }
+            },
+            {
+              "kind": "method",
+              "name": "_syncTypematic",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              }
             },
             {
               "kind": "method",
@@ -170,10 +266,24 @@
           "events": [
             {
               "type": {
-                "text": "CustomEvent<{ originalEvent: MouseEvent }>"
+                "text": "CustomEvent<{ originalEvent: MouseEvent | KeyboardEvent; repeatCount?: number }>"
               },
               "description": "Dispatched when the button is activated",
               "name": "fzl-click"
+            },
+            {
+              "type": {
+                "text": "CustomEvent<{ widgetId: string; originalEvent: FocusEvent }>"
+              },
+              "description": "Dispatched when the widget gains focus",
+              "name": "fzl-focus"
+            },
+            {
+              "type": {
+                "text": "CustomEvent<{ widgetId: string; originalEvent: FocusEvent }>"
+              },
+              "description": "Dispatched when the widget loses focus",
+              "name": "fzl-blur"
             }
           ],
           "attributes": [
@@ -208,6 +318,14 @@
               "description": "Form button behavior",
               "name": "type",
               "default": "'button'"
+            },
+            {
+              "type": {
+                "text": "boolean"
+              },
+              "description": "Enables typematic repeat firing of `fzl-click` while held down",
+              "name": "typematic",
+              "default": "false"
             }
           ],
           "tagName": "fzl-ng-button",
@@ -288,6 +406,25 @@
             }
           ],
           "members": [
+            {
+              "kind": "field",
+              "name": "fzlWidget",
+              "type": {
+                "text": "FzlWidgetController"
+              },
+              "readonly": true,
+              "default": "new FzlWidgetController(_host.nativeElement)"
+            },
+            {
+              "kind": "field",
+              "name": "_keyNav",
+              "type": {
+                "text": "FzlKeyNavController"
+              },
+              "privacy": "private",
+              "readonly": true,
+              "default": "new FzlKeyNavController(_host.nativeElement, { orientation: 'horizontal', rovingTabIndex: true, getItems: () => Array.from( this._host.nativeElement.shadowRoot?.querySelectorAll<HTMLElement>( '.back-btn:not([disabled]):not([hidden]), a.crumb-link' ) ?? [] ), })"
+            },
             {
               "kind": "field",
               "name": "items",
@@ -388,6 +525,50 @@
             },
             {
               "kind": "method",
+              "name": "ngOnInit",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              }
+            },
+            {
+              "kind": "method",
+              "name": "ngAfterViewChecked",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              }
+            },
+            {
+              "kind": "method",
+              "name": "ngOnDestroy",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              }
+            },
+            {
+              "kind": "method",
+              "name": "onKeyDown",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "event",
+                  "type": {
+                    "text": "KeyboardEvent"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
               "name": "onBackClick",
               "parameters": [
                 {
@@ -437,6 +618,20 @@
               },
               "description": "Dispatched when a breadcrumb link item is clicked",
               "name": "fzl-navigate"
+            },
+            {
+              "type": {
+                "text": "CustomEvent<{ widgetId: string; originalEvent: FocusEvent }>"
+              },
+              "description": "Dispatched when the widget gains focus",
+              "name": "fzl-focus"
+            },
+            {
+              "type": {
+                "text": "CustomEvent<{ widgetId: string; originalEvent: FocusEvent }>"
+              },
+              "description": "Dispatched when the widget loses focus",
+              "name": "fzl-blur"
             }
           ],
           "attributes": [
@@ -643,6 +838,34 @@
           "members": [
             {
               "kind": "field",
+              "name": "fzlWidget",
+              "type": {
+                "text": "FzlWidgetController"
+              },
+              "readonly": true,
+              "default": "new FzlWidgetController(_host.nativeElement)"
+            },
+            {
+              "kind": "field",
+              "name": "_keyNav",
+              "type": {
+                "text": "FzlKeyNavController"
+              },
+              "privacy": "private",
+              "readonly": true,
+              "default": "new FzlKeyNavController(_host.nativeElement, { orientation: 'both', rovingTabIndex: true, getItems: () => Array.from( this._host.nativeElement.shadowRoot?.querySelectorAll<HTMLElement>('.fzl-card') ?? [] ), })"
+            },
+            {
+              "kind": "field",
+              "name": "_pendingFocusIndex",
+              "type": {
+                "text": "number | null"
+              },
+              "privacy": "private",
+              "default": "null"
+            },
+            {
+              "kind": "field",
               "name": "_items",
               "type": {
                 "text": "FzlCardItem[] | string"
@@ -794,6 +1017,41 @@
             {
               "kind": "method",
               "name": "ngOnInit"
+            },
+            {
+              "kind": "method",
+              "name": "ngAfterViewChecked",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              }
+            },
+            {
+              "kind": "method",
+              "name": "ngOnDestroy",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              }
+            },
+            {
+              "kind": "method",
+              "name": "onFeedKeyDown",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "event",
+                  "type": {
+                    "text": "KeyboardEvent"
+                  }
+                }
+              ]
             },
             {
               "kind": "field",
@@ -1083,6 +1341,20 @@
               },
               "description": "Dispatched when cards are reordered",
               "name": "fzl-cards-reorder"
+            },
+            {
+              "type": {
+                "text": "CustomEvent<{ widgetId: string; originalEvent: FocusEvent }>"
+              },
+              "description": "Dispatched when the widget gains focus",
+              "name": "fzl-focus"
+            },
+            {
+              "type": {
+                "text": "CustomEvent<{ widgetId: string; originalEvent: FocusEvent }>"
+              },
+              "description": "Dispatched when the widget loses focus",
+              "name": "fzl-blur"
             }
           ],
           "attributes": [

@@ -10,6 +10,7 @@ build/
 
 # Angular specific
 .angular/
+webcomponents-angular/packages/
 
 # Storybook
 storybook-static/

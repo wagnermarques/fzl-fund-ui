@@ -1,4 +1,5 @@
 import { fzlDesignTokensCss } from '@fzl/design-tokens';
+import { FzlWidgetMixin, FzlKeyNavController } from '@fzl/core';
 
 export interface FzlCrumbItem {
   /** Display label for the breadcrumb item */
@@ -214,6 +215,8 @@ template.innerHTML = `
  *
  * @fires {CustomEvent<{ backHref: string; originalEvent: MouseEvent }>} fzl-back - Dispatched when the back button is activated
  * @fires {CustomEvent<{ item: FzlCrumbItem; index: number; href?: string; originalEvent: MouseEvent }>} fzl-navigate - Dispatched when a breadcrumb link item is clicked
+ * @fires {CustomEvent<{ widgetId: string; originalEvent: FocusEvent }>} fzl-focus - Dispatched when the widget gains focus
+ * @fires {CustomEvent<{ widgetId: string; originalEvent: FocusEvent }>} fzl-blur - Dispatched when the widget loses focus
  *
  * @csspart nav - The outer `<nav>` landmark element
  * @csspart back-button - The back navigation `<button>` element
@@ -223,12 +226,13 @@ template.innerHTML = `
  * @csspart separator - Visual separator `<span>` between items
  * @csspart current - The `<span aria-current="page">` active view label
  */
-export class FzlEs6Crumb extends HTMLElement {
+export class FzlEs6Crumb extends FzlWidgetMixin(HTMLElement) {
   private _navEl!: HTMLElement;
   private _backBtnEl!: HTMLButtonElement;
   private _backLabelEl!: HTMLElement;
   private _listEl!: HTMLOListElement;
   private _itemsProp: FzlCrumbItem[] | null = null;
+  private _keyNav!: FzlKeyNavController;
 
   static get observedAttributes(): string[] {
     return [
@@ -252,6 +256,21 @@ export class FzlEs6Crumb extends HTMLElement {
     this._backBtnEl = shadow.querySelector('.back-btn')!;
     this._backLabelEl = shadow.querySelector('.back-label')!;
     this._listEl = shadow.querySelector('ol')!;
+
+    this._keyNav = new FzlKeyNavController(this, {
+      orientation: 'horizontal',
+      rovingTabIndex: true,
+      getItems: () =>
+        Array.from(
+          shadow.querySelectorAll<HTMLElement>(
+            '.back-btn:not([disabled]):not([hidden]), a.crumb-link'
+          )
+        ),
+    });
+
+    this._navEl.addEventListener('keydown', (event: KeyboardEvent) => {
+      this._keyNav.handleKeyDown(event);
+    });
 
     this._backBtnEl.addEventListener('click', (event: MouseEvent) => {
       if (this.backDisabled) {
@@ -280,7 +299,8 @@ export class FzlEs6Crumb extends HTMLElement {
     });
   }
 
-  connectedCallback(): void {
+  override connectedCallback(): void {
+    super.connectedCallback();
     this._render();
   }
 
@@ -416,6 +436,8 @@ export class FzlEs6Crumb extends HTMLElement {
 
       this._listEl.appendChild(li);
     });
+
+    this._keyNav.syncTabIndices();
   }
 }
 

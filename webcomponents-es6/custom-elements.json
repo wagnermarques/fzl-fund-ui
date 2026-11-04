@@ -12,6 +12,14 @@
           "name": "*",
           "declaration": {
             "name": "*",
+            "package": "@fzl/core"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "*",
+          "declaration": {
+            "name": "*",
             "module": "src/components/button/button.component"
           }
         },
@@ -73,6 +81,24 @@
             },
             {
               "kind": "field",
+              "name": "_typematicCleanup",
+              "type": {
+                "text": "(() => void) | null"
+              },
+              "privacy": "private",
+              "default": "null"
+            },
+            {
+              "kind": "field",
+              "name": "_lastTypematicTick",
+              "type": {
+                "text": "boolean"
+              },
+              "privacy": "private",
+              "default": "false"
+            },
+            {
+              "kind": "field",
               "name": "formAssociated",
               "type": {
                 "text": "boolean"
@@ -117,6 +143,35 @@
               "default": "'button'"
             },
             {
+              "kind": "field",
+              "name": "typematic",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "Enables typematic repeat firing of `fzl-click` while held down",
+              "default": "false"
+            },
+            {
+              "kind": "method",
+              "name": "_clearTypematic",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              }
+            },
+            {
+              "kind": "method",
+              "name": "_syncTypematic",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              }
+            },
+            {
               "kind": "method",
               "name": "_render",
               "privacy": "private",
@@ -130,10 +185,24 @@
           "events": [
             {
               "type": {
-                "text": "CustomEvent<{ originalEvent: MouseEvent }>"
+                "text": "CustomEvent<{ originalEvent: MouseEvent | KeyboardEvent; repeatCount?: number }>"
               },
               "description": "Dispatched when the button is activated",
               "name": "fzl-click"
+            },
+            {
+              "type": {
+                "text": "CustomEvent<{ widgetId: string; originalEvent: FocusEvent }>"
+              },
+              "description": "Dispatched when the widget gains focus",
+              "name": "fzl-focus"
+            },
+            {
+              "type": {
+                "text": "CustomEvent<{ widgetId: string; originalEvent: FocusEvent }>"
+              },
+              "description": "Dispatched when the widget loses focus",
+              "name": "fzl-blur"
             }
           ],
           "attributes": [
@@ -168,6 +237,20 @@
               },
               "description": "Form button behavior",
               "default": "'button'"
+            },
+            {
+              "name": "typematic",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "Enables typematic repeat firing of `fzl-click` while held down",
+              "default": "false"
+            }
+          ],
+          "mixins": [
+            {
+              "name": "FzlWidgetMixin",
+              "package": "@fzl/core"
             }
           ],
           "superclass": {
@@ -192,6 +275,333 @@
           "declaration": {
             "name": "FzlEs6Button",
             "module": "src/components/button/button.component.ts"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/components/crumb/crumb.component.ts",
+      "declarations": [
+        {
+          "kind": "function",
+          "name": "parseFzlCrumbItems",
+          "return": {
+            "type": {
+              "text": "FzlCrumbItem[]"
+            }
+          },
+          "parameters": [
+            {
+              "name": "items",
+              "type": {
+                "text": "FzlCrumbItem[] | string | null | undefined"
+              }
+            },
+            {
+              "name": "pathStr",
+              "optional": true,
+              "type": {
+                "text": "string"
+              }
+            }
+          ]
+        },
+        {
+          "kind": "class",
+          "description": "Pure Vanilla ES6 Breadcrumb (\"Crumb\") Custom Element showing current navigation path\nand providing back navigation to the previous view.",
+          "name": "FzlEs6Crumb",
+          "cssParts": [
+            {
+              "description": "The outer `<nav>` landmark element",
+              "name": "nav"
+            },
+            {
+              "description": "The back navigation `<button>` element",
+              "name": "back-button"
+            },
+            {
+              "description": "The `<ol>` breadcrumb trail list",
+              "name": "list"
+            },
+            {
+              "description": "Each `<li>` breadcrumb item",
+              "name": "item"
+            },
+            {
+              "description": "Interactive `<a>` link for ancestor items",
+              "name": "link"
+            },
+            {
+              "description": "Visual separator `<span>` between items",
+              "name": "separator"
+            },
+            {
+              "description": "The `<span aria-current=\"page\">` active view label",
+              "name": "current"
+            }
+          ],
+          "members": [
+            {
+              "kind": "field",
+              "name": "_navEl",
+              "type": {
+                "text": "HTMLElement"
+              },
+              "privacy": "private",
+              "default": "shadow.querySelector('nav')!"
+            },
+            {
+              "kind": "field",
+              "name": "_backBtnEl",
+              "type": {
+                "text": "HTMLButtonElement"
+              },
+              "privacy": "private",
+              "default": "shadow.querySelector('.back-btn')!"
+            },
+            {
+              "kind": "field",
+              "name": "_backLabelEl",
+              "type": {
+                "text": "HTMLElement"
+              },
+              "privacy": "private",
+              "default": "shadow.querySelector('.back-label')!"
+            },
+            {
+              "kind": "field",
+              "name": "_listEl",
+              "type": {
+                "text": "HTMLOListElement"
+              },
+              "privacy": "private",
+              "default": "shadow.querySelector('ol')!"
+            },
+            {
+              "kind": "field",
+              "name": "_itemsProp",
+              "type": {
+                "text": "FzlCrumbItem[] | null"
+              },
+              "privacy": "private",
+              "default": "null"
+            },
+            {
+              "kind": "field",
+              "name": "_keyNav",
+              "type": {
+                "text": "FzlKeyNavController"
+              },
+              "privacy": "private",
+              "default": "new FzlKeyNavController(this, { orientation: 'horizontal', rovingTabIndex: true, getItems: () => Array.from( shadow.querySelectorAll<HTMLElement>( '.back-btn:not([disabled]):not([hidden]), a.crumb-link' ) ), })"
+            },
+            {
+              "kind": "field",
+              "name": "items",
+              "type": {
+                "text": "FzlCrumbItem[]"
+              },
+              "description": "Breadcrumb items array",
+              "default": "[]"
+            },
+            {
+              "kind": "field",
+              "name": "path",
+              "type": {
+                "text": "string"
+              },
+              "description": "Path string shorthand",
+              "default": "''"
+            },
+            {
+              "kind": "field",
+              "name": "separator",
+              "type": {
+                "text": "string"
+              },
+              "description": "Visual separator between breadcrumb items",
+              "default": "'›'"
+            },
+            {
+              "kind": "field",
+              "name": "showBack",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "Whether to display the back button",
+              "default": "true"
+            },
+            {
+              "kind": "field",
+              "name": "backDisabled",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "Whether the back button is disabled",
+              "default": "false"
+            },
+            {
+              "kind": "field",
+              "name": "backLabel",
+              "type": {
+                "text": "string"
+              },
+              "description": "Label for the back navigation button",
+              "default": "'Voltar'"
+            },
+            {
+              "kind": "field",
+              "name": "backHref",
+              "type": {
+                "text": "string"
+              },
+              "description": "Optional explicit target URL/hash for the back button",
+              "default": "''"
+            },
+            {
+              "kind": "method",
+              "name": "_render",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              }
+            }
+          ],
+          "events": [
+            {
+              "type": {
+                "text": "CustomEvent<{ backHref: string; originalEvent: MouseEvent }>"
+              },
+              "description": "Dispatched when the back button is activated",
+              "name": "fzl-back"
+            },
+            {
+              "type": {
+                "text": "CustomEvent<{ item: FzlCrumbItem; index: number; href?: string; originalEvent: MouseEvent }>"
+              },
+              "description": "Dispatched when a breadcrumb link item is clicked",
+              "name": "fzl-navigate"
+            },
+            {
+              "type": {
+                "text": "CustomEvent<{ widgetId: string; originalEvent: FocusEvent }>"
+              },
+              "description": "Dispatched when the widget gains focus",
+              "name": "fzl-focus"
+            },
+            {
+              "type": {
+                "text": "CustomEvent<{ widgetId: string; originalEvent: FocusEvent }>"
+              },
+              "description": "Dispatched when the widget loses focus",
+              "name": "fzl-blur"
+            }
+          ],
+          "attributes": [
+            {
+              "name": "items",
+              "type": {
+                "text": "string"
+              },
+              "description": "Breadcrumb items JSON string or delimited string",
+              "default": "'[]'"
+            },
+            {
+              "name": "path",
+              "type": {
+                "text": "string"
+              },
+              "description": "Path string shorthand (e.g. \"Início / Config / Backend\")",
+              "default": "''"
+            },
+            {
+              "name": "separator",
+              "type": {
+                "text": "string"
+              },
+              "description": "Visual separator between breadcrumb items",
+              "default": "'›'"
+            },
+            {
+              "name": "show-back",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "Whether to display the back button",
+              "default": "true"
+            },
+            {
+              "name": "back-disabled",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "Whether the back button is disabled",
+              "default": "false"
+            },
+            {
+              "name": "back-label",
+              "type": {
+                "text": "string"
+              },
+              "description": "Label for the back navigation button",
+              "default": "'Voltar'"
+            },
+            {
+              "name": "back-href",
+              "type": {
+                "text": "string"
+              },
+              "description": "Optional explicit target URL/hash for the back button",
+              "default": "''"
+            },
+            {
+              "name": "aria-label",
+              "type": {
+                "text": "string"
+              },
+              "description": "Accessible label for the `<nav>` landmark",
+              "default": "'Navegação estrutural'"
+            }
+          ],
+          "mixins": [
+            {
+              "name": "FzlWidgetMixin",
+              "package": "@fzl/core"
+            }
+          ],
+          "superclass": {
+            "name": "HTMLElement"
+          },
+          "tagName": "fzl-es6-crumb",
+          "customElement": true
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "parseFzlCrumbItems",
+          "declaration": {
+            "name": "parseFzlCrumbItems",
+            "module": "src/components/crumb/crumb.component.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "FzlEs6Crumb",
+          "declaration": {
+            "name": "FzlEs6Crumb",
+            "module": "src/components/crumb/crumb.component.ts"
+          }
+        },
+        {
+          "kind": "custom-element-definition",
+          "name": "fzl-es6-crumb",
+          "declaration": {
+            "name": "FzlEs6Crumb",
+            "module": "src/components/crumb/crumb.component.ts"
           }
         }
       ]
@@ -448,6 +858,16 @@
             },
             {
               "kind": "field",
+              "name": "_keyNav",
+              "type": {
+                "text": "FzlKeyNavController"
+              },
+              "privacy": "private",
+              "readonly": true,
+              "default": "new FzlKeyNavController(this, { orientation: 'both', rovingTabIndex: true, getItems: () => Array.from(this._feedEl.querySelectorAll<HTMLElement>('.fzl-card')), })"
+            },
+            {
+              "kind": "field",
               "name": "items",
               "type": {
                 "text": "FzlCardItem[] | string"
@@ -576,13 +996,6 @@
           ],
           "events": [
             {
-              "name": "fzl-cards-reorder",
-              "type": {
-                "text": "CustomEvent<{ items: FzlCardItem[]; fromIndex: number; toIndex: number; item: FzlCardItem }>"
-              },
-              "description": "Dispatched when cards are reordered"
-            },
-            {
               "name": "fzl-filter-change",
               "type": {
                 "text": "CustomEvent<{ filter: string }>"
@@ -609,6 +1022,27 @@
                 "text": "CustomEvent<{ action: string; item: FzlCardItem; index: number; originalEvent: MouseEvent }>"
               },
               "description": "Dispatched when card action button is clicked"
+            },
+            {
+              "type": {
+                "text": "CustomEvent<{ items: FzlCardItem[]; fromIndex: number; toIndex: number; item: FzlCardItem }>"
+              },
+              "description": "Dispatched when cards are reordered",
+              "name": "fzl-cards-reorder"
+            },
+            {
+              "type": {
+                "text": "CustomEvent<{ widgetId: string; originalEvent: FocusEvent }>"
+              },
+              "description": "Dispatched when the widget gains focus",
+              "name": "fzl-focus"
+            },
+            {
+              "type": {
+                "text": "CustomEvent<{ widgetId: string; originalEvent: FocusEvent }>"
+              },
+              "description": "Dispatched when the widget loses focus",
+              "name": "fzl-blur"
             }
           ],
           "attributes": [
@@ -638,6 +1072,12 @@
             },
             {
               "name": "empty-text"
+            }
+          ],
+          "mixins": [
+            {
+              "name": "FzlWidgetMixin",
+              "package": "@fzl/core"
             }
           ],
           "superclass": {
@@ -686,304 +1126,6 @@
           "declaration": {
             "name": "FzlEs6CardList",
             "module": "src/components/card-list/card-list.component.ts"
-          }
-        }
-      ]
-    },
-    {
-      "kind": "javascript-module",
-      "path": "src/components/crumb/crumb.component.ts",
-      "declarations": [
-        {
-          "kind": "function",
-          "name": "parseFzlCrumbItems",
-          "return": {
-            "type": {
-              "text": "FzlCrumbItem[]"
-            }
-          },
-          "parameters": [
-            {
-              "name": "items",
-              "type": {
-                "text": "FzlCrumbItem[] | string | null | undefined"
-              }
-            },
-            {
-              "name": "pathStr",
-              "optional": true,
-              "type": {
-                "text": "string"
-              }
-            }
-          ]
-        },
-        {
-          "kind": "class",
-          "description": "Pure Vanilla ES6 Breadcrumb (\"Crumb\") Custom Element showing current navigation path\nand providing back navigation to the previous view.",
-          "name": "FzlEs6Crumb",
-          "cssParts": [
-            {
-              "description": "The outer `<nav>` landmark element",
-              "name": "nav"
-            },
-            {
-              "description": "The back navigation `<button>` element",
-              "name": "back-button"
-            },
-            {
-              "description": "The `<ol>` breadcrumb trail list",
-              "name": "list"
-            },
-            {
-              "description": "Each `<li>` breadcrumb item",
-              "name": "item"
-            },
-            {
-              "description": "Interactive `<a>` link for ancestor items",
-              "name": "link"
-            },
-            {
-              "description": "Visual separator `<span>` between items",
-              "name": "separator"
-            },
-            {
-              "description": "The `<span aria-current=\"page\">` active view label",
-              "name": "current"
-            }
-          ],
-          "members": [
-            {
-              "kind": "field",
-              "name": "_navEl",
-              "type": {
-                "text": "HTMLElement"
-              },
-              "privacy": "private",
-              "default": "shadow.querySelector('nav')!"
-            },
-            {
-              "kind": "field",
-              "name": "_backBtnEl",
-              "type": {
-                "text": "HTMLButtonElement"
-              },
-              "privacy": "private",
-              "default": "shadow.querySelector('.back-btn')!"
-            },
-            {
-              "kind": "field",
-              "name": "_backLabelEl",
-              "type": {
-                "text": "HTMLElement"
-              },
-              "privacy": "private",
-              "default": "shadow.querySelector('.back-label')!"
-            },
-            {
-              "kind": "field",
-              "name": "_listEl",
-              "type": {
-                "text": "HTMLOListElement"
-              },
-              "privacy": "private",
-              "default": "shadow.querySelector('ol')!"
-            },
-            {
-              "kind": "field",
-              "name": "_itemsProp",
-              "type": {
-                "text": "FzlCrumbItem[] | null"
-              },
-              "privacy": "private",
-              "default": "null"
-            },
-            {
-              "kind": "field",
-              "name": "items",
-              "type": {
-                "text": "FzlCrumbItem[]"
-              },
-              "description": "Breadcrumb items array",
-              "default": "[]"
-            },
-            {
-              "kind": "field",
-              "name": "path",
-              "type": {
-                "text": "string"
-              },
-              "description": "Path string shorthand",
-              "default": "''"
-            },
-            {
-              "kind": "field",
-              "name": "separator",
-              "type": {
-                "text": "string"
-              },
-              "description": "Visual separator between breadcrumb items",
-              "default": "'›'"
-            },
-            {
-              "kind": "field",
-              "name": "showBack",
-              "type": {
-                "text": "boolean"
-              },
-              "description": "Whether to display the back button",
-              "default": "true"
-            },
-            {
-              "kind": "field",
-              "name": "backDisabled",
-              "type": {
-                "text": "boolean"
-              },
-              "description": "Whether the back button is disabled",
-              "default": "false"
-            },
-            {
-              "kind": "field",
-              "name": "backLabel",
-              "type": {
-                "text": "string"
-              },
-              "description": "Label for the back navigation button",
-              "default": "'Voltar'"
-            },
-            {
-              "kind": "field",
-              "name": "backHref",
-              "type": {
-                "text": "string"
-              },
-              "description": "Optional explicit target URL/hash for the back button",
-              "default": "''"
-            },
-            {
-              "kind": "method",
-              "name": "_render",
-              "privacy": "private",
-              "return": {
-                "type": {
-                  "text": "void"
-                }
-              }
-            }
-          ],
-          "events": [
-            {
-              "type": {
-                "text": "CustomEvent<{ backHref: string; originalEvent: MouseEvent }>"
-              },
-              "description": "Dispatched when the back button is activated",
-              "name": "fzl-back"
-            },
-            {
-              "type": {
-                "text": "CustomEvent<{ item: FzlCrumbItem; index: number; href?: string; originalEvent: MouseEvent }>"
-              },
-              "description": "Dispatched when a breadcrumb link item is clicked",
-              "name": "fzl-navigate"
-            }
-          ],
-          "attributes": [
-            {
-              "name": "items",
-              "type": {
-                "text": "string"
-              },
-              "description": "Breadcrumb items JSON string or delimited string",
-              "default": "'[]'"
-            },
-            {
-              "name": "path",
-              "type": {
-                "text": "string"
-              },
-              "description": "Path string shorthand (e.g. \"Início / Config / Backend\")",
-              "default": "''"
-            },
-            {
-              "name": "separator",
-              "type": {
-                "text": "string"
-              },
-              "description": "Visual separator between breadcrumb items",
-              "default": "'›'"
-            },
-            {
-              "name": "show-back",
-              "type": {
-                "text": "boolean"
-              },
-              "description": "Whether to display the back button",
-              "default": "true"
-            },
-            {
-              "name": "back-disabled",
-              "type": {
-                "text": "boolean"
-              },
-              "description": "Whether the back button is disabled",
-              "default": "false"
-            },
-            {
-              "name": "back-label",
-              "type": {
-                "text": "string"
-              },
-              "description": "Label for the back navigation button",
-              "default": "'Voltar'"
-            },
-            {
-              "name": "back-href",
-              "type": {
-                "text": "string"
-              },
-              "description": "Optional explicit target URL/hash for the back button",
-              "default": "''"
-            },
-            {
-              "name": "aria-label",
-              "type": {
-                "text": "string"
-              },
-              "description": "Accessible label for the `<nav>` landmark",
-              "default": "'Navegação estrutural'"
-            }
-          ],
-          "superclass": {
-            "name": "HTMLElement"
-          },
-          "tagName": "fzl-es6-crumb",
-          "customElement": true
-        }
-      ],
-      "exports": [
-        {
-          "kind": "js",
-          "name": "parseFzlCrumbItems",
-          "declaration": {
-            "name": "parseFzlCrumbItems",
-            "module": "src/components/crumb/crumb.component.ts"
-          }
-        },
-        {
-          "kind": "js",
-          "name": "FzlEs6Crumb",
-          "declaration": {
-            "name": "FzlEs6Crumb",
-            "module": "src/components/crumb/crumb.component.ts"
-          }
-        },
-        {
-          "kind": "custom-element-definition",
-          "name": "fzl-es6-crumb",
-          "declaration": {
-            "name": "FzlEs6Crumb",
-            "module": "src/components/crumb/crumb.component.ts"
           }
         }
       ]

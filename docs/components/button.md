@@ -58,11 +58,14 @@ Pure Vanilla ES6 Custom Element button with Shadow DOM encapsulation.
 | `size` | `size` | `'sm' \| 'md' \| 'lg'` | `'md'` | Size scale of the button |
 | `disabled` | `disabled` | `boolean` | `false` | Whether the button is disabled |
 | `type` | `type` | `'button' \| 'submit' \| 'reset'` | `'button'` | Form button behavior |
+| `typematic` | `typematic` | `boolean` | `false` | Enables typematic repeat firing of `fzl-click` while held down |
 
 #### Events
 | Event Name | Detail Type | Description |
 | :--- | :--- | :--- |
-| `fzl-click` | `CustomEvent<{ originalEvent: MouseEvent }>` | Dispatched when the button is activated |
+| `fzl-click` | `CustomEvent<{ originalEvent: MouseEvent \| KeyboardEvent; repeatCount?: number }>` | Dispatched when the button is activated |
+| `fzl-focus` | `CustomEvent<{ widgetId: string; originalEvent: FocusEvent }>` | Dispatched when the widget gains focus |
+| `fzl-blur` | `CustomEvent<{ widgetId: string; originalEvent: FocusEvent }>` | Dispatched when the widget loses focus |
 
 #### Slots
 | Slot Name | Description |
@@ -87,11 +90,14 @@ Reactive Lit-based Custom Element button with Shadow DOM encapsulation.
 | `size` | `size` | `FzlButtonSize` | `'md'` | Size scale of the button |
 | `disabled` | `disabled` | `boolean` | `false` | Whether the button is disabled |
 | `type` | `type` | `'button' \| 'submit' \| 'reset'` | `'button'` | Form button behavior |
+| `typematic` | `typematic` | `boolean` | `false` | Enables typematic repeat firing of `fzl-click` while held down |
 
 #### Events
 | Event Name | Detail Type | Description |
 | :--- | :--- | :--- |
-| `fzl-click` | `CustomEvent<{ originalEvent: MouseEvent }>` | Dispatched when the button is activated |
+| `fzl-click` | `CustomEvent<{ originalEvent: MouseEvent \| KeyboardEvent; repeatCount?: number }>` | Dispatched when the button is activated |
+| `fzl-focus` | `CustomEvent<{ widgetId: string; originalEvent: FocusEvent }>` | Dispatched when the widget gains focus |
+| `fzl-blur` | `CustomEvent<{ widgetId: string; originalEvent: FocusEvent }>` | Dispatched when the widget loses focus |
 
 #### Slots
 | Slot Name | Description |
@@ -116,11 +122,14 @@ Angular Elements Custom Element button with Shadow DOM encapsulation.
 | `size` | `size` | `'sm' \| 'md' \| 'lg'` | `'md'` | Size scale of the button |
 | `disabled` | `disabled` | `boolean` | `false` | Whether the button is disabled |
 | `type` | `type` | `'button' \| 'submit' \| 'reset'` | `'button'` | Form button behavior |
+| `typematic` | `typematic` | `boolean` | `false` | Enables typematic repeat firing of `fzl-click` while held down |
 
 #### Events
 | Event Name | Detail Type | Description |
 | :--- | :--- | :--- |
-| `fzl-click` | `CustomEvent<{ originalEvent: MouseEvent }>` | Dispatched when the button is activated |
+| `fzl-click` | `CustomEvent<{ originalEvent: MouseEvent \| KeyboardEvent; repeatCount?: number }>` | Dispatched when the button is activated |
+| `fzl-focus` | `CustomEvent<{ widgetId: string; originalEvent: FocusEvent }>` | Dispatched when the widget gains focus |
+| `fzl-blur` | `CustomEvent<{ widgetId: string; originalEvent: FocusEvent }>` | Dispatched when the widget loses focus |
 
 #### Slots
 | Slot Name | Description |

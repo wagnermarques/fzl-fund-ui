@@ -1,6 +1,7 @@
-import { LitElement, html, css, unsafeCSS } from 'lit';
+import { LitElement, html, css, unsafeCSS, type PropertyValues } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { fzlDesignTokensCss } from '@fzl/design-tokens';
+import { FzlWidgetMixin, addTypematicListener } from '@fzl/core';
 
 export type FzlButtonVariant = 'primary' | 'secondary' | 'danger';
 export type FzlButtonSize = 'sm' | 'md' | 'lg';
@@ -11,14 +12,21 @@ export type FzlButtonSize = 'sm' | 'md' | 'lg';
  * @customElement fzl-lit-button
  * @tag fzl-lit-button
  *
- * @fires {CustomEvent<{ originalEvent: MouseEvent }>} fzl-click - Dispatched when the button is activated
+ * @fires {CustomEvent<{ originalEvent: MouseEvent | KeyboardEvent; repeatCount?: number }>} fzl-click - Dispatched when the button is activated
+ * @fires {CustomEvent<{ widgetId: string; originalEvent: FocusEvent }>} fzl-focus - Dispatched when the widget gains focus
+ * @fires {CustomEvent<{ widgetId: string; originalEvent: FocusEvent }>} fzl-blur - Dispatched when the widget loses focus
  *
  * @slot - Content to be displayed inside the button
  *
  * @csspart button - The internal native `<button>` element
  */
 @customElement('fzl-lit-button')
-export class FzlLitButton extends LitElement {
+export class FzlLitButton extends FzlWidgetMixin(LitElement) {
+  static override shadowRootOptions: ShadowRootInit = {
+    ...LitElement.shadowRootOptions,
+    delegatesFocus: true,
+  };
+
   static override styles = [
     unsafeCSS(fzlDesignTokensCss),
     css`
@@ -132,19 +140,58 @@ export class FzlLitButton extends LitElement {
   @property({ type: String, reflect: true })
   type: 'button' | 'submit' | 'reset' = 'button';
 
+  /**
+   * Enables typematic repeat firing of `fzl-click` while held down
+   * @attr {boolean} typematic
+   */
+  @property({ type: Boolean, reflect: true })
+  typematic: boolean = false;
+
+  private _typematicCleanup: (() => void) | null = null;
+  private _lastTypematicTick = false;
+
+  override updated(changedProps: PropertyValues): void {
+    super.updated(changedProps);
+    if (changedProps.has('typematic')) {
+      this._syncTypematic();
+    }
+  }
+
+  override disconnectedCallback(): void {
+    this._clearTypematic();
+    super.disconnectedCallback();
+  }
+
+  private _clearTypematic(): void {
+    if (this._typematicCleanup) {
+      this._typematicCleanup();
+      this._typematicCleanup = null;
+    }
+  }
+
+  private _syncTypematic(): void {
+    this._clearTypematic();
+    if (!this.typematic) return;
+    const btn = this.renderRoot.querySelector('button');
+    if (!btn) return;
+    this._typematicCleanup = addTypematicListener(btn, (count, event) => {
+      if (this.disabled) return;
+      this._lastTypematicTick = true;
+      this.emit('fzl-click', { originalEvent: event, repeatCount: count });
+    });
+  }
+
   private _handleClick(event: MouseEvent) {
     if (this.disabled) {
       event.preventDefault();
       event.stopImmediatePropagation();
       return;
     }
-    this.dispatchEvent(
-      new CustomEvent('fzl-click', {
-        detail: { originalEvent: event },
-        bubbles: true,
-        composed: true
-      })
-    );
+    if (this.typematic && this._lastTypematicTick) {
+      this._lastTypematicTick = false;
+      return;
+    }
+    this.emit('fzl-click', { originalEvent: event });
   }
 
   override render() {

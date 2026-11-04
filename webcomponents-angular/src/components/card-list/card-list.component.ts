@@ -3,13 +3,18 @@ import {
   Input,
   Output,
   EventEmitter,
+  ElementRef,
   ViewEncapsulation,
   ChangeDetectionStrategy,
   ChangeDetectorRef,
+  OnInit,
+  AfterViewChecked,
+  OnDestroy,
   inject,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { fzlDesignTokensCss } from '@fzl/design-tokens';
+import { FzlWidgetController, FzlKeyNavController } from '@fzl/core';
 
 export interface FzlCardItem {
   id: string;
@@ -131,6 +136,8 @@ export function filterFzlCardItems(items: FzlCardItem[], query: string): FzlCard
  * @fires {CustomEvent<{ sortBy: string; sortOrder: FzlSortOrder }>} fzl-sort-change - Dispatched when sorting criteria changes
  * @fires {CustomEvent<{ filter: string }>} fzl-filter-change - Dispatched when search filter text changes
  * @fires {CustomEvent<{ items: FzlCardItem[]; fromIndex: number; toIndex: number; item: FzlCardItem }>} fzl-cards-reorder - Dispatched when cards are reordered
+ * @fires {CustomEvent<{ widgetId: string; originalEvent: FocusEvent }>} fzl-focus - Dispatched when the widget gains focus
+ * @fires {CustomEvent<{ widgetId: string; originalEvent: FocusEvent }>} fzl-blur - Dispatched when the widget loses focus
  *
  * @csspart container - The outer root container
  * @csspart toolbar - The top sorting and filtering toolbar
@@ -197,6 +204,7 @@ export function filterFzlCardItems(items: FzlCardItem[], query: string): FzlCard
         [style.max-height]="feedMaxHeight"
         part="list"
         role="list"
+        (keydown)="onFeedKeyDown($event)"
       >
         <li class="fzl-empty" *ngIf="displayedItems.length === 0" role="listitem">
           {{ emptyText }}
@@ -614,8 +622,23 @@ export function filterFzlCardItems(items: FzlCardItem[], query: string): FzlCard
     `,
   ],
 })
-export class FzlNgCardListComponent {
+export class FzlNgCardListComponent implements OnInit, AfterViewChecked, OnDestroy {
+  readonly fzlWidget: FzlWidgetController;
+  private readonly _keyNav: FzlKeyNavController;
+  private _pendingFocusIndex: number | null = null;
   private _items: FzlCardItem[] | string = [];
+
+  constructor(private readonly _host: ElementRef<HTMLElement>) {
+    this.fzlWidget = new FzlWidgetController(_host.nativeElement);
+    this._keyNav = new FzlKeyNavController(_host.nativeElement, {
+      orientation: 'both',
+      rovingTabIndex: true,
+      getItems: () =>
+        Array.from(
+          this._host.nativeElement.shadowRoot?.querySelectorAll<HTMLElement>('.fzl-card') ?? []
+        ),
+    });
+  }
 
   @Input()
   get items(): FzlCardItem[] | string {
@@ -677,8 +700,26 @@ export class FzlNgCardListComponent {
   private cdr = inject(ChangeDetectorRef);
 
   ngOnInit() {
+    this.fzlWidget.connect();
     this.currentSortBy = this.sortBy;
     this.currentSortOrder = this.sortOrder;
+  }
+
+  ngAfterViewChecked(): void {
+    this._keyNav.syncTabIndices();
+    if (this._pendingFocusIndex !== null) {
+      const targetIdx = this._pendingFocusIndex;
+      this._pendingFocusIndex = null;
+      this._keyNav.focusItem(targetIdx);
+    }
+  }
+
+  ngOnDestroy(): void {
+    this.fzlWidget.disconnect();
+  }
+
+  onFeedKeyDown(event: KeyboardEvent): void {
+    this._keyNav.handleKeyDown(event);
   }
 
   get isAllowSort(): boolean {
@@ -764,6 +805,8 @@ export class FzlNgCardListComponent {
 
     this.currentSortBy = '';
     this.sortBy = '';
+    this._pendingFocusIndex = toIndex;
+    this._keyNav.focusedIndex = toIndex;
 
     this._items = updated;
 

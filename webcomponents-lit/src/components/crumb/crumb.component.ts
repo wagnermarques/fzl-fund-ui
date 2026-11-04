@@ -1,6 +1,7 @@
-import { LitElement, html, css, unsafeCSS } from 'lit';
+import { LitElement, html, css, unsafeCSS, type PropertyValues } from 'lit';
 import { property } from 'lit/decorators.js';
 import { fzlDesignTokensCss } from '@fzl/design-tokens';
+import { FzlWidgetMixin, FzlKeyNavController } from '@fzl/core';
 
 export interface FzlCrumbItem {
   /** Display label for the breadcrumb item */
@@ -59,6 +60,8 @@ export function parseFzlCrumbItems(
  *
  * @fires {CustomEvent<{ backHref: string; originalEvent: MouseEvent }>} fzl-back - Dispatched when the back button is activated
  * @fires {CustomEvent<{ item: FzlCrumbItem; index: number; href?: string; originalEvent: MouseEvent }>} fzl-navigate - Dispatched when a breadcrumb link item is clicked
+ * @fires {CustomEvent<{ widgetId: string; originalEvent: FocusEvent }>} fzl-focus - Dispatched when the widget gains focus
+ * @fires {CustomEvent<{ widgetId: string; originalEvent: FocusEvent }>} fzl-blur - Dispatched when the widget loses focus
  *
  * @csspart nav - The outer `<nav>` landmark element
  * @csspart back-button - The back navigation `<button>` element
@@ -68,7 +71,7 @@ export function parseFzlCrumbItems(
  * @csspart separator - Visual separator `<span>` between items
  * @csspart current - The `<span aria-current="page">` active view label
  */
-export class FzlLitCrumb extends LitElement {
+export class FzlLitCrumb extends FzlWidgetMixin(LitElement) {
   static override styles = [
     unsafeCSS(fzlDesignTokensCss),
     css`
@@ -254,6 +257,26 @@ export class FzlLitCrumb extends LitElement {
   @property({ type: String, attribute: 'aria-label', reflect: true })
   override ariaLabel: string = 'Navegação estrutural';
 
+  private _keyNav = new FzlKeyNavController(this, {
+    orientation: 'horizontal',
+    rovingTabIndex: true,
+    getItems: () =>
+      Array.from(
+        this.renderRoot.querySelectorAll<HTMLElement>(
+          '.back-btn:not([disabled]):not([hidden]), a.crumb-link'
+        )
+      ),
+  });
+
+  override updated(_changedProperties: PropertyValues): void {
+    super.updated(_changedProperties);
+    this._keyNav.syncTabIndices();
+  }
+
+  private _handleKeyDown(event: KeyboardEvent): void {
+    this._keyNav.handleKeyDown(event);
+  }
+
   private _resolvedItems(): FzlCrumbItem[] {
     return parseFzlCrumbItems(this.items, this.path);
   }
@@ -302,7 +325,11 @@ export class FzlLitCrumb extends LitElement {
     const lastIdx = list.length - 1;
 
     return html`
-      <nav part="nav" aria-label=${this.ariaLabel || 'Navegação estrutural'}>
+      <nav
+        part="nav"
+        aria-label=${this.ariaLabel || 'Navegação estrutural'}
+        @keydown=${this._handleKeyDown}
+      >
         ${this.showBack
           ? html`
               <button

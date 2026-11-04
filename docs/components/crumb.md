@@ -81,6 +81,8 @@ and providing back navigation to the previous view.
 | :--- | :--- | :--- |
 | `fzl-back` | `CustomEvent<{ backHref: string; originalEvent: MouseEvent }>` | Dispatched when the back button is activated |
 | `fzl-navigate` | `CustomEvent<{ item: FzlCrumbItem; index: number; href?: string; originalEvent: MouseEvent }>` | Dispatched when a breadcrumb link item is clicked |
+| `fzl-focus` | `CustomEvent<{ widgetId: string; originalEvent: FocusEvent }>` | Dispatched when the widget gains focus |
+| `fzl-blur` | `CustomEvent<{ widgetId: string; originalEvent: FocusEvent }>` | Dispatched when the widget loses focus |
 
 #### CSS Shadow Parts (`::part`)
 | Part Name | Description |
@@ -117,6 +119,8 @@ and providing back navigation to the previous view.
 | :--- | :--- | :--- |
 | `fzl-back` | `CustomEvent<{ backHref: string; originalEvent: MouseEvent }>` | Dispatched when the back button is activated |
 | `fzl-navigate` | `CustomEvent<{ item: FzlCrumbItem; index: number; href?: string; originalEvent: MouseEvent }>` | Dispatched when a breadcrumb link item is clicked |
+| `fzl-focus` | `CustomEvent<{ widgetId: string; originalEvent: FocusEvent }>` | Dispatched when the widget gains focus |
+| `fzl-blur` | `CustomEvent<{ widgetId: string; originalEvent: FocusEvent }>` | Dispatched when the widget loses focus |
 
 #### CSS Shadow Parts (`::part`)
 | Part Name | Description |
@@ -153,6 +157,8 @@ and providing back navigation to the previous view.
 | :--- | :--- | :--- |
 | `fzl-back` | `CustomEvent<{ backHref: string; originalEvent: MouseEvent }>` | Dispatched when the back button is activated |
 | `fzl-navigate` | `CustomEvent<{ item: FzlCrumbItem; index: number; href?: string; originalEvent: MouseEvent }>` | Dispatched when a breadcrumb link item is clicked |
+| `fzl-focus` | `CustomEvent<{ widgetId: string; originalEvent: FocusEvent }>` | Dispatched when the widget gains focus |
+| `fzl-blur` | `CustomEvent<{ widgetId: string; originalEvent: FocusEvent }>` | Dispatched when the widget loses focus |
 
 #### CSS Shadow Parts (`::part`)
 | Part Name | Description |

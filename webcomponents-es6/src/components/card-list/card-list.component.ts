@@ -1,4 +1,5 @@
 import { fzlDesignTokensCss } from '@fzl/design-tokens';
+import { FzlWidgetMixin, FzlKeyNavController } from '@fzl/core';
 
 export interface FzlCardItem {
   id: string;
@@ -444,6 +445,8 @@ template.innerHTML = `
  * @fires {CustomEvent<{ sortBy: string; sortOrder: FzlSortOrder }>} fzl-sort-change - Dispatched when sorting criteria changes
  * @fires {CustomEvent<{ filter: string }>} fzl-filter-change - Dispatched when search filter text changes
  * @fires {CustomEvent<{ items: FzlCardItem[]; fromIndex: number; toIndex: number; item: FzlCardItem }>} fzl-cards-reorder - Dispatched when cards are reordered
+ * @fires {CustomEvent<{ widgetId: string; originalEvent: FocusEvent }>} fzl-focus - Dispatched when the widget gains focus
+ * @fires {CustomEvent<{ widgetId: string; originalEvent: FocusEvent }>} fzl-blur - Dispatched when the widget loses focus
  *
  * @csspart container - The outer root container
  * @csspart toolbar - The top sorting and filtering toolbar
@@ -454,7 +457,7 @@ template.innerHTML = `
  * @csspart card-footer - Card footer containing tags and action
  * @csspart reorder-controls - Reordering buttons container on each card
  */
-export class FzlEs6CardList extends HTMLElement {
+export class FzlEs6CardList extends FzlWidgetMixin(HTMLElement) {
   static get observedAttributes(): string[] {
     return [
       'items',
@@ -485,6 +488,7 @@ export class FzlEs6CardList extends HTMLElement {
   private readonly _root: ShadowRoot;
   private readonly _toolbarEl: HTMLDivElement;
   private readonly _feedEl: HTMLUListElement;
+  private readonly _keyNav: FzlKeyNavController;
 
   constructor() {
     super();
@@ -493,6 +497,16 @@ export class FzlEs6CardList extends HTMLElement {
 
     this._toolbarEl = this._root.querySelector('.fzl-toolbar') as HTMLDivElement;
     this._feedEl = this._root.querySelector('.fzl-card-feed') as HTMLUListElement;
+
+    this._keyNav = new FzlKeyNavController(this, {
+      orientation: 'both',
+      rovingTabIndex: true,
+      getItems: () => Array.from(this._feedEl.querySelectorAll<HTMLElement>('.fzl-card')),
+    });
+
+    this._feedEl.addEventListener('keydown', (event: KeyboardEvent) => {
+      this._keyNav.handleKeyDown(event);
+    });
   }
 
   get items(): FzlCardItem[] | string {
@@ -578,7 +592,8 @@ export class FzlEs6CardList extends HTMLElement {
     this._render();
   }
 
-  connectedCallback(): void {
+  override connectedCallback(): void {
+    super.connectedCallback();
     this._updateLayoutClass();
     this._updateFeedHeight();
     this._renderToolbar();
@@ -638,21 +653,17 @@ export class FzlEs6CardList extends HTMLElement {
 
     this._sortBy = '';
     this._items = updated;
+    this._keyNav.focusedIndex = toIndex;
 
-    this.dispatchEvent(
-      new CustomEvent('fzl-cards-reorder', {
-        detail: {
-          items: updated,
-          fromIndex,
-          toIndex,
-          item: moved,
-        },
-        bubbles: true,
-        composed: true,
-      })
-    );
+    this.emit('fzl-cards-reorder', {
+      items: updated,
+      fromIndex,
+      toIndex,
+      item: moved,
+    });
 
     this._render();
+    this._keyNav.focusItem(toIndex);
   }
 
   private _updateLayoutClass(): void {
@@ -1022,6 +1033,8 @@ export class FzlEs6CardList extends HTMLElement {
       cardLi.appendChild(footer);
       this._feedEl.appendChild(cardLi);
     });
+
+    this._keyNav.syncTabIndices();
   }
 }
 

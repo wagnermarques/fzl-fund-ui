@@ -3,11 +3,16 @@ import {
   Input,
   Output,
   EventEmitter,
+  ElementRef,
   ViewEncapsulation,
   ChangeDetectionStrategy,
+  OnInit,
+  OnDestroy,
+  AfterViewChecked,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { fzlDesignTokensCss } from '@fzl/design-tokens';
+import { FzlWidgetController, FzlKeyNavController } from '@fzl/core';
 
 export interface FzlCrumbItem {
   /** Display label for the breadcrumb item */
@@ -75,6 +80,8 @@ export function parseFzlCrumbItems(
  *
  * @fires {CustomEvent<{ backHref: string; originalEvent: MouseEvent }>} fzl-back - Dispatched when the back button is activated
  * @fires {CustomEvent<{ item: FzlCrumbItem; index: number; href?: string; originalEvent: MouseEvent }>} fzl-navigate - Dispatched when a breadcrumb link item is clicked
+ * @fires {CustomEvent<{ widgetId: string; originalEvent: FocusEvent }>} fzl-focus - Dispatched when the widget gains focus
+ * @fires {CustomEvent<{ widgetId: string; originalEvent: FocusEvent }>} fzl-blur - Dispatched when the widget loses focus
  *
  * @csspart nav - The outer `<nav>` landmark element
  * @csspart back-button - The back navigation `<button>` element
@@ -91,7 +98,11 @@ export function parseFzlCrumbItems(
   encapsulation: ViewEncapsulation.ShadowDom,
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <nav part="nav" [attr.aria-label]="ariaLabel || 'Navegação estrutural'">
+    <nav
+      part="nav"
+      [attr.aria-label]="ariaLabel || 'Navegação estrutural'"
+      (keydown)="onKeyDown($event)"
+    >
       <button
         *ngIf="isShowBack"
         part="back-button"
@@ -252,7 +263,24 @@ export function parseFzlCrumbItems(
     `,
   ],
 })
-export class FzlNgCrumbComponent {
+export class FzlNgCrumbComponent implements OnInit, AfterViewChecked, OnDestroy {
+  readonly fzlWidget: FzlWidgetController;
+  private readonly _keyNav: FzlKeyNavController;
+
+  constructor(private readonly _host: ElementRef<HTMLElement>) {
+    this.fzlWidget = new FzlWidgetController(_host.nativeElement);
+    this._keyNav = new FzlKeyNavController(_host.nativeElement, {
+      orientation: 'horizontal',
+      rovingTabIndex: true,
+      getItems: () =>
+        Array.from(
+          this._host.nativeElement.shadowRoot?.querySelectorAll<HTMLElement>(
+            '.back-btn:not([disabled]):not([hidden]), a.crumb-link'
+          ) ?? []
+        ),
+    });
+  }
+
   @Input() items: FzlCrumbItem[] | string = [];
   @Input() path: string = '';
   @Input() separator: string = '›';
@@ -282,6 +310,22 @@ export class FzlNgCrumbComponent {
 
   get resolvedItems(): FzlCrumbItem[] {
     return parseFzlCrumbItems(this.items, this.path);
+  }
+
+  ngOnInit(): void {
+    this.fzlWidget.connect();
+  }
+
+  ngAfterViewChecked(): void {
+    this._keyNav.syncTabIndices();
+  }
+
+  ngOnDestroy(): void {
+    this.fzlWidget.disconnect();
+  }
+
+  onKeyDown(event: KeyboardEvent): void {
+    this._keyNav.handleKeyDown(event);
   }
 
   onBackClick(event: MouseEvent) {

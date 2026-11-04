@@ -99,11 +99,13 @@ Displays structured cards with sorting, filtering, and responsive scrolling.
 #### Events
 | Event Name | Detail Type | Description |
 | :--- | :--- | :--- |
-| `fzl-cards-reorder` | `CustomEvent<{ items: FzlCardItem[]; fromIndex: number; toIndex: number; item: FzlCardItem }>` | Dispatched when cards are reordered |
 | `fzl-filter-change` | `CustomEvent<{ filter: string }>` | Dispatched when search filter text changes |
 | `fzl-sort-change` | `CustomEvent<{ sortBy: string; sortOrder: FzlSortOrder }>` | Dispatched when sorting criteria changes |
 | `fzl-card-click` | `CustomEvent<{ item: FzlCardItem; index: number; originalEvent: MouseEvent }>` | Dispatched when a card is clicked |
 | `fzl-card-action` | `CustomEvent<{ action: string; item: FzlCardItem; index: number; originalEvent: MouseEvent }>` | Dispatched when card action button is clicked |
+| `fzl-cards-reorder` | `CustomEvent<{ items: FzlCardItem[]; fromIndex: number; toIndex: number; item: FzlCardItem }>` | Dispatched when cards are reordered |
+| `fzl-focus` | `CustomEvent<{ widgetId: string; originalEvent: FocusEvent }>` | Dispatched when the widget gains focus |
+| `fzl-blur` | `CustomEvent<{ widgetId: string; originalEvent: FocusEvent }>` | Dispatched when the widget loses focus |
 
 #### CSS Shadow Parts (`::part`)
 | Part Name | Description |
@@ -140,11 +142,13 @@ Displays structured cards with responsive layouts, sorting, filtering and scroll
 #### Events
 | Event Name | Detail Type | Description |
 | :--- | :--- | :--- |
-| `fzl-cards-reorder` | `CustomEvent<{ items: FzlCardItem[]; fromIndex: number; toIndex: number; item: FzlCardItem }>` | Dispatched when cards are reordered |
 | `fzl-card-click` | `CustomEvent<{ item: FzlCardItem; index: number; originalEvent: MouseEvent }>` | Dispatched when a card is clicked |
 | `fzl-card-action` | `CustomEvent<{ action: string; item: FzlCardItem; index: number; originalEvent: MouseEvent }>` | Dispatched when card action button is clicked |
 | `fzl-sort-change` | `CustomEvent<{ sortBy: string; sortOrder: FzlSortOrder }>` | Dispatched when sorting criteria changes |
 | `fzl-filter-change` | `CustomEvent<{ filter: string }>` | Dispatched when search filter text changes |
+| `fzl-cards-reorder` | `CustomEvent<{ items: FzlCardItem[]; fromIndex: number; toIndex: number; item: FzlCardItem }>` | Dispatched when cards are reordered |
+| `fzl-focus` | `CustomEvent<{ widgetId: string; originalEvent: FocusEvent }>` | Dispatched when the widget gains focus |
+| `fzl-blur` | `CustomEvent<{ widgetId: string; originalEvent: FocusEvent }>` | Dispatched when the widget loses focus |
 
 #### CSS Shadow Parts (`::part`)
 | Part Name | Description |
@@ -186,6 +190,8 @@ Displays structured cards with sorting, filtering, and responsive scrolling.
 | `fzl-sort-change` | `CustomEvent<{ sortBy: string; sortOrder: FzlSortOrder }>` | Dispatched when sorting criteria changes |
 | `fzl-filter-change` | `CustomEvent<{ filter: string }>` | Dispatched when search filter text changes |
 | `fzl-cards-reorder` | `CustomEvent<{ items: FzlCardItem[]; fromIndex: number; toIndex: number; item: FzlCardItem }>` | Dispatched when cards are reordered |
+| `fzl-focus` | `CustomEvent<{ widgetId: string; originalEvent: FocusEvent }>` | Dispatched when the widget gains focus |
+| `fzl-blur` | `CustomEvent<{ widgetId: string; originalEvent: FocusEvent }>` | Dispatched when the widget loses focus |
 
 #### CSS Shadow Parts (`::part`)
 | Part Name | Description |

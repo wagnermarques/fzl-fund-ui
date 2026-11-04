@@ -1,4 +1,5 @@
 import { fzlDesignTokensCss } from '@fzl/design-tokens';
+import { FzlWidgetMixin, addTypematicListener } from '@fzl/core';
 
 export type FzlButtonVariant = 'primary' | 'secondary' | 'danger';
 export type FzlButtonSize = 'sm' | 'md' | 'lg';
@@ -103,21 +104,27 @@ template.innerHTML = `
  * @attr {'sm' | 'md' | 'lg'} [size='md'] - Size scale of the button
  * @attr {boolean} [disabled=false] - Whether the button is disabled
  * @attr {'button' | 'submit' | 'reset'} [type='button'] - Form button behavior
+ * @attr {boolean} [typematic=false] - Enables typematic repeat firing of `fzl-click` while held down
  *
  * @prop {'primary' | 'secondary' | 'danger'} [variant='primary'] - Visual appearance variant
  * @prop {'sm' | 'md' | 'lg'} [size='md'] - Size scale of the button
  * @prop {boolean} [disabled=false] - Whether the button is disabled
  * @prop {'button' | 'submit' | 'reset'} [type='button'] - Form button behavior
+ * @prop {boolean} [typematic=false] - Enables typematic repeat firing of `fzl-click` while held down
  *
- * @fires {CustomEvent<{ originalEvent: MouseEvent }>} fzl-click - Dispatched when the button is activated
+ * @fires {CustomEvent<{ originalEvent: MouseEvent | KeyboardEvent; repeatCount?: number }>} fzl-click - Dispatched when the button is activated
+ * @fires {CustomEvent<{ widgetId: string; originalEvent: FocusEvent }>} fzl-focus - Dispatched when the widget gains focus
+ * @fires {CustomEvent<{ widgetId: string; originalEvent: FocusEvent }>} fzl-blur - Dispatched when the widget loses focus
  *
  * @slot - Content to be displayed inside the button
  *
  * @csspart button - The internal native `<button>` element
  */
-export class FzlEs6Button extends HTMLElement {
+export class FzlEs6Button extends FzlWidgetMixin(HTMLElement) {
   private _internals?: ElementInternals;
   private _buttonEl!: HTMLButtonElement;
+  private _typematicCleanup: (() => void) | null = null;
+  private _lastTypematicTick = false;
 
   /** @internal */
   get internals(): ElementInternals | undefined {
@@ -127,7 +134,7 @@ export class FzlEs6Button extends HTMLElement {
   static formAssociated = true;
 
   static get observedAttributes(): string[] {
-    return ['variant', 'size', 'disabled', 'type'];
+    return ['variant', 'size', 'disabled', 'type', 'typematic'];
   }
 
   constructor() {
@@ -135,7 +142,7 @@ export class FzlEs6Button extends HTMLElement {
     if (typeof this.attachInternals === 'function') {
       this._internals = this.attachInternals();
     }
-    const shadow = this.attachShadow({ mode: 'open' });
+    const shadow = this.attachShadow({ mode: 'open', delegatesFocus: true });
     shadow.appendChild(template.content.cloneNode(true));
 
     this._buttonEl = shadow.querySelector('button')!;
@@ -145,23 +152,31 @@ export class FzlEs6Button extends HTMLElement {
         event.stopImmediatePropagation();
         return;
       }
-      this.dispatchEvent(
-        new CustomEvent('fzl-click', {
-          detail: { originalEvent: event },
-          bubbles: true,
-          composed: true,
-        })
-      );
+      if (this.typematic && this._lastTypematicTick) {
+        this._lastTypematicTick = false;
+        return;
+      }
+      this.emit('fzl-click', { originalEvent: event });
     });
   }
 
-  connectedCallback(): void {
+  override connectedCallback(): void {
+    super.connectedCallback();
     this._render();
+    this._syncTypematic();
   }
 
-  attributeChangedCallback(_name: string, oldValue: string | null, newValue: string | null): void {
+  override disconnectedCallback(): void {
+    this._clearTypematic();
+    super.disconnectedCallback();
+  }
+
+  attributeChangedCallback(name: string, oldValue: string | null, newValue: string | null): void {
     if (oldValue !== newValue) {
       this._render();
+      if (name === 'typematic') {
+        this._syncTypematic();
+      }
     }
   }
 
@@ -195,6 +210,34 @@ export class FzlEs6Button extends HTMLElement {
   }
   set type(val: 'button' | 'submit' | 'reset') {
     this.setAttribute('type', val);
+  }
+
+  get typematic(): boolean {
+    return this.hasAttribute('typematic') && this.getAttribute('typematic') !== 'false';
+  }
+  set typematic(val: boolean) {
+    if (val) {
+      this.setAttribute('typematic', '');
+    } else {
+      this.removeAttribute('typematic');
+    }
+  }
+
+  private _clearTypematic(): void {
+    if (this._typematicCleanup) {
+      this._typematicCleanup();
+      this._typematicCleanup = null;
+    }
+  }
+
+  private _syncTypematic(): void {
+    this._clearTypematic();
+    if (!this.typematic || !this._buttonEl) return;
+    this._typematicCleanup = addTypematicListener(this._buttonEl, (count, event) => {
+      if (this.disabled) return;
+      this._lastTypematicTick = true;
+      this.emit('fzl-click', { originalEvent: event, repeatCount: count });
+    });
   }
 
   private _render(): void {

@@ -10,7 +10,7 @@ export default defineConfig({
       // Workspace .ts sources outside src/ (e.g. @fzl/design-tokens) must be part of the
       // Angular compilation, otherwise the plugin emits them empty (esbuild is disabled).
       workspaceRoot: resolve(__dirname, '..'),
-      include: ['/packages/design-tokens/src/**/*.ts']
+      include: ['/packages/design-tokens/src/**/*.ts', '/packages/core/src/**/*.ts']
     }),
     dts({ rollupTypes: true })
   ],

@@ -303,21 +303,45 @@ export class AuthView extends LitElement {
     }
   }
 
-  _renderRedirect() {
+  async _signUpWithRedirect() {
+    this._error = null
+    this._busy = true
+    try {
+      await authService.signUp({})
+    } catch (err) {
+      this._error = err.message
+      this._busy = false
+    }
+  }
+
+  _renderRedirect(screen) {
+    const isSignup = screen === 'signup'
     return html`
-      <h1>Entrar</h1>
-      <p class="subtitle">Você será levado à página de login da sua conta e depois volta para o app.</p>
+      <h1>${isSignup ? 'Criar conta' : 'Entrar'}</h1>
+      <p class="subtitle">
+        ${isSignup
+          ? 'Você será levado à página de cadastro da sua conta e depois volta para o app.'
+          : 'Você será levado à página de login da sua conta e depois volta para o app.'}
+      </p>
       ${this._renderError()}
-      <md-filled-button ?disabled=${this._busy} @click=${this._signInWithRedirect}>
-        <md-icon slot="icon">login</md-icon>
-        Entrar
+      <md-filled-button ?disabled=${this._busy} @click=${isSignup ? this._signUpWithRedirect : this._signInWithRedirect}>
+        <md-icon slot="icon">${isSignup ? 'person_add' : 'login'}</md-icon>
+        ${isSignup ? 'Criar conta' : 'Entrar'}
       </md-filled-button>
+
+      ${isSignup
+        ? html`<p class="switch">Já tem conta? <md-text-button @click=${navigateToLogin}>Entrar</md-text-button></p>`
+        : authService.supports('signUp')
+          ? html`<p class="switch">
+              Não tem conta? <md-text-button @click=${navigateToSignup}>Criar conta</md-text-button>
+            </p>`
+          : ''}
     `
   }
 
   _renderForm(screen) {
-    if (authService.usesRedirect() && !(screen === 'signup' && authService.supports('signUp'))) {
-      return this._renderRedirect()
+    if (authService.usesRedirect()) {
+      return this._renderRedirect(screen)
     }
     const signup = screen === 'signup' && authService.supports('signUp')
     return html`

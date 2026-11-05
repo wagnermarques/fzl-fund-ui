@@ -355,8 +355,11 @@ export const authService = {
     return () => signUpListeners.delete(callback)
   },
 
-  async signUp({ name, email, password }) {
+  async signUp({ name, email, password } = {}) {
     requireOperation('signUp')
+    if (provider.redirect) {
+      return provider.signUp({ name, email, password })
+    }
     name = String(name ?? '').trim()
     email = normalizeEmail(email)
     if (!name) throw new Error('Informe seu nome.')

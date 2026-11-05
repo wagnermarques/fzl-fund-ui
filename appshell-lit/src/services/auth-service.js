@@ -62,7 +62,7 @@ const RESETS_KEY = storageKey('auth:password-resets')
 const RESET_TTL_MS = 30 * 60 * 1000
 const DEFAULT_MIN_LENGTH = 6
 
-export const PROVIDER_OPERATIONS = ['signIn', 'signOut', 'signUp', 'requestPasswordReset', 'resetPassword', 'changePassword']
+export const PROVIDER_OPERATIONS = ['signIn', 'signOut', 'signUp', 'requestPasswordReset', 'resetPassword', 'changePassword', 'updateProfile']
 export const REQUIRED_OPERATIONS = ['signIn', 'signOut']
 
 // --- provedor local (demonstração) ---------------------------------------
@@ -83,7 +83,18 @@ function writeJSON(key, value) {
 
 /** Usuário público (sem hash/salt) a partir do registro armazenado. */
 function toPublicUser(record) {
-  return record ? { id: record.id, name: record.name, email: record.email, createdAt: record.createdAt } : null
+  return record
+    ? {
+        id: record.id,
+        name: record.name,
+        email: record.email,
+        createdAt: record.createdAt,
+        avatarUrl: record.avatarUrl ?? null,
+        phone: record.phone ?? '',
+        bio: record.bio ?? '',
+        role: record.role ?? '',
+      }
+    : null
 }
 
 function loadSessionUser() {
@@ -205,6 +216,20 @@ export const localProvider = {
       throw new Error('Senha atual incorreta.')
     }
     saveUser(await withNewPassword(record, newPassword))
+  },
+
+  async updateProfile(updates) {
+    const session = readJSON(SESSION_KEY, null)
+    if (!session) throw new Error('Usuário não autenticado.')
+    const users = readJSON(USERS_KEY, [])
+    const index = users.findIndex((u) => u.id === session.userId)
+    if (index === -1) throw new Error('Usuário não encontrado.')
+    const allowed = ['name', 'avatarUrl', 'phone', 'bio', 'role']
+    const filtered = Object.fromEntries(Object.entries(updates).filter(([k]) => allowed.includes(k)))
+    const updated = { ...users[index], ...filtered }
+    users[index] = updated
+    writeJSON(USERS_KEY, users)
+    return toPublicUser(updated)
   },
 }
 
@@ -374,6 +399,18 @@ export const authService = {
     requireOperation('changePassword')
     if (!currentUser) throw new Error('Entre na sua conta para trocar a senha.')
     await provider.changePassword({ user: currentUser, currentPassword, newPassword })
+  },
+
+  async updateProfile(updates) {
+    if (!currentUser) throw new Error('Entre na sua conta para atualizar o perfil.')
+    let user = currentUser
+    if (typeof provider?.updateProfile === 'function') {
+      user = await provider.updateProfile(updates)
+    } else {
+      user = { ...currentUser, ...updates }
+    }
+    setCurrentUser(user, 'profileUpdate')
+    return user
   },
 }
 

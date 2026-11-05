@@ -12,6 +12,7 @@ import './app-footer.js'
 import './app-header.js'
 import './app-crumb.js'
 import './auth-view.js'
+import './user-profile-view.js'
 import './not-found-view.js'
 import { resolveRouteCrumbs } from './app-crumb.js'
 import { announce, focusElement, setDocumentTitle } from '../a11y/index.js'
@@ -503,7 +504,9 @@ export class AppShell extends LitElement {
     if (this._user) {
       return html`
         <md-list-item type="button" @click=${() => this._selectDrawerItem(navigateToAccount)}>
-          <md-icon slot="start">account_circle</md-icon>
+          ${this._user.avatarUrl
+            ? html`<img slot="start" src=${this._user.avatarUrl} style="width: 24px; height: 24px; border-radius: 50%; object-fit: cover;" alt="" />`
+            : html`<md-icon slot="start">account_circle</md-icon>`}
           <div slot="headline">Minha conta</div>
           <div slot="supporting-text">${this._user.email}</div>
         </md-list-item>
@@ -693,7 +696,7 @@ export class AppShell extends LitElement {
       case 'conta-alterar-senha':
         return html`<auth-view mode="change"></auth-view>`
       case 'conta':
-        return html`<auth-view></auth-view>`
+        return html`<user-profile-view></user-profile-view>`
       case 'config-backend':
         return html`<config-backend-view></config-backend-view>`
       case 'config-idioma':

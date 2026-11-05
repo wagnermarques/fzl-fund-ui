@@ -27,6 +27,10 @@
       "types": "./dist/reader-chapterview.d.ts",
       "import": "./dist/reader-chapterview.js"
     },
+    "./avatar-upload": {
+      "types": "./dist/avatar-upload.d.ts",
+      "import": "./dist/avatar-upload.js"
+    },
     "./chip": {
       "types": "./dist/reader-chapterview.d.ts",
       "import": "./dist/reader-chapterview.js"

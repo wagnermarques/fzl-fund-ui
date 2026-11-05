@@ -28,21 +28,57 @@ export class UserStatus extends LitElement {
       color: var(--md-sys-color-on-primary-container);
       font-size: 0.85rem;
       font-weight: 600;
+      overflow: hidden;
+    }
+    .avatar-img {
+      object-fit: cover;
+      width: 100%;
+      height: 100%;
     }
     md-menu {
       --md-menu-container-color: var(--md-sys-color-surface);
       min-width: 220px;
     }
     .who {
-      padding: 8px 16px;
+      padding: 12px 16px;
       line-height: 1.4;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .who-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--md-sys-color-primary-container);
+      color: var(--md-sys-color-on-primary-container);
+      font-weight: 600;
+    }
+    .who-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .who-details {
+      min-width: 0;
     }
     .who .name {
       font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
     .who .email {
       font-size: 0.8rem;
       color: var(--md-sys-color-on-surface-variant);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
   `
 
@@ -89,12 +125,23 @@ export class UserStatus extends LitElement {
         title=${this._user.name}
         @click=${this._toggleMenu}
       >
-        <span class="avatar">${this._initials(this._user.name)}</span>
+        <span class="avatar">
+          ${this._user.avatarUrl
+            ? html`<img class="avatar-img" src=${this._user.avatarUrl} alt="" />`
+            : this._initials(this._user.name)}
+        </span>
       </md-icon-button>
       <md-menu anchor="anchor" positioning="popover" menu-corner="start-end" anchor-corner="end-end">
         <div class="who">
-          <div class="name">${this._user.name}</div>
-          <div class="email">${this._user.email}</div>
+          <div class="who-avatar">
+            ${this._user.avatarUrl
+              ? html`<img src=${this._user.avatarUrl} alt="" />`
+              : this._initials(this._user.name)}
+          </div>
+          <div class="who-details">
+            <div class="name">${this._user.name}</div>
+            <div class="email">${this._user.email}</div>
+          </div>
         </div>
         <md-divider></md-divider>
         <md-menu-item @click=${navigateToAccount}>

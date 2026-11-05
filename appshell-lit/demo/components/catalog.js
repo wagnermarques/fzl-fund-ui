@@ -16,6 +16,7 @@ import appFooterDoc from '../../../docs/components/app-footer.md?raw'
 import consentBannerDoc from '../../../docs/components/consent-banner.md?raw'
 import userStatusDoc from '../../../docs/components/user-status.md?raw'
 import webPushDoc from '../../../docs/components/web-push.md?raw'
+import avatarUploadDoc from '../../../docs/components/avatar-upload.md?raw'
 
 /** Catálogo da documentação viva (#/componentes). Cada componente aponta
  *  para a sua especificação em docs/components/ (o texto) e para as
@@ -281,6 +282,31 @@ export const catalog = [
         packageName: '@fzl/webcomponents-lit',
         manifest: litManifest,
         load: () => import('@fzl/webcomponents-lit/reader-chapterview'),
+      },
+    ],
+  },
+  {
+    id: 'avatar-upload',
+    name: 'Avatar Upload & Crop',
+    icon: 'account_circle',
+    summary:
+      'Web Component acessível para upload e recorte redondo ("crop circular") de fotos de perfil com pan, zoom, rotação e saídas em Data URL e Blob prontas para qualquer backend.',
+    doc: avatarUploadDoc,
+    slotText: '',
+    initialValues: {
+      name: 'Wagner Marques',
+      size: 130,
+      'button-label': 'Alterar foto',
+      'crop-title': 'Recortar foto de perfil',
+    },
+    implementations: [
+      {
+        id: 'lit',
+        label: 'Lit',
+        tag: 'fzl-lit-avatar-upload',
+        packageName: '@fzl/webcomponents-lit',
+        manifest: litManifest,
+        load: () => import('@fzl/webcomponents-lit/avatar-upload'),
       },
     ],
   },

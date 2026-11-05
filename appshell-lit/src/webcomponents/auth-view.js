@@ -8,6 +8,7 @@ import {
   navigateToLogin,
   navigateToSignup,
 } from '../router.js'
+import './user-profile-view.js'
 
 /** Conta do usuário. mode:
  *  - "signin" / "signup": login e cadastro;
@@ -287,31 +288,7 @@ export class AuthView extends LitElement {
   }
 
   _renderAccount() {
-    const since = new Date(this._user.createdAt).toLocaleDateString('pt-BR')
-    return html`
-      <h1>Minha conta</h1>
-      <p class="subtitle">Você está conectado.</p>
-      <dl class="profile">
-        <dt>Nome</dt>
-        <dd>${this._user.name}</dd>
-        <dt>E-mail</dt>
-        <dd>${this._user.email}</dd>
-        <dt>Desde</dt>
-        <dd>${since}</dd>
-      </dl>
-      <div class="actions">
-        ${authService.supports('changePassword')
-          ? html`<md-outlined-button @click=${navigateToChangePassword}>
-              <md-icon slot="icon">password</md-icon>
-              Alterar senha
-            </md-outlined-button>`
-          : ''}
-        <md-outlined-button @click=${() => authService.signOut()}>
-          <md-icon slot="icon">logout</md-icon>
-          Sair
-        </md-outlined-button>
-      </div>
-    `
+    return html`<user-profile-view></user-profile-view>`
   }
 
   /** Provedor com redirect (auth.redirect): o login é na página dele. */

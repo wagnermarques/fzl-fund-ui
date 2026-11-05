@@ -51,6 +51,30 @@ describe('authService com o provedor local', () => {
     await expect(authService.changePassword({ currentPassword: 'a', newPassword: 'b' })).rejects.toThrow(/Entre na sua conta/)
   })
 
+  it('atualiza perfil (nome, avatar, bio, cargo) do usuário conectado e persiste', async () => {
+    await authService.signUp({ name: 'Wagner Marques', email: 'wagner@fzl.com', password: 'senha123' })
+    const updated = await authService.updateProfile({
+      name: 'Wagner P. Marques',
+      avatarUrl: 'data:image/png;base64,mockAvatarData',
+      role: 'Arquiteto de Software',
+      bio: 'Desenvolvedor e entusiasta de Web Components',
+    })
+
+    expect(updated).toMatchObject({
+      name: 'Wagner P. Marques',
+      email: 'wagner@fzl.com',
+      avatarUrl: 'data:image/png;base64,mockAvatarData',
+      role: 'Arquiteto de Software',
+      bio: 'Desenvolvedor e entusiasta de Web Components',
+    })
+    expect(authService.getCurrentUser()).toEqual(updated)
+
+    // Desconecta e reconecta para garantir persistência no storage
+    await authService.signOut()
+    await authService.signIn({ email: 'wagner@fzl.com', password: 'senha123' })
+    expect(authService.getCurrentUser()).toEqual(updated)
+  })
+
   it('redefine a senha pelo link, que só vale uma vez', async () => {
     await authService.signUp({ name: 'Ana', email: 'ana@x.com', password: 'segredo1' })
     await authService.signOut()

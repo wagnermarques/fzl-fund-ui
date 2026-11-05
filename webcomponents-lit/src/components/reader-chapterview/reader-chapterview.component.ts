@@ -216,7 +216,7 @@ export class FzlReaderChapterView extends FzlWidgetMixin(LitElement) {
 
   /** Style variant */
   @property({ type: String, reflect: true })
-  variant: FzlChipVariant = 'default';
+  variant: 'default' | 'filter' | 'input' | 'pill' = 'default';
 
   /** Optional custom background or accent color */
   @property({ type: String })
@@ -351,10 +351,28 @@ export class FzlReaderChapterViewGroup extends FzlWidgetMixin(LitElement) {
 
   /** Selection behavior */
   @property({ type: String, attribute: 'selection-mode' })
-  selectionMode: FzlChipSelectionMode = 'single';
+  selectionMode: 'single' | 'multiple' | 'none' = 'single';
 
   /** Selected value (string for single, array for multiple) */
-  @property({ type: [String, Array] })
+  @property({
+    converter: {
+      fromAttribute(value: string | null): string | string[] {
+        if (!value) return '';
+        if (value.startsWith('[') && value.endsWith(']')) {
+          try {
+            return JSON.parse(value);
+          } catch {
+            return value;
+          }
+        }
+        return value;
+      },
+      toAttribute(value: string | string[]): string {
+        if (Array.isArray(value)) return JSON.stringify(value);
+        return value || '';
+      },
+    },
+  })
   selected: string | string[] = '';
 
   /** Whether chips wrap to multiple lines */

@@ -782,7 +782,7 @@
               "kind": "field",
               "name": "variant",
               "type": {
-                "text": "FzlChipVariant"
+                "text": "'default' | 'filter' | 'input' | 'pill'"
               },
               "default": "'default'",
               "description": "Style variant",
@@ -922,7 +922,7 @@
             {
               "name": "variant",
               "type": {
-                "text": "FzlChipVariant"
+                "text": "'default' | 'filter' | 'input' | 'pill'"
               },
               "default": "'default'",
               "description": "Style variant",
@@ -985,7 +985,7 @@
               "kind": "field",
               "name": "selectionMode",
               "type": {
-                "text": "FzlChipSelectionMode"
+                "text": "'single' | 'multiple' | 'none'"
               },
               "default": "'single'",
               "description": "Selection behavior",
@@ -1082,7 +1082,7 @@
             {
               "name": "selection-mode",
               "type": {
-                "text": "FzlChipSelectionMode"
+                "text": "'single' | 'multiple' | 'none'"
               },
               "default": "'single'",
               "description": "Selection behavior",
@@ -1272,7 +1272,7 @@
             {
               "name": "variant",
               "type": {
-                "text": "FzlChipVariant"
+                "text": "'default' | 'filter' | 'input' | 'pill'"
               },
               "default": "'default'",
               "description": "Style variant",
@@ -1413,7 +1413,7 @@
               "kind": "field",
               "name": "variant",
               "type": {
-                "text": "FzlChipVariant"
+                "text": "'default' | 'filter' | 'input' | 'pill'"
               },
               "default": "'default'",
               "description": "Style variant",
@@ -1566,7 +1566,7 @@
             {
               "name": "selection-mode",
               "type": {
-                "text": "FzlChipSelectionMode"
+                "text": "'single' | 'multiple' | 'none'"
               },
               "default": "'single'",
               "description": "Selection behavior",
@@ -1635,7 +1635,7 @@
               "kind": "field",
               "name": "selectionMode",
               "type": {
-                "text": "FzlChipSelectionMode"
+                "text": "'single' | 'multiple' | 'none'"
               },
               "default": "'single'",
               "description": "Selection behavior",

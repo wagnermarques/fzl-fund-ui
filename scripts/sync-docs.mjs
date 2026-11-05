@@ -139,7 +139,10 @@ function main() {
     for (const el of elements) {
       // Match tag names like fzl-es6-button, fzl-lit-button, fzl-ng-button -> "button"
       const match = el.tagName.match(/^fzl-(?:es6|lit|ng)-(.+)$/) || el.tagName.match(/^fzl-(.+)$/);
-      const widgetKey = match ? match[1] : el.tagName;
+      let widgetKey = match ? match[1] : el.tagName;
+      if (widgetKey === 'reader-chapterview-group') {
+        widgetKey = 'reader-chapterview';
+      }
       if (!allElementsBySuffix.has(widgetKey)) {
         allElementsBySuffix.set(widgetKey, []);
       }

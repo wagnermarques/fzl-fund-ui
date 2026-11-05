@@ -747,9 +747,10 @@ export class ComponentDocsView extends LitElement {
   }
 
   willUpdate(changed) {
-    if (changed.has('component')) {
-      this._values = { ...(this.component?.initialValues ?? {}) }
-      this._slotText = this.component?.slotText ?? ''
+    if (changed.has('component') || changed.has('implId')) {
+      const impl = this._implementation
+      this._values = { ...(this.component?.initialValues ?? {}), ...(impl?.initialValues ?? {}) }
+      this._slotText = impl?.slotText ?? this.component?.slotText ?? ''
       this._events = []
     }
   }
@@ -839,7 +840,23 @@ export class ComponentDocsView extends LitElement {
     if (event.type === 'fzl-cards-reorder' && event.detail?.items) {
       this._values = { ...this._values, items: JSON.stringify(event.detail.items) }
     }
-    const detail = event.detail ? Object.keys(event.detail).join(', ') : ''
+    if (event.type === 'fzl-change' && event.detail?.selected !== undefined) {
+      this._values = {
+        ...this._values,
+        selected: Array.isArray(event.detail.selected)
+          ? JSON.stringify(event.detail.selected)
+          : String(event.detail.selected),
+      }
+    }
+    if (event.type === 'fzl-click' && event.currentTarget.localName === 'fzl-reader-chapterview') {
+      this._values = { ...this._values, selected: !this._values.selected }
+    }
+    const detail = event.detail
+      ? Object.entries(event.detail)
+          .filter(([k]) => k !== 'originalEvent')
+          .map(([k, v]) => `${k}: ${typeof v === 'object' && v !== null ? JSON.stringify(v) : v}`)
+          .join(', ')
+      : ''
     const time = new Date().toLocaleTimeString()
     const line = `${time}  <${event.currentTarget.localName}>  ${event.type}${detail ? `  { ${detail} }` : ''}`
     this._events = [line, ...this._events].slice(0, MAX_EVENTS)

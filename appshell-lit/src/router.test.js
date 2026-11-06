@@ -144,6 +144,7 @@ describe('href', () => {
     expect(href()).toBe('#/')
     expect(href('')).toBe('#/')
     expect(href('conta/entrar')).toBe('#/conta/entrar')
+    expect(href('#/conta/entrar')).toBe('#/conta/entrar')
     expect(href('/busca/', { q: 'legitima defesa', oc: 2 })).toBe('#/busca?q=legitima+defesa&oc=2')
   })
 

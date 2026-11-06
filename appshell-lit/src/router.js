@@ -128,9 +128,11 @@ export function resolveRoute(hash, appRoutes = []) {
 }
 
 /** Monta o hash de uma rota: href('br/lei/art1', { q: 'x' }) -> '#/br/lei/art1?q=x'.
+ *  Tolera caminhos já iniciados por '#/' ou '/', normalizando para um único prefixo '#/'.
  *  Cada segmento é codificado; valores de query null/undefined são omitidos. */
 export function href(path = '', query = {}) {
-  const encodedPath = String(path)
+  const cleanPath = String(path).replace(/^[#/]+/, '')
+  const encodedPath = cleanPath
     .split('/')
     .filter(Boolean)
     .map(encodeURIComponent)

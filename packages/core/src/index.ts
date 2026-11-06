@@ -34,3 +34,14 @@ export {
   type FzlWidgetInterface,
   type FzlWidgetLifecycleElement,
 } from './mixins';
+export {
+  FzlMemoryStore,
+  type FzlStore,
+  type FzlId,
+  type FzlStoreChangeEvent,
+  type FzlStoreObserver,
+  type FzlQuerySort,
+  type FzlQueryOptions,
+  type FzlQueryPredicate,
+  type FzlQueryResults,
+} from './store';

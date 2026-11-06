@@ -47,6 +47,14 @@
       "types": "./dist/geo-explorer.d.ts",
       "import": "./dist/geo-explorer.js"
     },
+    "./form": {
+      "types": "./dist/form.d.ts",
+      "import": "./dist/form.js"
+    },
+    "./data-grid": {
+      "types": "./dist/data-grid.d.ts",
+      "import": "./dist/data-grid.js"
+    },
     "./custom-elements.json": "./custom-elements.json"
   },
   "scripts": {

@@ -16,7 +16,9 @@ export default defineConfig({
         'availability-grid': resolve(__dirname, 'src/components/availability-grid/availability-grid.component.ts'),
         'avatar-upload': resolve(__dirname, 'src/components/avatar-upload/avatar-upload.component.ts'),
         'geo-map': resolve(__dirname, 'src/components/geo/geo-map.component.ts'),
-        'geo-explorer': resolve(__dirname, 'src/components/geo/geo-explorer.component.ts')
+        'geo-explorer': resolve(__dirname, 'src/components/geo/geo-explorer.component.ts'),
+        form: resolve(__dirname, 'src/components/form/form.component.ts'),
+        'data-grid': resolve(__dirname, 'src/components/grid/data-grid.component.ts')
       },
       formats: ['es']
     },

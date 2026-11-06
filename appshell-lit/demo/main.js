@@ -2,6 +2,7 @@ import { html } from 'lit'
 import '../src/styles/theme.css'
 import './home-view.js'
 import './components/components-view.js'
+import './developers-view.js'
 import { catalog, findComponent } from './components/catalog.js'
 import { createAppShell, pattern } from '../src/index.js'
 
@@ -65,9 +66,25 @@ createAppShell({
         `
       },
     },
+    // Rota dedicada para a página de Infraestrutura de Componentes (Dijit / dojo/store)
+    {
+      name: 'developers',
+      match: (segments, query) =>
+        pattern('developers')(segments, query) ?? pattern('desenvolvedores')(segments, query),
+      title: 'Infraestrutura de Componentes',
+      crumb: [{ label: 'Desenvolvedores' }],
+      render: () => html`<developers-view></developers-view>`,
+    },
   ],
   drawer: {
     sections: [
+      {
+        id: 'developers',
+        label: 'Engenharia & Arquitetura',
+        items: [
+          { label: 'Infraestrutura de Componentes', icon: 'terminal', href: '#/developers' },
+        ],
+      },
       {
         id: 'gis',
         label: 'Geoprocessamento & SIG',

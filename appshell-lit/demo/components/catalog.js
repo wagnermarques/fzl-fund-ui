@@ -18,6 +18,8 @@ import userStatusDoc from '../../../docs/components/user-status.md?raw'
 import webPushDoc from '../../../docs/components/web-push.md?raw'
 import avatarUploadDoc from '../../../docs/components/avatar-upload.md?raw'
 import geoExplorerDoc from '../../../docs/components/geo-explorer.md?raw'
+import formDoc from '../../../docs/components/form.md?raw'
+import dataGridDoc from '../../../docs/components/data-grid.md?raw'
 
 /** Catálogo da documentação viva (#/componentes). Cada componente aponta
  *  para a sua especificação em docs/components/ (o texto) e para as
@@ -519,6 +521,44 @@ export const catalog = [
         packageName: '@fzl/webcomponents-lit',
         manifest: litManifest,
         load: () => import('@fzl/webcomponents-lit/geo-explorer'),
+      },
+    ],
+  },
+  {
+    id: 'form',
+    name: 'Formulário & Controles de Entrada',
+    icon: 'edit_note',
+    summary:
+      'Formulário orquestrador inspirado no dijit/form/Form e controles básicos (_FormWidget: text-input, number-input, select, checkbox) com validação e serialização de dados.',
+    doc: formDoc,
+    slotText: '<fzl-text-input name="exemplo" label="Campo de Exemplo" placeholder="Digite algo..." required></fzl-text-input>',
+    implementations: [
+      {
+        id: 'lit',
+        label: 'Lit',
+        tag: 'fzl-form',
+        packageName: '@fzl/webcomponents-lit',
+        manifest: litManifest,
+        load: () => import('@fzl/webcomponents-lit/form'),
+      },
+    ],
+  },
+  {
+    id: 'data-grid',
+    name: 'DataGrid Reativo',
+    icon: 'table_chart',
+    summary:
+      'Grade de dados tabular reativa inspirada no dojox/grid/DataGrid e dgrid, integrada ao FzlStore (dojo/store) com ordenação, busca e seleção.',
+    doc: dataGridDoc,
+    slotText: '',
+    implementations: [
+      {
+        id: 'lit',
+        label: 'Lit',
+        tag: 'fzl-data-grid',
+        packageName: '@fzl/webcomponents-lit',
+        manifest: litManifest,
+        load: () => import('@fzl/webcomponents-lit/data-grid'),
       },
     ],
   },

@@ -14,7 +14,9 @@ export default defineConfig({
         'card-list': resolve(__dirname, 'src/components/card-list/card-list.component.ts'),
         'reader-chapterview': resolve(__dirname, 'src/components/reader-chapterview/reader-chapterview.component.ts'),
         'availability-grid': resolve(__dirname, 'src/components/availability-grid/availability-grid.component.ts'),
-        'avatar-upload': resolve(__dirname, 'src/components/avatar-upload/avatar-upload.component.ts')
+        'avatar-upload': resolve(__dirname, 'src/components/avatar-upload/avatar-upload.component.ts'),
+        'geo-map': resolve(__dirname, 'src/components/geo/geo-map.component.ts'),
+        'geo-explorer': resolve(__dirname, 'src/components/geo/geo-explorer.component.ts')
       },
       formats: ['es']
     },

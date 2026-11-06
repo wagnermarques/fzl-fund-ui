@@ -39,6 +39,14 @@
       "types": "./dist/availability-grid.d.ts",
       "import": "./dist/availability-grid.js"
     },
+    "./geo-map": {
+      "types": "./dist/geo-map.d.ts",
+      "import": "./dist/geo-map.js"
+    },
+    "./geo-explorer": {
+      "types": "./dist/geo-explorer.d.ts",
+      "import": "./dist/geo-explorer.js"
+    },
     "./custom-elements.json": "./custom-elements.json"
   },
   "scripts": {
@@ -58,8 +66,12 @@
   "devDependencies": {
     "@fzl/core": "*",
     "@fzl/design-tokens": "*",
+    "@types/leaflet": "^1.9.22",
     "lit": "^3.3.3",
     "vite": "^8.0.0",
     "vite-plugin-dts": "^4.3.0"
+  },
+  "dependencies": {
+    "leaflet": "^1.9.4"
   }
 }

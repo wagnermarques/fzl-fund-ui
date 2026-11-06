@@ -62,6 +62,86 @@
             "name": "*",
             "module": "src/components/avatar-upload/avatar-upload.component"
           }
+        },
+        {
+          "kind": "js",
+          "name": "*",
+          "declaration": {
+            "name": "*",
+            "module": "src/components/geo/geo-math"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "*",
+          "declaration": {
+            "name": "*",
+            "module": "src/components/geo/basemaps"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "*",
+          "declaration": {
+            "name": "*",
+            "module": "src/components/geo/ibge-service"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "*",
+          "declaration": {
+            "name": "*",
+            "module": "src/components/geo/geo-map.component"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "*",
+          "declaration": {
+            "name": "*",
+            "module": "src/components/geo/geo-zoom-inspector.component"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "*",
+          "declaration": {
+            "name": "*",
+            "module": "src/components/geo/geo-feature-details.component"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "*",
+          "declaration": {
+            "name": "*",
+            "module": "src/components/geo/geo-legend.component"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "*",
+          "declaration": {
+            "name": "*",
+            "module": "src/components/geo/geo-basemap-selector.component"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "*",
+          "declaration": {
+            "name": "*",
+            "module": "src/components/geo/geo-layer-manager.component"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "*",
+          "declaration": {
+            "name": "*",
+            "module": "src/components/geo/geo-explorer.component"
+          }
         }
       ]
     },
@@ -733,746 +813,6 @@
           "declaration": {
             "name": "FzlLitAvailabilityGrid",
             "module": "src/components/availability-grid/availability-grid.component.ts"
-          }
-        }
-      ]
-    },
-    {
-      "kind": "javascript-module",
-      "path": "src/components/avatar-upload/avatar-upload.component.ts",
-      "declarations": [
-        {
-          "kind": "class",
-          "description": "Reactive Lit-based Avatar Upload & Circular Crop Web Component.\n\nProvides a round avatar preview with drag-and-drop, file picker,\nand an interactive circular crop modal (pan, zoom, rotation) that\ngenerates both Data URL and Blob outputs for backend integration.",
-          "name": "FzlLitAvatarUpload",
-          "cssParts": [
-            {
-              "description": "The root container",
-              "name": "container"
-            },
-            {
-              "description": "The circular avatar trigger element",
-              "name": "avatar"
-            },
-            {
-              "description": "The cropped avatar image element",
-              "name": "image"
-            },
-            {
-              "description": "The camera badge icon overlay",
-              "name": "badge"
-            },
-            {
-              "description": "The crop modal overlay",
-              "name": "modal"
-            },
-            {
-              "description": "The modal dialog box",
-              "name": "dialog"
-            },
-            {
-              "description": "The action buttons below the avatar",
-              "name": "actions"
-            }
-          ],
-          "members": [
-            {
-              "kind": "field",
-              "name": "src",
-              "type": {
-                "text": "string"
-              },
-              "default": "''",
-              "description": "Current avatar image source (URL or Data URL)",
-              "attribute": "src",
-              "reflects": true
-            },
-            {
-              "kind": "field",
-              "name": "name",
-              "type": {
-                "text": "string"
-              },
-              "default": "''",
-              "description": "User name (used for alt text and fallback initials)",
-              "attribute": "name"
-            },
-            {
-              "kind": "field",
-              "name": "size",
-              "type": {
-                "text": "number"
-              },
-              "default": "120",
-              "description": "Diameter of the avatar in pixels",
-              "attribute": "size"
-            },
-            {
-              "kind": "field",
-              "name": "outputSize",
-              "type": {
-                "text": "number"
-              },
-              "default": "360",
-              "description": "Width and height of the exported square image in pixels",
-              "attribute": "outputSize"
-            },
-            {
-              "kind": "field",
-              "name": "outputFormat",
-              "type": {
-                "text": "'image/png' | 'image/jpeg' | 'image/webp'"
-              },
-              "default": "'image/png'",
-              "description": "Format of the exported image",
-              "attribute": "outputFormat"
-            },
-            {
-              "kind": "field",
-              "name": "outputQuality",
-              "type": {
-                "text": "number"
-              },
-              "default": "0.92",
-              "description": "Compression quality (0 to 1) for JPEG/WebP",
-              "attribute": "outputQuality"
-            },
-            {
-              "kind": "field",
-              "name": "accept",
-              "type": {
-                "text": "string"
-              },
-              "default": "'image/png, image/jpeg, image/webp, image/gif'",
-              "description": "Accepted MIME types for the file picker",
-              "attribute": "accept"
-            },
-            {
-              "kind": "field",
-              "name": "maxFileSize",
-              "description": "Maximum allowed file size in bytes (default: 5MB)",
-              "attribute": "maxFileSize"
-            },
-            {
-              "kind": "field",
-              "name": "disabled",
-              "type": {
-                "text": "boolean"
-              },
-              "default": "false",
-              "description": "Whether the component is disabled",
-              "attribute": "disabled",
-              "reflects": true
-            },
-            {
-              "kind": "field",
-              "name": "readonly",
-              "type": {
-                "text": "boolean"
-              },
-              "default": "false",
-              "description": "Whether the avatar is read-only (displays avatar without edit actions)",
-              "attribute": "readonly",
-              "reflects": true
-            },
-            {
-              "kind": "field",
-              "name": "buttonLabel",
-              "type": {
-                "text": "string"
-              },
-              "default": "'Alterar foto'",
-              "description": "Label for the edit button",
-              "attribute": "buttonLabel"
-            },
-            {
-              "kind": "field",
-              "name": "cropTitle",
-              "type": {
-                "text": "string"
-              },
-              "default": "'Recortar foto de perfil'",
-              "description": "Modal title",
-              "attribute": "cropTitle"
-            },
-            {
-              "kind": "field",
-              "name": "_isDragOver",
-              "type": {
-                "text": "boolean"
-              },
-              "privacy": "private",
-              "default": "false"
-            },
-            {
-              "kind": "field",
-              "name": "_isCropModalOpen",
-              "type": {
-                "text": "boolean"
-              },
-              "privacy": "private",
-              "default": "false"
-            },
-            {
-              "kind": "field",
-              "name": "_zoom",
-              "type": {
-                "text": "number"
-              },
-              "privacy": "private",
-              "default": "1"
-            },
-            {
-              "kind": "field",
-              "name": "_minZoom",
-              "type": {
-                "text": "number"
-              },
-              "privacy": "private",
-              "default": "1"
-            },
-            {
-              "kind": "field",
-              "name": "_maxZoom",
-              "type": {
-                "text": "number"
-              },
-              "privacy": "private",
-              "default": "4"
-            },
-            {
-              "kind": "field",
-              "name": "_panX",
-              "type": {
-                "text": "number"
-              },
-              "privacy": "private",
-              "default": "0"
-            },
-            {
-              "kind": "field",
-              "name": "_panY",
-              "type": {
-                "text": "number"
-              },
-              "privacy": "private",
-              "default": "0"
-            },
-            {
-              "kind": "field",
-              "name": "_rotation",
-              "type": {
-                "text": "number"
-              },
-              "privacy": "private",
-              "default": "0"
-            },
-            {
-              "kind": "field",
-              "name": "_isPanning",
-              "type": {
-                "text": "boolean"
-              },
-              "privacy": "private",
-              "default": "false"
-            },
-            {
-              "kind": "field",
-              "name": "_rawLoadedImage",
-              "type": {
-                "text": "HTMLImageElement | null"
-              },
-              "privacy": "private",
-              "default": "null"
-            },
-            {
-              "kind": "field",
-              "name": "_selectedFile",
-              "type": {
-                "text": "File | null"
-              },
-              "privacy": "private",
-              "default": "null"
-            },
-            {
-              "kind": "field",
-              "name": "_pointerStartX",
-              "type": {
-                "text": "number"
-              },
-              "privacy": "private",
-              "default": "0"
-            },
-            {
-              "kind": "field",
-              "name": "_pointerStartY",
-              "type": {
-                "text": "number"
-              },
-              "privacy": "private",
-              "default": "0"
-            },
-            {
-              "kind": "field",
-              "name": "_panStartX",
-              "type": {
-                "text": "number"
-              },
-              "privacy": "private",
-              "default": "0"
-            },
-            {
-              "kind": "field",
-              "name": "_panStartY",
-              "type": {
-                "text": "number"
-              },
-              "privacy": "private",
-              "default": "0"
-            },
-            {
-              "kind": "method",
-              "name": "_cleanupCropState",
-              "privacy": "private"
-            },
-            {
-              "kind": "method",
-              "name": "_computeInitials",
-              "privacy": "private",
-              "return": {
-                "type": {
-                  "text": "string"
-                }
-              },
-              "parameters": [
-                {
-                  "name": "name",
-                  "type": {
-                    "text": "string"
-                  }
-                }
-              ],
-              "description": "Compute initials from the user name"
-            },
-            {
-              "kind": "method",
-              "name": "_triggerFileInput",
-              "privacy": "private",
-              "description": "Open file picker"
-            },
-            {
-              "kind": "method",
-              "name": "_handleFileSelected",
-              "privacy": "private",
-              "parameters": [
-                {
-                  "name": "e",
-                  "type": {
-                    "text": "Event"
-                  }
-                }
-              ],
-              "description": "Handle file input selection"
-            },
-            {
-              "kind": "method",
-              "name": "_processSelectedFile",
-              "privacy": "private",
-              "parameters": [
-                {
-                  "name": "file",
-                  "type": {
-                    "text": "File"
-                  }
-                }
-              ],
-              "description": "Validate and prepare the selected image file"
-            },
-            {
-              "kind": "method",
-              "name": "_emitError",
-              "privacy": "private",
-              "parameters": [
-                {
-                  "name": "error",
-                  "type": {
-                    "text": "FzlAvatarErrorEventDetail['error']"
-                  }
-                },
-                {
-                  "name": "message",
-                  "type": {
-                    "text": "string"
-                  }
-                },
-                {
-                  "name": "file",
-                  "optional": true,
-                  "type": {
-                    "text": "File"
-                  }
-                }
-              ]
-            },
-            {
-              "kind": "method",
-              "name": "_initCropState",
-              "privacy": "private",
-              "parameters": [
-                {
-                  "name": "img",
-                  "type": {
-                    "text": "HTMLImageElement"
-                  }
-                }
-              ],
-              "description": "Calculate initial zoom and bounds"
-            },
-            {
-              "kind": "method",
-              "name": "_drawCropCanvas",
-              "privacy": "private",
-              "description": "Draw image and circular crop guide on the modal canvas"
-            },
-            {
-              "kind": "method",
-              "name": "_handlePointerDown",
-              "privacy": "private",
-              "parameters": [
-                {
-                  "name": "e",
-                  "type": {
-                    "text": "PointerEvent"
-                  }
-                }
-              ]
-            },
-            {
-              "kind": "method",
-              "name": "_handlePointerMove",
-              "privacy": "private",
-              "parameters": [
-                {
-                  "name": "e",
-                  "type": {
-                    "text": "PointerEvent"
-                  }
-                }
-              ]
-            },
-            {
-              "kind": "method",
-              "name": "_handlePointerUp",
-              "privacy": "private",
-              "parameters": [
-                {
-                  "name": "e",
-                  "type": {
-                    "text": "PointerEvent"
-                  }
-                }
-              ]
-            },
-            {
-              "kind": "method",
-              "name": "_handleWheel",
-              "privacy": "private",
-              "parameters": [
-                {
-                  "name": "e",
-                  "type": {
-                    "text": "WheelEvent"
-                  }
-                }
-              ]
-            },
-            {
-              "kind": "method",
-              "name": "_handleZoomSliderChange",
-              "privacy": "private",
-              "parameters": [
-                {
-                  "name": "e",
-                  "type": {
-                    "text": "Event"
-                  }
-                }
-              ]
-            },
-            {
-              "kind": "method",
-              "name": "_rotateClockwise",
-              "privacy": "private"
-            },
-            {
-              "kind": "method",
-              "name": "_zoomIn",
-              "privacy": "private"
-            },
-            {
-              "kind": "method",
-              "name": "_zoomOut",
-              "privacy": "private"
-            },
-            {
-              "kind": "method",
-              "name": "_closeCropModal",
-              "privacy": "private"
-            },
-            {
-              "kind": "method",
-              "name": "_applyCrop",
-              "privacy": "private",
-              "description": "Apply crop, export Data URL and Blob, and dispatch change event"
-            },
-            {
-              "kind": "method",
-              "name": "_handleRemoveAvatar",
-              "privacy": "private",
-              "parameters": [
-                {
-                  "name": "e",
-                  "type": {
-                    "text": "Event"
-                  }
-                }
-              ],
-              "description": "Remove avatar"
-            },
-            {
-              "kind": "method",
-              "name": "_handleDragOver",
-              "privacy": "private",
-              "parameters": [
-                {
-                  "name": "e",
-                  "type": {
-                    "text": "DragEvent"
-                  }
-                }
-              ]
-            },
-            {
-              "kind": "method",
-              "name": "_handleDragLeave",
-              "privacy": "private",
-              "parameters": [
-                {
-                  "name": "e",
-                  "type": {
-                    "text": "DragEvent"
-                  }
-                }
-              ]
-            },
-            {
-              "kind": "method",
-              "name": "_handleDrop",
-              "privacy": "private",
-              "parameters": [
-                {
-                  "name": "e",
-                  "type": {
-                    "text": "DragEvent"
-                  }
-                }
-              ]
-            },
-            {
-              "kind": "method",
-              "name": "_handleKeyDown",
-              "privacy": "private",
-              "parameters": [
-                {
-                  "name": "e",
-                  "type": {
-                    "text": "KeyboardEvent"
-                  }
-                }
-              ]
-            }
-          ],
-          "events": [
-            {
-              "name": "fzl-avatar-error",
-              "type": {
-                "text": "CustomEvent<FzlAvatarErrorEventDetail>"
-              },
-              "description": "Dispatched when validation fails (size, type)"
-            },
-            {
-              "name": "fzl-avatar-change",
-              "type": {
-                "text": "CustomEvent<FzlAvatarChangeEventDetail>"
-              },
-              "description": "Dispatched when the user crops and applies a new avatar"
-            },
-            {
-              "name": "fzl-avatar-remove",
-              "type": {
-                "text": "CustomEvent<void>"
-              },
-              "description": "Dispatched when the user removes their avatar"
-            },
-            {
-              "type": {
-                "text": "CustomEvent<{ widgetId: string; originalEvent: FocusEvent }>"
-              },
-              "description": "Dispatched when the widget gains focus",
-              "name": "fzl-focus"
-            },
-            {
-              "type": {
-                "text": "CustomEvent<{ widgetId: string; originalEvent: FocusEvent }>"
-              },
-              "description": "Dispatched when the widget loses focus",
-              "name": "fzl-blur"
-            }
-          ],
-          "attributes": [
-            {
-              "name": "src",
-              "type": {
-                "text": "string"
-              },
-              "default": "''",
-              "description": "Current avatar image source (URL or Data URL)",
-              "fieldName": "src"
-            },
-            {
-              "name": "name",
-              "type": {
-                "text": "string"
-              },
-              "default": "''",
-              "description": "User name (used for alt text and fallback initials)",
-              "fieldName": "name"
-            },
-            {
-              "name": "size",
-              "type": {
-                "text": "number"
-              },
-              "default": "120",
-              "description": "Diameter of the avatar in pixels",
-              "fieldName": "size"
-            },
-            {
-              "name": "outputSize",
-              "type": {
-                "text": "number"
-              },
-              "default": "360",
-              "description": "Width and height of the exported square image in pixels",
-              "fieldName": "outputSize"
-            },
-            {
-              "name": "outputFormat",
-              "type": {
-                "text": "'image/png' | 'image/jpeg' | 'image/webp'"
-              },
-              "default": "'image/png'",
-              "description": "Format of the exported image",
-              "fieldName": "outputFormat"
-            },
-            {
-              "name": "outputQuality",
-              "type": {
-                "text": "number"
-              },
-              "default": "0.92",
-              "description": "Compression quality (0 to 1) for JPEG/WebP",
-              "fieldName": "outputQuality"
-            },
-            {
-              "name": "accept",
-              "type": {
-                "text": "string"
-              },
-              "default": "'image/png, image/jpeg, image/webp, image/gif'",
-              "description": "Accepted MIME types for the file picker",
-              "fieldName": "accept"
-            },
-            {
-              "name": "maxFileSize",
-              "description": "Maximum allowed file size in bytes (default: 5MB)",
-              "fieldName": "maxFileSize"
-            },
-            {
-              "name": "disabled",
-              "type": {
-                "text": "boolean"
-              },
-              "default": "false",
-              "description": "Whether the component is disabled",
-              "fieldName": "disabled"
-            },
-            {
-              "name": "readonly",
-              "type": {
-                "text": "boolean"
-              },
-              "default": "false",
-              "description": "Whether the avatar is read-only (displays avatar without edit actions)",
-              "fieldName": "readonly"
-            },
-            {
-              "name": "buttonLabel",
-              "type": {
-                "text": "string"
-              },
-              "default": "'Alterar foto'",
-              "description": "Label for the edit button",
-              "fieldName": "buttonLabel"
-            },
-            {
-              "name": "cropTitle",
-              "type": {
-                "text": "string"
-              },
-              "default": "'Recortar foto de perfil'",
-              "description": "Modal title",
-              "fieldName": "cropTitle"
-            }
-          ],
-          "mixins": [
-            {
-              "name": "FzlWidgetMixin",
-              "package": "@fzl/core"
-            }
-          ],
-          "superclass": {
-            "name": "LitElement",
-            "package": "lit"
-          },
-          "tagName": "fzl-lit-avatar-upload",
-          "customElement": true
-        },
-        {
-          "kind": "variable",
-          "name": "dataUrl"
-        },
-        {
-          "kind": "variable",
-          "name": "blob",
-          "default": "await new Promise<Blob | null>((resolve) => { exportCanvas.toBlob(resolve, this.outputFormat, this.outputQuality); })"
-        }
-      ],
-      "exports": [
-        {
-          "kind": "js",
-          "name": "FzlLitAvatarUpload",
-          "declaration": {
-            "name": "FzlLitAvatarUpload",
-            "module": "src/components/avatar-upload/avatar-upload.component.ts"
-          }
-        },
-        {
-          "kind": "custom-element-definition",
-          "name": "fzl-lit-avatar-upload",
-          "declaration": {
-            "name": "FzlLitAvatarUpload",
-            "module": "src/components/avatar-upload/avatar-upload.component.ts"
           }
         }
       ]
@@ -2374,6 +1714,3059 @@
           "declaration": {
             "name": "FzlLitCardList",
             "module": "src/components/card-list/card-list.component.ts"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/components/geo/basemaps.ts",
+      "declarations": [
+        {
+          "kind": "variable",
+          "name": "BASEMAP_PROVIDERS",
+          "type": {
+            "text": "Record<string, BasemapProvider>"
+          },
+          "default": "{ 'carto-light': { id: 'carto-light', name: 'CartoDB Positron (Claro)', url: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', subdomains: 'abcd', attribution: '&copy; <a href=\"https://www.openstreetmap.org/copyright\">OpenStreetMap</a> contributors &copy; <a href=\"https://carto.com/attributions\">CARTO</a> | Dados: <a href=\"https://www.ibge.gov.br\">IBGE 2024</a>', maxZoom: 19, description: 'Fundo claro e minimalista, ideal para destacar mapas temáticos e polígonos sem poluição visual.', isDark: false, }, 'carto-dark': { id: 'carto-dark', name: 'CartoDB Dark Matter (Escuro)', url: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', subdomains: 'abcd', attribution: '&copy; <a href=\"https://www.openstreetmap.org/copyright\">OpenStreetMap</a> contributors &copy; <a href=\"https://carto.com/attributions\">CARTO</a> | Dados: <a href=\"https://www.ibge.gov.br\">IBGE 2024</a>', maxZoom: 19, description: 'Modo escuro de alto contraste, ideal para visualizações noturnas ou polígonos temáticos vibrantes.', isDark: true, }, osm: { id: 'osm', name: 'OpenStreetMap (Padrão)', url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', subdomains: 'abc', attribution: '&copy; <a href=\"https://www.openstreetmap.org/copyright\">OpenStreetMap</a> contributors | Dados: <a href=\"https://www.ibge.gov.br\">IBGE 2024</a>', maxZoom: 19, description: 'Mapa rico em detalhes urbanos, nomes de vias, bairros, rios e relevo clássico colaborativo.', isDark: false, }, 'esri-satellite': { id: 'esri-satellite', name: 'Esri World Imagery (Satélite)', url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community | Dados: <a href=\"https://www.ibge.gov.br\">IBGE 2024</a>', maxZoom: 18, description: 'Fotografias reais de satélite em alta resolução para inspecionar cobertura vegetal, rios e relevo real.', isDark: true, }, opentopo: { id: 'opentopo', name: 'OpenTopoMap (Topográfico)', url: 'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', subdomains: 'abc', attribution: 'Map data: &copy; <a href=\"https://www.openstreetmap.org/copyright\">OpenStreetMap</a> contributors, <a href=\"http://viewfinderpanoramas.org\">SRTM</a> | Map style: &copy; <a href=\"https://opentopomap.org\">OpenTopoMap</a> | Dados: <a href=\"https://www.ibge.gov.br\">IBGE 2024</a>', maxZoom: 17, description: 'Mapa topográfico com relevo sombreado e curvas de nível de elevação do terreno.', isDark: false, }, }"
+        },
+        {
+          "kind": "variable",
+          "name": "DEFAULT_BASEMAP_KEY",
+          "type": {
+            "text": "string"
+          },
+          "default": "'carto-light'"
+        },
+        {
+          "kind": "function",
+          "name": "getBasemapProvider",
+          "return": {
+            "type": {
+              "text": "BasemapProvider"
+            }
+          },
+          "parameters": [
+            {
+              "name": "key",
+              "type": {
+                "text": "string"
+              }
+            }
+          ]
+        },
+        {
+          "kind": "function",
+          "name": "generateSampleTileUrl",
+          "return": {
+            "type": {
+              "text": "string"
+            }
+          },
+          "parameters": [
+            {
+              "name": "providerKey",
+              "type": {
+                "text": "string"
+              }
+            },
+            {
+              "name": "zoom",
+              "type": {
+                "text": "number"
+              }
+            },
+            {
+              "name": "x",
+              "type": {
+                "text": "number"
+              }
+            },
+            {
+              "name": "y",
+              "type": {
+                "text": "number"
+              }
+            }
+          ],
+          "description": "Returns a concrete tile image URL for given coordinates using the provider's template."
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "BASEMAP_PROVIDERS",
+          "declaration": {
+            "name": "BASEMAP_PROVIDERS",
+            "module": "src/components/geo/basemaps.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "DEFAULT_BASEMAP_KEY",
+          "declaration": {
+            "name": "DEFAULT_BASEMAP_KEY",
+            "module": "src/components/geo/basemaps.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "getBasemapProvider",
+          "declaration": {
+            "name": "getBasemapProvider",
+            "module": "src/components/geo/basemaps.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "generateSampleTileUrl",
+          "declaration": {
+            "name": "generateSampleTileUrl",
+            "module": "src/components/geo/basemaps.ts"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/components/geo/geo-basemap-selector.component.ts",
+      "declarations": [
+        {
+          "kind": "class",
+          "description": "Basemap (TileLayer) Selector and URL Inspector Component.",
+          "name": "FzlGeoBasemapSelector",
+          "members": [
+            {
+              "kind": "field",
+              "name": "basemap",
+              "default": "DEFAULT_BASEMAP_KEY",
+              "attribute": "basemap"
+            },
+            {
+              "kind": "field",
+              "name": "centerZoom",
+              "type": {
+                "text": "number"
+              },
+              "default": "4",
+              "attribute": "centerZoom"
+            },
+            {
+              "kind": "field",
+              "name": "centerX",
+              "type": {
+                "text": "number"
+              },
+              "default": "6",
+              "attribute": "centerX"
+            },
+            {
+              "kind": "field",
+              "name": "centerY",
+              "type": {
+                "text": "number"
+              },
+              "default": "9",
+              "attribute": "centerY"
+            },
+            {
+              "kind": "method",
+              "name": "_onChange",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "e",
+                  "type": {
+                    "text": "Event"
+                  }
+                }
+              ]
+            }
+          ],
+          "events": [
+            {
+              "name": "fzl-basemap-change",
+              "type": {
+                "text": "CustomEvent<{ basemap: string }>"
+              },
+              "description": "Dispatched when the active basemap is changed"
+            }
+          ],
+          "attributes": [
+            {
+              "name": "basemap",
+              "default": "DEFAULT_BASEMAP_KEY",
+              "fieldName": "basemap"
+            },
+            {
+              "name": "centerZoom",
+              "type": {
+                "text": "number"
+              },
+              "default": "4",
+              "fieldName": "centerZoom"
+            },
+            {
+              "name": "centerX",
+              "type": {
+                "text": "number"
+              },
+              "default": "6",
+              "fieldName": "centerX"
+            },
+            {
+              "name": "centerY",
+              "type": {
+                "text": "number"
+              },
+              "default": "9",
+              "fieldName": "centerY"
+            }
+          ],
+          "mixins": [
+            {
+              "name": "FzlWidgetMixin",
+              "package": "@fzl/core"
+            }
+          ],
+          "superclass": {
+            "name": "LitElement",
+            "package": "lit"
+          },
+          "tagName": "fzl-geo-basemap-selector",
+          "customElement": true
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "FzlGeoBasemapSelector",
+          "declaration": {
+            "name": "FzlGeoBasemapSelector",
+            "module": "src/components/geo/geo-basemap-selector.component.ts"
+          }
+        },
+        {
+          "kind": "custom-element-definition",
+          "name": "fzl-geo-basemap-selector",
+          "declaration": {
+            "name": "FzlGeoBasemapSelector",
+            "module": "src/components/geo/geo-basemap-selector.component.ts"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/components/geo/geo-explorer.component.ts",
+      "declarations": [
+        {
+          "kind": "class",
+          "description": "Full Composite WebGIS & IBGE Territorial Meshes Explorer Component.\n\nCombines map viewport, basemap controls, layer management with Auto-LOD,\nzoom inspector, feature attribute inspector, and thematic legend into\na responsive dashboard.",
+          "name": "FzlGeoExplorer",
+          "members": [
+            {
+              "kind": "field",
+              "name": "basemap",
+              "default": "DEFAULT_BASEMAP_KEY",
+              "attribute": "basemap"
+            },
+            {
+              "kind": "field",
+              "name": "showGrid",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "true",
+              "attribute": "showGrid"
+            },
+            {
+              "kind": "field",
+              "name": "_zoom",
+              "type": {
+                "text": "number"
+              },
+              "privacy": "private",
+              "default": "4"
+            },
+            {
+              "kind": "field",
+              "name": "_centerLat",
+              "type": {
+                "text": "number"
+              },
+              "privacy": "private",
+              "default": "-14.235"
+            },
+            {
+              "kind": "field",
+              "name": "_centerLng",
+              "type": {
+                "text": "number"
+              },
+              "privacy": "private",
+              "default": "-51.925"
+            },
+            {
+              "kind": "field",
+              "name": "_pyramidStats",
+              "type": {
+                "text": "TilePyramidStats"
+              },
+              "privacy": "private"
+            },
+            {
+              "kind": "field",
+              "name": "_activeFeatureProps",
+              "type": {
+                "text": "any"
+              },
+              "privacy": "private",
+              "default": "null"
+            },
+            {
+              "kind": "method",
+              "name": "_getMapElement",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "FzlGeoMap | null"
+                }
+              }
+            },
+            {
+              "kind": "method",
+              "name": "_handleMapMove",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "e",
+                  "type": {
+                    "text": "CustomEvent<FzlMapMoveEventDetail>"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "_handleFeatureHover",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "e",
+                  "type": {
+                    "text": "CustomEvent<FzlFeatureEventDetail>"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "_handleFeatureSelect",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "e",
+                  "type": {
+                    "text": "CustomEvent<FzlFeatureEventDetail>"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "_handleZoomChange",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "e",
+                  "type": {
+                    "text": "CustomEvent<{ zoom: number }>"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "_handleBasemapChange",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "basemapKey",
+                  "type": {
+                    "text": "string"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "_handleGridToggle",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "e",
+                  "type": {
+                    "text": "Event"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "_handleLayerToggle",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "e",
+                  "type": {
+                    "text": "CustomEvent<FzlLayerToggleEventDetail>"
+                  }
+                }
+              ]
+            }
+          ],
+          "attributes": [
+            {
+              "name": "basemap",
+              "default": "DEFAULT_BASEMAP_KEY",
+              "fieldName": "basemap"
+            },
+            {
+              "name": "showGrid",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "true",
+              "fieldName": "showGrid"
+            }
+          ],
+          "mixins": [
+            {
+              "name": "FzlWidgetMixin",
+              "package": "@fzl/core"
+            }
+          ],
+          "superclass": {
+            "name": "LitElement",
+            "package": "lit"
+          },
+          "tagName": "fzl-geo-explorer",
+          "customElement": true
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "FzlGeoExplorer",
+          "declaration": {
+            "name": "FzlGeoExplorer",
+            "module": "src/components/geo/geo-explorer.component.ts"
+          }
+        },
+        {
+          "kind": "custom-element-definition",
+          "name": "fzl-geo-explorer",
+          "declaration": {
+            "name": "FzlGeoExplorer",
+            "module": "src/components/geo/geo-explorer.component.ts"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/components/geo/geo-feature-details.component.ts",
+      "declarations": [
+        {
+          "kind": "class",
+          "description": "Feature Inspector Widget displaying territorial metadata attributes on hover/click.",
+          "name": "FzlGeoFeatureDetails",
+          "members": [],
+          "attributes": [
+            {
+              "name": "properties",
+              "type": {
+                "text": "any"
+              },
+              "default": "null",
+              "fieldName": "properties"
+            }
+          ],
+          "mixins": [
+            {
+              "name": "FzlWidgetMixin",
+              "package": "@fzl/core"
+            }
+          ],
+          "superclass": {
+            "name": "LitElement",
+            "package": "lit"
+          },
+          "tagName": "fzl-geo-feature-details",
+          "customElement": true
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "FzlGeoFeatureDetails",
+          "declaration": {
+            "name": "FzlGeoFeatureDetails",
+            "module": "src/components/geo/geo-feature-details.component.ts"
+          }
+        },
+        {
+          "kind": "custom-element-definition",
+          "name": "fzl-geo-feature-details",
+          "declaration": {
+            "name": "FzlGeoFeatureDetails",
+            "module": "src/components/geo/geo-feature-details.component.ts"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/components/geo/geo-layer-manager.component.ts",
+      "declarations": [
+        {
+          "kind": "class",
+          "description": "IBGE Territorial Meshes Layer Manager & Auto-LOD (Level of Detail) Widget.",
+          "name": "FzlGeoLayerManager",
+          "members": [
+            {
+              "kind": "field",
+              "name": "autoLod",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "true",
+              "description": "Whether Auto-LOD (Level of Detail by Zoom) is enabled",
+              "attribute": "autoLod"
+            },
+            {
+              "kind": "field",
+              "name": "currentZoom",
+              "type": {
+                "text": "number"
+              },
+              "default": "4",
+              "description": "Active map zoom level, used by Auto-LOD",
+              "attribute": "currentZoom"
+            },
+            {
+              "kind": "field",
+              "name": "_activeLayers",
+              "type": {
+                "text": "Partial<Record<IbgeLayerKey, CachedLayerData>>"
+              },
+              "privacy": "private",
+              "default": "{}",
+              "description": "Map of active layers by key"
+            },
+            {
+              "kind": "field",
+              "name": "_loadingLayers",
+              "type": {
+                "text": "Partial<Record<IbgeLayerKey, boolean>>"
+              },
+              "privacy": "private",
+              "default": "{}"
+            },
+            {
+              "kind": "field",
+              "name": "_autoLodCurrentKey",
+              "type": {
+                "text": "IbgeLayerKey | null"
+              },
+              "privacy": "private",
+              "default": "null"
+            },
+            {
+              "kind": "method",
+              "name": "_handleAutoLodSync",
+              "privacy": "private"
+            },
+            {
+              "kind": "method",
+              "name": "_activateLayer",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "key",
+                  "type": {
+                    "text": "IbgeLayerKey"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "_deactivateLayer",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "key",
+                  "type": {
+                    "text": "IbgeLayerKey"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "_onLayerCheckboxChange",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "e",
+                  "type": {
+                    "text": "Event"
+                  }
+                },
+                {
+                  "name": "key",
+                  "type": {
+                    "text": "IbgeLayerKey"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "_onToggleAutoLod",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "e",
+                  "type": {
+                    "text": "Event"
+                  }
+                }
+              ]
+            }
+          ],
+          "events": [
+            {
+              "name": "fzl-layer-toggle",
+              "type": {
+                "text": "CustomEvent<FzlLayerToggleEventDetail>"
+              },
+              "description": "Dispatched when a layer is toggled on or off"
+            },
+            {
+              "name": "fzl-auto-lod-toggle",
+              "type": {
+                "text": "CustomEvent<FzlAutoLodToggleEventDetail>"
+              },
+              "description": "Dispatched when Auto-LOD is toggled"
+            }
+          ],
+          "attributes": [
+            {
+              "name": "autoLod",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "true",
+              "description": "Whether Auto-LOD (Level of Detail by Zoom) is enabled",
+              "fieldName": "autoLod"
+            },
+            {
+              "name": "currentZoom",
+              "type": {
+                "text": "number"
+              },
+              "default": "4",
+              "description": "Active map zoom level, used by Auto-LOD",
+              "fieldName": "currentZoom"
+            }
+          ],
+          "mixins": [
+            {
+              "name": "FzlWidgetMixin",
+              "package": "@fzl/core"
+            }
+          ],
+          "superclass": {
+            "name": "LitElement",
+            "package": "lit"
+          },
+          "tagName": "fzl-geo-layer-manager",
+          "customElement": true
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "FzlGeoLayerManager",
+          "declaration": {
+            "name": "FzlGeoLayerManager",
+            "module": "src/components/geo/geo-layer-manager.component.ts"
+          }
+        },
+        {
+          "kind": "custom-element-definition",
+          "name": "fzl-geo-layer-manager",
+          "declaration": {
+            "name": "FzlGeoLayerManager",
+            "module": "src/components/geo/geo-layer-manager.component.ts"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/components/geo/geo-legend.component.ts",
+      "declarations": [
+        {
+          "kind": "variable",
+          "name": "DEFAULT_REGION_LEGEND_ITEMS",
+          "type": {
+            "text": "LegendItem[]"
+          },
+          "default": "[ { label: 'Norte (N)', color: REGION_COLORS['Norte'], id: 'N' }, { label: 'Nordeste (NE)', color: REGION_COLORS['Nordeste'], id: 'NE' }, { label: 'Centro-Oeste (CO)', color: REGION_COLORS['Centro-Oeste'], id: 'CO' }, { label: 'Sudeste (SE)', color: REGION_COLORS['Sudeste'], id: 'SE' }, { label: 'Sul (S)', color: REGION_COLORS['Sul'], id: 'S' }, ]"
+        },
+        {
+          "kind": "class",
+          "description": "Thematic Map Legend Component.",
+          "name": "FzlGeoLegend",
+          "members": [
+            {
+              "kind": "field",
+              "name": "items",
+              "type": {
+                "text": "LegendItem[]"
+              },
+              "default": "[ { label: 'Norte (N)', color: REGION_COLORS['Norte'], id: 'N' }, { label: 'Nordeste (NE)', color: REGION_COLORS['Nordeste'], id: 'NE' }, { label: 'Centro-Oeste (CO)', color: REGION_COLORS['Centro-Oeste'], id: 'CO' }, { label: 'Sudeste (SE)', color: REGION_COLORS['Sudeste'], id: 'SE' }, { label: 'Sul (S)', color: REGION_COLORS['Sul'], id: 'S' }, ]",
+              "attribute": "items"
+            }
+          ],
+          "attributes": [
+            {
+              "name": "items",
+              "type": {
+                "text": "LegendItem[]"
+              },
+              "default": "DEFAULT_REGION_LEGEND_ITEMS",
+              "fieldName": "items"
+            }
+          ],
+          "mixins": [
+            {
+              "name": "FzlWidgetMixin",
+              "package": "@fzl/core"
+            }
+          ],
+          "superclass": {
+            "name": "LitElement",
+            "package": "lit"
+          },
+          "tagName": "fzl-geo-legend",
+          "customElement": true
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "DEFAULT_REGION_LEGEND_ITEMS",
+          "declaration": {
+            "name": "DEFAULT_REGION_LEGEND_ITEMS",
+            "module": "src/components/geo/geo-legend.component.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "FzlGeoLegend",
+          "declaration": {
+            "name": "FzlGeoLegend",
+            "module": "src/components/geo/geo-legend.component.ts"
+          }
+        },
+        {
+          "kind": "custom-element-definition",
+          "name": "fzl-geo-legend",
+          "declaration": {
+            "name": "FzlGeoLegend",
+            "module": "src/components/geo/geo-legend.component.ts"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/components/geo/geo-map.component.ts",
+      "declarations": [
+        {
+          "kind": "class",
+          "description": "Reactive Web Component encapsulating a Leaflet WebGIS Map with Slippy Tile Pyramid,\nbasemap layer switching, Z/X/Y debug grid, and IBGE GeoJSON vector layers.",
+          "name": "FzlGeoMap",
+          "members": [
+            {
+              "kind": "field",
+              "name": "center",
+              "type": {
+                "text": "[number, number]"
+              },
+              "default": "[-14.235, -51.925]",
+              "description": "Latitude & Longitude of map center",
+              "attribute": "center"
+            },
+            {
+              "kind": "field",
+              "name": "zoom",
+              "type": {
+                "text": "number"
+              },
+              "default": "4",
+              "description": "Integer zoom level",
+              "attribute": "zoom"
+            },
+            {
+              "kind": "field",
+              "name": "minZoom",
+              "type": {
+                "text": "number"
+              },
+              "default": "0",
+              "attribute": "minZoom"
+            },
+            {
+              "kind": "field",
+              "name": "maxZoom",
+              "type": {
+                "text": "number"
+              },
+              "default": "18",
+              "attribute": "maxZoom"
+            },
+            {
+              "kind": "field",
+              "name": "basemap",
+              "default": "DEFAULT_BASEMAP_KEY",
+              "description": "Active Basemap identifier",
+              "attribute": "basemap"
+            },
+            {
+              "kind": "field",
+              "name": "showGrid",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "true",
+              "description": "Whether to show the Z/X/Y tile debug grid",
+              "attribute": "showGrid"
+            },
+            {
+              "kind": "field",
+              "name": "_mapInstance",
+              "type": {
+                "text": "L.Map | null"
+              },
+              "privacy": "private",
+              "default": "null"
+            },
+            {
+              "kind": "field",
+              "name": "_basemapLayer",
+              "type": {
+                "text": "L.TileLayer | null"
+              },
+              "privacy": "private",
+              "default": "null"
+            },
+            {
+              "kind": "field",
+              "name": "_debugGridLayer",
+              "type": {
+                "text": "L.GridLayer | null"
+              },
+              "privacy": "private",
+              "default": "null"
+            },
+            {
+              "kind": "field",
+              "name": "_vectorLayers",
+              "type": {
+                "text": "Partial<Record<IbgeLayerKey, L.GeoJSON>>"
+              },
+              "privacy": "private",
+              "default": "{}"
+            },
+            {
+              "kind": "field",
+              "name": "_ufBoundaryOverlay",
+              "type": {
+                "text": "L.GeoJSON | null"
+              },
+              "privacy": "private",
+              "default": "null"
+            },
+            {
+              "kind": "field",
+              "name": "_ufGeoJsonData",
+              "type": {
+                "text": "any"
+              },
+              "privacy": "private",
+              "default": "null"
+            },
+            {
+              "kind": "field",
+              "name": "_resizeObserver",
+              "type": {
+                "text": "ResizeObserver | null"
+              },
+              "privacy": "private",
+              "default": "null"
+            },
+            {
+              "kind": "method",
+              "name": "_setupResizeObserver",
+              "privacy": "private"
+            },
+            {
+              "kind": "method",
+              "name": "_initMap",
+              "privacy": "private",
+              "description": "Initializes Leaflet map instance and default layers"
+            },
+            {
+              "kind": "method",
+              "name": "_setupDebugGrid",
+              "privacy": "private"
+            },
+            {
+              "kind": "method",
+              "name": "_updateBasemap",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "providerKey",
+                  "type": {
+                    "text": "string"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "_handleMapMove",
+              "privacy": "private"
+            },
+            {
+              "kind": "method",
+              "name": "_handleZoomChange",
+              "privacy": "private"
+            },
+            {
+              "kind": "method",
+              "name": "setZoom",
+              "privacy": "public",
+              "parameters": [
+                {
+                  "name": "zoom",
+                  "type": {
+                    "text": "number"
+                  }
+                }
+              ],
+              "description": "Set integer zoom level"
+            },
+            {
+              "kind": "method",
+              "name": "panTo",
+              "privacy": "public",
+              "parameters": [
+                {
+                  "name": "lat",
+                  "type": {
+                    "text": "number"
+                  }
+                },
+                {
+                  "name": "lng",
+                  "type": {
+                    "text": "number"
+                  }
+                }
+              ],
+              "description": "Pan to lat/lng coordinates"
+            },
+            {
+              "kind": "method",
+              "name": "fitBounds",
+              "privacy": "public",
+              "parameters": [
+                {
+                  "name": "bounds",
+                  "type": {
+                    "text": "L.LatLngBoundsExpression"
+                  }
+                }
+              ],
+              "description": "Fit bounds with padding"
+            },
+            {
+              "kind": "method",
+              "name": "invalidateSize",
+              "privacy": "public",
+              "description": "Invalidate map size"
+            },
+            {
+              "kind": "method",
+              "name": "setBasemap",
+              "privacy": "public",
+              "parameters": [
+                {
+                  "name": "providerKey",
+                  "type": {
+                    "text": "string"
+                  }
+                }
+              ],
+              "description": "Change active basemap layer"
+            },
+            {
+              "kind": "method",
+              "name": "toggleGrid",
+              "privacy": "public",
+              "parameters": [
+                {
+                  "name": "show",
+                  "type": {
+                    "text": "boolean"
+                  }
+                }
+              ],
+              "description": "Toggle the Z/X/Y tile debug grid"
+            },
+            {
+              "kind": "method",
+              "name": "setGeoJsonLayer",
+              "privacy": "public",
+              "parameters": [
+                {
+                  "name": "layerKey",
+                  "type": {
+                    "text": "IbgeLayerKey"
+                  }
+                },
+                {
+                  "name": "geoJsonData",
+                  "type": {
+                    "text": "any"
+                  }
+                },
+                {
+                  "name": "shouldFit",
+                  "default": "false"
+                }
+              ],
+              "description": "Adds or updates a GeoJSON vector layer on the map with interactive tooltips and hover effects"
+            },
+            {
+              "kind": "method",
+              "name": "removeGeoJsonLayer",
+              "privacy": "public",
+              "parameters": [
+                {
+                  "name": "layerKey",
+                  "type": {
+                    "text": "IbgeLayerKey"
+                  }
+                }
+              ],
+              "description": "Removes a GeoJSON vector layer by key"
+            },
+            {
+              "kind": "method",
+              "name": "_reorderLayers",
+              "privacy": "private",
+              "description": "Ensure visual layer stacking: país (base) -> regioes -> uf -> municipios (top)"
+            },
+            {
+              "kind": "method",
+              "name": "_syncUfBoundaryOverlay",
+              "privacy": "private",
+              "description": "Keeps an exclusive border overlay for UFs on top of municipalities so state bounds remain crisp"
+            }
+          ],
+          "events": [
+            {
+              "name": "fzl-map-move",
+              "type": {
+                "text": "CustomEvent<FzlMapMoveEventDetail>"
+              },
+              "description": "Emitted when map pans or finishes moving"
+            },
+            {
+              "name": "fzl-map-zoom",
+              "type": {
+                "text": "CustomEvent<TilePyramidStats>"
+              },
+              "description": "Emitted when map zoom level changes"
+            },
+            {
+              "name": "fzl-feature-hover",
+              "type": {
+                "text": "CustomEvent<FzlFeatureEventDetail>"
+              },
+              "description": "Emitted when hovering over a vector polygon"
+            },
+            {
+              "name": "fzl-feature-select",
+              "type": {
+                "text": "CustomEvent<FzlFeatureEventDetail>"
+              },
+              "description": "Emitted when clicking on a polygon"
+            }
+          ],
+          "attributes": [
+            {
+              "name": "center",
+              "type": {
+                "text": "[number, number]"
+              },
+              "default": "[-14.235, -51.925]",
+              "description": "Latitude & Longitude of map center",
+              "fieldName": "center"
+            },
+            {
+              "name": "zoom",
+              "type": {
+                "text": "number"
+              },
+              "default": "4",
+              "description": "Integer zoom level",
+              "fieldName": "zoom"
+            },
+            {
+              "name": "minZoom",
+              "type": {
+                "text": "number"
+              },
+              "default": "0",
+              "fieldName": "minZoom"
+            },
+            {
+              "name": "maxZoom",
+              "type": {
+                "text": "number"
+              },
+              "default": "18",
+              "fieldName": "maxZoom"
+            },
+            {
+              "name": "basemap",
+              "default": "DEFAULT_BASEMAP_KEY",
+              "description": "Active Basemap identifier",
+              "fieldName": "basemap"
+            },
+            {
+              "name": "showGrid",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "true",
+              "description": "Whether to show the Z/X/Y tile debug grid",
+              "fieldName": "showGrid"
+            }
+          ],
+          "mixins": [
+            {
+              "name": "FzlWidgetMixin",
+              "package": "@fzl/core"
+            }
+          ],
+          "superclass": {
+            "name": "LitElement",
+            "package": "lit"
+          },
+          "tagName": "fzl-geo-map",
+          "customElement": true
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "FzlGeoMap",
+          "declaration": {
+            "name": "FzlGeoMap",
+            "module": "src/components/geo/geo-map.component.ts"
+          }
+        },
+        {
+          "kind": "custom-element-definition",
+          "name": "fzl-geo-map",
+          "declaration": {
+            "name": "FzlGeoMap",
+            "module": "src/components/geo/geo-map.component.ts"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/components/geo/geo-math.ts",
+      "declarations": [
+        {
+          "kind": "variable",
+          "name": "ZOOM_PRESETS",
+          "type": {
+            "text": "ZoomPreset[]"
+          },
+          "default": "[ { label: 'Mundo', zoom: 0, description: 'Visão global planetária (Z=0)' }, { label: 'América', zoom: 3, description: 'Visão continental das Américas (Z=3)' }, { label: 'Brasil', zoom: 4, description: 'Visão nacional do Brasil (Z=4)' }, { label: 'Estado', zoom: 7, description: 'Visão estadual / regional (Z=7)' }, { label: 'Cidade', zoom: 11, description: 'Visão municipal / metropolitana (Z=11)' }, { label: 'Rua', zoom: 15, description: 'Visão urbana detalhada de ruas (Z=15)' }, ]"
+        },
+        {
+          "kind": "function",
+          "name": "latLngToTileCoords",
+          "return": {
+            "type": {
+              "text": "{ x: number; y: number }"
+            }
+          },
+          "parameters": [
+            {
+              "name": "lat",
+              "type": {
+                "text": "number"
+              }
+            },
+            {
+              "name": "lng",
+              "type": {
+                "text": "number"
+              }
+            },
+            {
+              "name": "zoom",
+              "type": {
+                "text": "number"
+              }
+            }
+          ],
+          "description": "Converts WGS-84 Geographic Coordinates (Latitude, Longitude) into Slippy Map Tile (X, Y)\nat a specific integer zoom level Z using the spherical Web Mercator projection."
+        },
+        {
+          "kind": "function",
+          "name": "calculateVisibleTilesRange",
+          "return": {
+            "type": {
+              "text": "VisibleTilesRange"
+            }
+          },
+          "parameters": [
+            {
+              "name": "nw",
+              "type": {
+                "text": "{ lat: number; lng: number }"
+              }
+            },
+            {
+              "name": "se",
+              "type": {
+                "text": "{ lat: number; lng: number }"
+              }
+            },
+            {
+              "name": "zoom",
+              "type": {
+                "text": "number"
+              }
+            }
+          ],
+          "description": "Calculates the bounding range of tile coordinates visible within the current map viewport."
+        },
+        {
+          "kind": "function",
+          "name": "calculateTilePyramidStats",
+          "return": {
+            "type": {
+              "text": "TilePyramidStats"
+            }
+          },
+          "parameters": [
+            {
+              "name": "zoom",
+              "type": {
+                "text": "number"
+              }
+            },
+            {
+              "name": "centerLat",
+              "type": {
+                "text": "number"
+              }
+            },
+            {
+              "name": "centerLng",
+              "type": {
+                "text": "number"
+              }
+            },
+            {
+              "name": "viewportBounds",
+              "optional": true,
+              "type": {
+                "text": "{ nw: { lat: number; lng: number }; se: { lat: number; lng: number } }"
+              }
+            }
+          ],
+          "description": "Calculates all mathematical pyramid statistics for the current zoom and center point."
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "ZOOM_PRESETS",
+          "declaration": {
+            "name": "ZOOM_PRESETS",
+            "module": "src/components/geo/geo-math.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "latLngToTileCoords",
+          "declaration": {
+            "name": "latLngToTileCoords",
+            "module": "src/components/geo/geo-math.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "calculateVisibleTilesRange",
+          "declaration": {
+            "name": "calculateVisibleTilesRange",
+            "module": "src/components/geo/geo-math.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "calculateTilePyramidStats",
+          "declaration": {
+            "name": "calculateTilePyramidStats",
+            "module": "src/components/geo/geo-math.ts"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/components/geo/geo-zoom-inspector.component.ts",
+      "declarations": [
+        {
+          "kind": "class",
+          "description": "Zoom Inspector and Slippy Map Tile Pyramid Calculator Component.",
+          "name": "FzlGeoZoomInspector",
+          "members": [
+            {
+              "kind": "field",
+              "name": "zoom",
+              "type": {
+                "text": "number"
+              },
+              "default": "4",
+              "attribute": "zoom"
+            },
+            {
+              "kind": "field",
+              "name": "centerLat",
+              "type": {
+                "text": "number"
+              },
+              "default": "-14.235",
+              "attribute": "centerLat"
+            },
+            {
+              "kind": "field",
+              "name": "centerLng",
+              "type": {
+                "text": "number"
+              },
+              "default": "-51.925",
+              "attribute": "centerLng"
+            },
+            {
+              "kind": "field",
+              "name": "stats",
+              "type": {
+                "text": "TilePyramidStats | null"
+              },
+              "default": "null",
+              "attribute": "stats"
+            },
+            {
+              "kind": "method",
+              "name": "_onSliderInput",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "e",
+                  "type": {
+                    "text": "Event"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "_onPresetClick",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "presetZoom",
+                  "type": {
+                    "text": "number"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "_dispatchZoomChange",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "zoom",
+                  "type": {
+                    "text": "number"
+                  }
+                }
+              ]
+            }
+          ],
+          "events": [
+            {
+              "name": "fzl-zoom-change",
+              "type": {
+                "text": "CustomEvent<{ zoom: number }>"
+              },
+              "description": "Dispatched when zoom level is modified via slider or preset"
+            }
+          ],
+          "attributes": [
+            {
+              "name": "zoom",
+              "type": {
+                "text": "number"
+              },
+              "default": "4",
+              "fieldName": "zoom"
+            },
+            {
+              "name": "centerLat",
+              "type": {
+                "text": "number"
+              },
+              "default": "-14.235",
+              "fieldName": "centerLat"
+            },
+            {
+              "name": "centerLng",
+              "type": {
+                "text": "number"
+              },
+              "default": "-51.925",
+              "fieldName": "centerLng"
+            },
+            {
+              "name": "stats",
+              "type": {
+                "text": "TilePyramidStats | null"
+              },
+              "default": "null",
+              "fieldName": "stats"
+            }
+          ],
+          "mixins": [
+            {
+              "name": "FzlWidgetMixin",
+              "package": "@fzl/core"
+            }
+          ],
+          "superclass": {
+            "name": "LitElement",
+            "package": "lit"
+          },
+          "tagName": "fzl-geo-zoom-inspector",
+          "customElement": true
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "FzlGeoZoomInspector",
+          "declaration": {
+            "name": "FzlGeoZoomInspector",
+            "module": "src/components/geo/geo-zoom-inspector.component.ts"
+          }
+        },
+        {
+          "kind": "custom-element-definition",
+          "name": "fzl-geo-zoom-inspector",
+          "declaration": {
+            "name": "FzlGeoZoomInspector",
+            "module": "src/components/geo/geo-zoom-inspector.component.ts"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/components/geo/ibge-service.ts",
+      "declarations": [
+        {
+          "kind": "variable",
+          "name": "IBGE_LAYERS_ORDER",
+          "type": {
+            "text": "IbgeLayerKey[]"
+          },
+          "default": "['pais', 'regioes', 'uf', 'municipios']"
+        },
+        {
+          "kind": "variable",
+          "name": "IBGE_LAYERS_METADATA",
+          "type": {
+            "text": "Record<IbgeLayerKey, IbgeLayerMetadata>"
+          },
+          "default": "{ pais: { key: 'pais', name: 'Contorno do País (Brasil)', description: 'Contorno Nacional do Brasil', apiUrl: 'https://servicodados.ibge.gov.br/api/v4/malhas/paises/BR?qualidade=minima&formato=application/vnd.geo+json', fallbackPath: 'https://claudiadaros75.github.io/Mapeamento-Intersetorial/data/BR_pais_2024_minima.geojson', featuresExpected: 1, sizeEstimate: '~15 KB', recommendedZoom: 'Z = 0 a 3', minZoomLOD: 0, maxZoomLOD: 3, }, regioes: { key: 'regioes', name: 'Grandes Regiões (5)', description: '5 Grandes Regiões (N, NE, CO, SE, S)', apiUrl: 'https://servicodados.ibge.gov.br/api/v4/malhas/paises/BR?qualidade=minima&formato=application/vnd.geo+json&intrarregiao=regiao', fallbackPath: 'https://claudiadaros75.github.io/Mapeamento-Intersetorial/data/BR_regioes_2024_minima.geojson', featuresExpected: 5, sizeEstimate: '~33 KB', recommendedZoom: 'Z = 4', minZoomLOD: 4, maxZoomLOD: 4, }, uf: { key: 'uf', name: 'Unidades da Federação (27)', description: '27 Unidades da Federação (Estados e DF)', apiUrl: 'https://servicodados.ibge.gov.br/api/v4/malhas/paises/BR?qualidade=minima&formato=application/vnd.geo+json&intrarregiao=UF', fallbackPath: 'https://claudiadaros75.github.io/Mapeamento-Intersetorial/data/BR_uf_2024_minima.geojson', featuresExpected: 27, sizeEstimate: '~117 KB', recommendedZoom: 'Z = 5 a 7', minZoomLOD: 5, maxZoomLOD: 7, }, municipios: { key: 'municipios', name: 'Municípios do Brasil (5.571)', description: '5.571 Municípios Brasileiros', apiUrl: 'https://servicodados.ibge.gov.br/api/v4/malhas/paises/BR?qualidade=minima&formato=application/vnd.geo+json&intrarregiao=municipio', fallbackPath: 'https://claudiadaros75.github.io/Mapeamento-Intersetorial/data/BR_municipios_2024_minima.geojson', featuresExpected: 5571, sizeEstimate: '~5.3 MB', recommendedZoom: 'Z = 8 a 18', minZoomLOD: 8, maxZoomLOD: 18, }, }"
+        },
+        {
+          "kind": "variable",
+          "name": "REGION_COLORS",
+          "type": {
+            "text": "Record<string, string>"
+          },
+          "default": "{ '1': '#2b83ba', // Norte Norte: '#2b83ba', N: '#2b83ba', '2': '#abdda4', // Nordeste Nordeste: '#abdda4', NE: '#abdda4', '5': '#ffffbf', // Centro-Oeste 'Centro-Oeste': '#ffffbf', CO: '#ffffbf', '3': '#fdae61', // Sudeste Sudeste: '#fdae61', SE: '#fdae61', '4': '#d7191c', // Sul Sul: '#d7191c', S: '#d7191c', }"
+        },
+        {
+          "kind": "variable",
+          "name": "PAIS_COLOR",
+          "type": {
+            "text": "string"
+          },
+          "default": "'#64748b'"
+        },
+        {
+          "kind": "variable",
+          "name": "MUNICIPIO_PALETTE",
+          "type": {
+            "text": "array"
+          },
+          "default": "[ '#f97316', '#a855f7', '#14b8a6', '#eab308', '#ec4899', '#22c55e', '#0ea5e9', '#f43f5e', '#84cc16', '#8b5cf6', '#06b6d4', '#d946ef', ]"
+        },
+        {
+          "kind": "variable",
+          "name": "UF_LIGHTNESS_STEPS",
+          "type": {
+            "text": "array"
+          },
+          "default": "[0, -16, 14, -28, 26, -8, 8, 20, -20]"
+        },
+        {
+          "kind": "variable",
+          "name": "UF_BORDER_COLOR",
+          "type": {
+            "text": "string"
+          },
+          "default": "'#1e293b'"
+        },
+        {
+          "kind": "variable",
+          "name": "UF_BORDER_WEIGHT",
+          "type": {
+            "text": "number"
+          },
+          "default": "2.2"
+        },
+        {
+          "kind": "function",
+          "name": "hashString",
+          "return": {
+            "type": {
+              "text": "number"
+            }
+          },
+          "parameters": [
+            {
+              "name": "str",
+              "type": {
+                "text": "string"
+              }
+            }
+          ],
+          "description": "Deterministic djb2 hash string"
+        },
+        {
+          "kind": "function",
+          "name": "hexToHsl",
+          "return": {
+            "type": {
+              "text": "{ h: number; s: number; l: number }"
+            }
+          },
+          "parameters": [
+            {
+              "name": "hex",
+              "type": {
+                "text": "string"
+              }
+            }
+          ]
+        },
+        {
+          "kind": "function",
+          "name": "hslToHex",
+          "return": {
+            "type": {
+              "text": "string"
+            }
+          },
+          "parameters": [
+            {
+              "name": "h",
+              "type": {
+                "text": "number"
+              }
+            },
+            {
+              "name": "s",
+              "type": {
+                "text": "number"
+              }
+            },
+            {
+              "name": "l",
+              "type": {
+                "text": "number"
+              }
+            }
+          ]
+        },
+        {
+          "kind": "function",
+          "name": "getRegionBaseColor",
+          "return": {
+            "type": {
+              "text": "string"
+            }
+          },
+          "parameters": [
+            {
+              "name": "properties",
+              "type": {
+                "text": "any"
+              }
+            }
+          ]
+        },
+        {
+          "kind": "function",
+          "name": "getUfColor",
+          "return": {
+            "type": {
+              "text": "string"
+            }
+          },
+          "parameters": [
+            {
+              "name": "properties",
+              "type": {
+                "text": "any"
+              }
+            }
+          ]
+        },
+        {
+          "kind": "function",
+          "name": "getMunicipioColor",
+          "return": {
+            "type": {
+              "text": "string"
+            }
+          },
+          "parameters": [
+            {
+              "name": "properties",
+              "type": {
+                "text": "any"
+              }
+            }
+          ]
+        },
+        {
+          "kind": "function",
+          "name": "getFeatureColor",
+          "return": {
+            "type": {
+              "text": "string"
+            }
+          },
+          "parameters": [
+            {
+              "name": "properties",
+              "type": {
+                "text": "any"
+              }
+            },
+            {
+              "name": "layerKey",
+              "type": {
+                "text": "IbgeLayerKey"
+              }
+            }
+          ],
+          "description": "Returns the fill color for any feature depending on its territorial layer key"
+        },
+        {
+          "kind": "function",
+          "name": "getFeatureStyle",
+          "parameters": [
+            {
+              "name": "feature",
+              "type": {
+                "text": "any"
+              }
+            },
+            {
+              "name": "layerKey",
+              "type": {
+                "text": "IbgeLayerKey"
+              }
+            }
+          ],
+          "description": "Generates Leaflet vector style object for a given feature"
+        },
+        {
+          "kind": "variable",
+          "name": "FEATURE_HIGHLIGHT_STYLE",
+          "type": {
+            "text": "object"
+          },
+          "default": "{ weight: 3.2, color: '#1d4ed8', dashArray: '', fillOpacity: 0.9, }"
+        },
+        {
+          "kind": "function",
+          "name": "getAutoLodLayerForZoom",
+          "return": {
+            "type": {
+              "text": "IbgeLayerKey"
+            }
+          },
+          "parameters": [
+            {
+              "name": "zoom",
+              "type": {
+                "text": "number"
+              }
+            }
+          ],
+          "description": "Calculates the target IBGE mesh layer key based on the current zoom level for Auto-LOD"
+        },
+        {
+          "kind": "function",
+          "name": "fetchIbgeLayer",
+          "return": {
+            "type": {
+              "text": "Promise<CachedLayerData>"
+            }
+          },
+          "parameters": [
+            {
+              "name": "layerKey",
+              "type": {
+                "text": "IbgeLayerKey"
+              }
+            }
+          ],
+          "description": "Loads GeoJSON mesh data for an IBGE layer with automatic in-memory caching"
+        },
+        {
+          "kind": "variable",
+          "name": "payloadSizeBytes"
+        },
+        {
+          "kind": "variable",
+          "name": "data"
+        },
+        {
+          "kind": "variable",
+          "name": "downloadDurationMs"
+        },
+        {
+          "kind": "variable",
+          "name": "featuresCount"
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "IBGE_LAYERS_ORDER",
+          "declaration": {
+            "name": "IBGE_LAYERS_ORDER",
+            "module": "src/components/geo/ibge-service.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "IBGE_LAYERS_METADATA",
+          "declaration": {
+            "name": "IBGE_LAYERS_METADATA",
+            "module": "src/components/geo/ibge-service.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "REGION_COLORS",
+          "declaration": {
+            "name": "REGION_COLORS",
+            "module": "src/components/geo/ibge-service.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "PAIS_COLOR",
+          "declaration": {
+            "name": "PAIS_COLOR",
+            "module": "src/components/geo/ibge-service.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "MUNICIPIO_PALETTE",
+          "declaration": {
+            "name": "MUNICIPIO_PALETTE",
+            "module": "src/components/geo/ibge-service.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "UF_LIGHTNESS_STEPS",
+          "declaration": {
+            "name": "UF_LIGHTNESS_STEPS",
+            "module": "src/components/geo/ibge-service.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "UF_BORDER_COLOR",
+          "declaration": {
+            "name": "UF_BORDER_COLOR",
+            "module": "src/components/geo/ibge-service.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "UF_BORDER_WEIGHT",
+          "declaration": {
+            "name": "UF_BORDER_WEIGHT",
+            "module": "src/components/geo/ibge-service.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "hashString",
+          "declaration": {
+            "name": "hashString",
+            "module": "src/components/geo/ibge-service.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "hexToHsl",
+          "declaration": {
+            "name": "hexToHsl",
+            "module": "src/components/geo/ibge-service.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "hslToHex",
+          "declaration": {
+            "name": "hslToHex",
+            "module": "src/components/geo/ibge-service.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "getRegionBaseColor",
+          "declaration": {
+            "name": "getRegionBaseColor",
+            "module": "src/components/geo/ibge-service.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "getUfColor",
+          "declaration": {
+            "name": "getUfColor",
+            "module": "src/components/geo/ibge-service.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "getMunicipioColor",
+          "declaration": {
+            "name": "getMunicipioColor",
+            "module": "src/components/geo/ibge-service.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "getFeatureColor",
+          "declaration": {
+            "name": "getFeatureColor",
+            "module": "src/components/geo/ibge-service.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "getFeatureStyle",
+          "declaration": {
+            "name": "getFeatureStyle",
+            "module": "src/components/geo/ibge-service.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "FEATURE_HIGHLIGHT_STYLE",
+          "declaration": {
+            "name": "FEATURE_HIGHLIGHT_STYLE",
+            "module": "src/components/geo/ibge-service.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "getAutoLodLayerForZoom",
+          "declaration": {
+            "name": "getAutoLodLayerForZoom",
+            "module": "src/components/geo/ibge-service.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "fetchIbgeLayer",
+          "declaration": {
+            "name": "fetchIbgeLayer",
+            "module": "src/components/geo/ibge-service.ts"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/components/crumb/crumb.component.ts",
+      "declarations": [
+        {
+          "kind": "function",
+          "name": "parseFzlCrumbItems",
+          "return": {
+            "type": {
+              "text": "FzlCrumbItem[]"
+            }
+          },
+          "parameters": [
+            {
+              "name": "items",
+              "type": {
+                "text": "FzlCrumbItem[] | string | null | undefined"
+              }
+            },
+            {
+              "name": "pathStr",
+              "optional": true,
+              "type": {
+                "text": "string"
+              }
+            }
+          ]
+        },
+        {
+          "kind": "class",
+          "description": "Reactive Lit-based Breadcrumb (\"Crumb\") Custom Element showing current navigation path\nand providing back navigation to the previous view.",
+          "name": "FzlLitCrumb",
+          "cssParts": [
+            {
+              "description": "The outer `<nav>` landmark element",
+              "name": "nav"
+            },
+            {
+              "description": "The back navigation `<button>` element",
+              "name": "back-button"
+            },
+            {
+              "description": "The `<ol>` breadcrumb trail list",
+              "name": "list"
+            },
+            {
+              "description": "Each `<li>` breadcrumb item",
+              "name": "item"
+            },
+            {
+              "description": "Interactive `<a>` link for ancestor items",
+              "name": "link"
+            },
+            {
+              "description": "Visual separator `<span>` between items",
+              "name": "separator"
+            },
+            {
+              "description": "The `<span aria-current=\"page\">` active view label",
+              "name": "current"
+            }
+          ],
+          "members": [
+            {
+              "kind": "field",
+              "name": "items",
+              "type": {
+                "text": "FzlCrumbItem[]"
+              },
+              "default": "[]",
+              "description": "Breadcrumb items array or JSON/delimited string",
+              "attribute": "items"
+            },
+            {
+              "kind": "field",
+              "name": "path",
+              "type": {
+                "text": "string"
+              },
+              "default": "''",
+              "description": "Path string shorthand (e.g. \"Início / Config / Backend\")",
+              "attribute": "path",
+              "reflects": true
+            },
+            {
+              "kind": "field",
+              "name": "separator",
+              "type": {
+                "text": "string"
+              },
+              "default": "'›'",
+              "description": "Visual separator between breadcrumb items",
+              "attribute": "separator",
+              "reflects": true
+            },
+            {
+              "kind": "field",
+              "name": "showBack",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "true",
+              "description": "Whether to display the back button",
+              "attribute": "show-back",
+              "reflects": true
+            },
+            {
+              "kind": "field",
+              "name": "backDisabled",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false",
+              "description": "Whether the back button is disabled",
+              "attribute": "back-disabled",
+              "reflects": true
+            },
+            {
+              "kind": "field",
+              "name": "backLabel",
+              "type": {
+                "text": "string"
+              },
+              "default": "'Voltar'",
+              "description": "Label for the back navigation button",
+              "attribute": "back-label",
+              "reflects": true
+            },
+            {
+              "kind": "field",
+              "name": "backHref",
+              "type": {
+                "text": "string"
+              },
+              "default": "''",
+              "description": "Optional explicit target URL/hash for the back button",
+              "attribute": "back-href",
+              "reflects": true
+            },
+            {
+              "kind": "field",
+              "name": "ariaLabel",
+              "type": {
+                "text": "string"
+              },
+              "default": "'Navegação estrutural'",
+              "description": "Accessible label for the `<nav>` landmark",
+              "attribute": "aria-label",
+              "reflects": true
+            },
+            {
+              "kind": "field",
+              "name": "_keyNav",
+              "privacy": "private",
+              "default": "new FzlKeyNavController(this, { orientation: 'horizontal', rovingTabIndex: true, getItems: () => Array.from( this.renderRoot.querySelectorAll<HTMLElement>( '.back-btn:not([disabled]):not([hidden]), a.crumb-link' ) ), })"
+            },
+            {
+              "kind": "method",
+              "name": "_handleKeyDown",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "event",
+                  "type": {
+                    "text": "KeyboardEvent"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "_resolvedItems",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "FzlCrumbItem[]"
+                }
+              }
+            },
+            {
+              "kind": "method",
+              "name": "_handleBack",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "event",
+                  "type": {
+                    "text": "MouseEvent"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "_handleItemClick",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "event",
+                  "type": {
+                    "text": "MouseEvent"
+                  }
+                },
+                {
+                  "name": "item",
+                  "type": {
+                    "text": "FzlCrumbItem"
+                  }
+                },
+                {
+                  "name": "index",
+                  "type": {
+                    "text": "number"
+                  }
+                }
+              ]
+            }
+          ],
+          "events": [
+            {
+              "type": {
+                "text": "CustomEvent<{ backHref: string; originalEvent: MouseEvent }>"
+              },
+              "description": "Dispatched when the back button is activated",
+              "name": "fzl-back"
+            },
+            {
+              "type": {
+                "text": "CustomEvent<{ item: FzlCrumbItem; index: number; href?: string; originalEvent: MouseEvent }>"
+              },
+              "description": "Dispatched when a breadcrumb link item is clicked",
+              "name": "fzl-navigate"
+            },
+            {
+              "type": {
+                "text": "CustomEvent<{ widgetId: string; originalEvent: FocusEvent }>"
+              },
+              "description": "Dispatched when the widget gains focus",
+              "name": "fzl-focus"
+            },
+            {
+              "type": {
+                "text": "CustomEvent<{ widgetId: string; originalEvent: FocusEvent }>"
+              },
+              "description": "Dispatched when the widget loses focus",
+              "name": "fzl-blur"
+            }
+          ],
+          "attributes": [
+            {
+              "name": "items",
+              "type": {
+                "text": "FzlCrumbItem[]"
+              },
+              "default": "[]",
+              "description": "Breadcrumb items array or JSON/delimited string",
+              "fieldName": "items",
+              "attribute": "items"
+            },
+            {
+              "name": "path",
+              "type": {
+                "text": "string"
+              },
+              "default": "''",
+              "description": "Path string shorthand (e.g. \"Início / Config / Backend\")",
+              "fieldName": "path",
+              "attribute": "path"
+            },
+            {
+              "name": "separator",
+              "type": {
+                "text": "string"
+              },
+              "default": "'›'",
+              "description": "Visual separator between breadcrumb items",
+              "fieldName": "separator",
+              "attribute": "separator"
+            },
+            {
+              "name": "show-back",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "true",
+              "description": "Whether to display the back button",
+              "fieldName": "showBack",
+              "attribute": "show-back"
+            },
+            {
+              "name": "back-disabled",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false",
+              "description": "Whether the back button is disabled",
+              "fieldName": "backDisabled",
+              "attribute": "back-disabled"
+            },
+            {
+              "name": "back-label",
+              "type": {
+                "text": "string"
+              },
+              "default": "'Voltar'",
+              "description": "Label for the back navigation button",
+              "fieldName": "backLabel",
+              "attribute": "back-label"
+            },
+            {
+              "name": "back-href",
+              "type": {
+                "text": "string"
+              },
+              "default": "''",
+              "description": "Optional explicit target URL/hash for the back button",
+              "fieldName": "backHref",
+              "attribute": "back-href"
+            },
+            {
+              "name": "aria-label",
+              "type": {
+                "text": "string"
+              },
+              "default": "'Navegação estrutural'",
+              "description": "Accessible label for the `<nav>` landmark",
+              "fieldName": "ariaLabel",
+              "attribute": "aria-label"
+            }
+          ],
+          "mixins": [
+            {
+              "name": "FzlWidgetMixin",
+              "package": "@fzl/core"
+            }
+          ],
+          "superclass": {
+            "name": "LitElement",
+            "package": "lit"
+          },
+          "tagName": "fzl-lit-crumb",
+          "customElement": true
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "parseFzlCrumbItems",
+          "declaration": {
+            "name": "parseFzlCrumbItems",
+            "module": "src/components/crumb/crumb.component.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "FzlLitCrumb",
+          "declaration": {
+            "name": "FzlLitCrumb",
+            "module": "src/components/crumb/crumb.component.ts"
+          }
+        },
+        {
+          "kind": "custom-element-definition",
+          "name": "fzl-lit-crumb",
+          "declaration": {
+            "name": "FzlLitCrumb",
+            "module": "src/components/crumb/crumb.component.ts"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/components/avatar-upload/avatar-upload.component.ts",
+      "declarations": [
+        {
+          "kind": "class",
+          "description": "Reactive Lit-based Avatar Upload & Circular Crop Web Component.\n\nProvides a round avatar preview with drag-and-drop, file picker,\nand an interactive circular crop modal (pan, zoom, rotation) that\ngenerates both Data URL and Blob outputs for backend integration.",
+          "name": "FzlLitAvatarUpload",
+          "cssParts": [
+            {
+              "description": "The root container",
+              "name": "container"
+            },
+            {
+              "description": "The circular avatar trigger element",
+              "name": "avatar"
+            },
+            {
+              "description": "The cropped avatar image element",
+              "name": "image"
+            },
+            {
+              "description": "The camera badge icon overlay",
+              "name": "badge"
+            },
+            {
+              "description": "The crop modal overlay",
+              "name": "modal"
+            },
+            {
+              "description": "The modal dialog box",
+              "name": "dialog"
+            },
+            {
+              "description": "The action buttons below the avatar",
+              "name": "actions"
+            }
+          ],
+          "members": [
+            {
+              "kind": "field",
+              "name": "src",
+              "type": {
+                "text": "string"
+              },
+              "default": "''",
+              "description": "Current avatar image source (URL or Data URL)",
+              "attribute": "src",
+              "reflects": true
+            },
+            {
+              "kind": "field",
+              "name": "name",
+              "type": {
+                "text": "string"
+              },
+              "default": "''",
+              "description": "User name (used for alt text and fallback initials)",
+              "attribute": "name"
+            },
+            {
+              "kind": "field",
+              "name": "size",
+              "type": {
+                "text": "number"
+              },
+              "default": "120",
+              "description": "Diameter of the avatar in pixels",
+              "attribute": "size"
+            },
+            {
+              "kind": "field",
+              "name": "outputSize",
+              "type": {
+                "text": "number"
+              },
+              "default": "360",
+              "description": "Width and height of the exported square image in pixels",
+              "attribute": "outputSize"
+            },
+            {
+              "kind": "field",
+              "name": "outputFormat",
+              "type": {
+                "text": "'image/png' | 'image/jpeg' | 'image/webp'"
+              },
+              "default": "'image/png'",
+              "description": "Format of the exported image",
+              "attribute": "outputFormat"
+            },
+            {
+              "kind": "field",
+              "name": "outputQuality",
+              "type": {
+                "text": "number"
+              },
+              "default": "0.92",
+              "description": "Compression quality (0 to 1) for JPEG/WebP",
+              "attribute": "outputQuality"
+            },
+            {
+              "kind": "field",
+              "name": "accept",
+              "type": {
+                "text": "string"
+              },
+              "default": "'image/png, image/jpeg, image/webp, image/gif'",
+              "description": "Accepted MIME types for the file picker",
+              "attribute": "accept"
+            },
+            {
+              "kind": "field",
+              "name": "maxFileSize",
+              "description": "Maximum allowed file size in bytes (default: 5MB)",
+              "attribute": "maxFileSize"
+            },
+            {
+              "kind": "field",
+              "name": "disabled",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false",
+              "description": "Whether the component is disabled",
+              "attribute": "disabled",
+              "reflects": true
+            },
+            {
+              "kind": "field",
+              "name": "readonly",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false",
+              "description": "Whether the avatar is read-only (displays avatar without edit actions)",
+              "attribute": "readonly",
+              "reflects": true
+            },
+            {
+              "kind": "field",
+              "name": "buttonLabel",
+              "type": {
+                "text": "string"
+              },
+              "default": "'Alterar foto'",
+              "description": "Label for the edit button",
+              "attribute": "buttonLabel"
+            },
+            {
+              "kind": "field",
+              "name": "cropTitle",
+              "type": {
+                "text": "string"
+              },
+              "default": "'Recortar foto de perfil'",
+              "description": "Modal title",
+              "attribute": "cropTitle"
+            },
+            {
+              "kind": "field",
+              "name": "_isDragOver",
+              "type": {
+                "text": "boolean"
+              },
+              "privacy": "private",
+              "default": "false"
+            },
+            {
+              "kind": "field",
+              "name": "_isCropModalOpen",
+              "type": {
+                "text": "boolean"
+              },
+              "privacy": "private",
+              "default": "false"
+            },
+            {
+              "kind": "field",
+              "name": "_zoom",
+              "type": {
+                "text": "number"
+              },
+              "privacy": "private",
+              "default": "1"
+            },
+            {
+              "kind": "field",
+              "name": "_minZoom",
+              "type": {
+                "text": "number"
+              },
+              "privacy": "private",
+              "default": "1"
+            },
+            {
+              "kind": "field",
+              "name": "_maxZoom",
+              "type": {
+                "text": "number"
+              },
+              "privacy": "private",
+              "default": "4"
+            },
+            {
+              "kind": "field",
+              "name": "_panX",
+              "type": {
+                "text": "number"
+              },
+              "privacy": "private",
+              "default": "0"
+            },
+            {
+              "kind": "field",
+              "name": "_panY",
+              "type": {
+                "text": "number"
+              },
+              "privacy": "private",
+              "default": "0"
+            },
+            {
+              "kind": "field",
+              "name": "_rotation",
+              "type": {
+                "text": "number"
+              },
+              "privacy": "private",
+              "default": "0"
+            },
+            {
+              "kind": "field",
+              "name": "_isPanning",
+              "type": {
+                "text": "boolean"
+              },
+              "privacy": "private",
+              "default": "false"
+            },
+            {
+              "kind": "field",
+              "name": "_rawLoadedImage",
+              "type": {
+                "text": "HTMLImageElement | null"
+              },
+              "privacy": "private",
+              "default": "null"
+            },
+            {
+              "kind": "field",
+              "name": "_selectedFile",
+              "type": {
+                "text": "File | null"
+              },
+              "privacy": "private",
+              "default": "null"
+            },
+            {
+              "kind": "field",
+              "name": "_pointerStartX",
+              "type": {
+                "text": "number"
+              },
+              "privacy": "private",
+              "default": "0"
+            },
+            {
+              "kind": "field",
+              "name": "_pointerStartY",
+              "type": {
+                "text": "number"
+              },
+              "privacy": "private",
+              "default": "0"
+            },
+            {
+              "kind": "field",
+              "name": "_panStartX",
+              "type": {
+                "text": "number"
+              },
+              "privacy": "private",
+              "default": "0"
+            },
+            {
+              "kind": "field",
+              "name": "_panStartY",
+              "type": {
+                "text": "number"
+              },
+              "privacy": "private",
+              "default": "0"
+            },
+            {
+              "kind": "method",
+              "name": "_cleanupCropState",
+              "privacy": "private"
+            },
+            {
+              "kind": "method",
+              "name": "_computeInitials",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "string"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "name",
+                  "type": {
+                    "text": "string"
+                  }
+                }
+              ],
+              "description": "Compute initials from the user name"
+            },
+            {
+              "kind": "method",
+              "name": "_triggerFileInput",
+              "privacy": "private",
+              "description": "Open file picker"
+            },
+            {
+              "kind": "method",
+              "name": "_handleFileSelected",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "e",
+                  "type": {
+                    "text": "Event"
+                  }
+                }
+              ],
+              "description": "Handle file input selection"
+            },
+            {
+              "kind": "method",
+              "name": "_processSelectedFile",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "file",
+                  "type": {
+                    "text": "File"
+                  }
+                }
+              ],
+              "description": "Validate and prepare the selected image file"
+            },
+            {
+              "kind": "method",
+              "name": "_emitError",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "error",
+                  "type": {
+                    "text": "FzlAvatarErrorEventDetail['error']"
+                  }
+                },
+                {
+                  "name": "message",
+                  "type": {
+                    "text": "string"
+                  }
+                },
+                {
+                  "name": "file",
+                  "optional": true,
+                  "type": {
+                    "text": "File"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "_initCropState",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "img",
+                  "type": {
+                    "text": "HTMLImageElement"
+                  }
+                }
+              ],
+              "description": "Calculate initial zoom and bounds"
+            },
+            {
+              "kind": "method",
+              "name": "_drawCropCanvas",
+              "privacy": "private",
+              "description": "Draw image and circular crop guide on the modal canvas"
+            },
+            {
+              "kind": "method",
+              "name": "_handlePointerDown",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "e",
+                  "type": {
+                    "text": "PointerEvent"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "_handlePointerMove",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "e",
+                  "type": {
+                    "text": "PointerEvent"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "_handlePointerUp",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "e",
+                  "type": {
+                    "text": "PointerEvent"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "_handleWheel",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "e",
+                  "type": {
+                    "text": "WheelEvent"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "_handleZoomSliderChange",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "e",
+                  "type": {
+                    "text": "Event"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "_rotateClockwise",
+              "privacy": "private"
+            },
+            {
+              "kind": "method",
+              "name": "_zoomIn",
+              "privacy": "private"
+            },
+            {
+              "kind": "method",
+              "name": "_zoomOut",
+              "privacy": "private"
+            },
+            {
+              "kind": "method",
+              "name": "_closeCropModal",
+              "privacy": "private"
+            },
+            {
+              "kind": "method",
+              "name": "_applyCrop",
+              "privacy": "private",
+              "description": "Apply crop, export Data URL and Blob, and dispatch change event"
+            },
+            {
+              "kind": "method",
+              "name": "_handleRemoveAvatar",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "e",
+                  "type": {
+                    "text": "Event"
+                  }
+                }
+              ],
+              "description": "Remove avatar"
+            },
+            {
+              "kind": "method",
+              "name": "_handleDragOver",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "e",
+                  "type": {
+                    "text": "DragEvent"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "_handleDragLeave",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "e",
+                  "type": {
+                    "text": "DragEvent"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "_handleDrop",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "e",
+                  "type": {
+                    "text": "DragEvent"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "_handleKeyDown",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "e",
+                  "type": {
+                    "text": "KeyboardEvent"
+                  }
+                }
+              ]
+            }
+          ],
+          "events": [
+            {
+              "name": "fzl-avatar-error",
+              "type": {
+                "text": "CustomEvent<FzlAvatarErrorEventDetail>"
+              },
+              "description": "Dispatched when validation fails (size, type)"
+            },
+            {
+              "name": "fzl-avatar-change",
+              "type": {
+                "text": "CustomEvent<FzlAvatarChangeEventDetail>"
+              },
+              "description": "Dispatched when the user crops and applies a new avatar"
+            },
+            {
+              "name": "fzl-avatar-remove",
+              "type": {
+                "text": "CustomEvent<void>"
+              },
+              "description": "Dispatched when the user removes their avatar"
+            },
+            {
+              "type": {
+                "text": "CustomEvent<{ widgetId: string; originalEvent: FocusEvent }>"
+              },
+              "description": "Dispatched when the widget gains focus",
+              "name": "fzl-focus"
+            },
+            {
+              "type": {
+                "text": "CustomEvent<{ widgetId: string; originalEvent: FocusEvent }>"
+              },
+              "description": "Dispatched when the widget loses focus",
+              "name": "fzl-blur"
+            }
+          ],
+          "attributes": [
+            {
+              "name": "src",
+              "type": {
+                "text": "string"
+              },
+              "default": "''",
+              "description": "Current avatar image source (URL or Data URL)",
+              "fieldName": "src"
+            },
+            {
+              "name": "name",
+              "type": {
+                "text": "string"
+              },
+              "default": "''",
+              "description": "User name (used for alt text and fallback initials)",
+              "fieldName": "name"
+            },
+            {
+              "name": "size",
+              "type": {
+                "text": "number"
+              },
+              "default": "120",
+              "description": "Diameter of the avatar in pixels",
+              "fieldName": "size"
+            },
+            {
+              "name": "outputSize",
+              "type": {
+                "text": "number"
+              },
+              "default": "360",
+              "description": "Width and height of the exported square image in pixels",
+              "fieldName": "outputSize"
+            },
+            {
+              "name": "outputFormat",
+              "type": {
+                "text": "'image/png' | 'image/jpeg' | 'image/webp'"
+              },
+              "default": "'image/png'",
+              "description": "Format of the exported image",
+              "fieldName": "outputFormat"
+            },
+            {
+              "name": "outputQuality",
+              "type": {
+                "text": "number"
+              },
+              "default": "0.92",
+              "description": "Compression quality (0 to 1) for JPEG/WebP",
+              "fieldName": "outputQuality"
+            },
+            {
+              "name": "accept",
+              "type": {
+                "text": "string"
+              },
+              "default": "'image/png, image/jpeg, image/webp, image/gif'",
+              "description": "Accepted MIME types for the file picker",
+              "fieldName": "accept"
+            },
+            {
+              "name": "maxFileSize",
+              "description": "Maximum allowed file size in bytes (default: 5MB)",
+              "fieldName": "maxFileSize"
+            },
+            {
+              "name": "disabled",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false",
+              "description": "Whether the component is disabled",
+              "fieldName": "disabled"
+            },
+            {
+              "name": "readonly",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false",
+              "description": "Whether the avatar is read-only (displays avatar without edit actions)",
+              "fieldName": "readonly"
+            },
+            {
+              "name": "buttonLabel",
+              "type": {
+                "text": "string"
+              },
+              "default": "'Alterar foto'",
+              "description": "Label for the edit button",
+              "fieldName": "buttonLabel"
+            },
+            {
+              "name": "cropTitle",
+              "type": {
+                "text": "string"
+              },
+              "default": "'Recortar foto de perfil'",
+              "description": "Modal title",
+              "fieldName": "cropTitle"
+            }
+          ],
+          "mixins": [
+            {
+              "name": "FzlWidgetMixin",
+              "package": "@fzl/core"
+            }
+          ],
+          "superclass": {
+            "name": "LitElement",
+            "package": "lit"
+          },
+          "tagName": "fzl-lit-avatar-upload",
+          "customElement": true
+        },
+        {
+          "kind": "variable",
+          "name": "dataUrl"
+        },
+        {
+          "kind": "variable",
+          "name": "blob",
+          "default": "await new Promise<Blob | null>((resolve) => { exportCanvas.toBlob(resolve, this.outputFormat, this.outputQuality); })"
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "FzlLitAvatarUpload",
+          "declaration": {
+            "name": "FzlLitAvatarUpload",
+            "module": "src/components/avatar-upload/avatar-upload.component.ts"
+          }
+        },
+        {
+          "kind": "custom-element-definition",
+          "name": "fzl-lit-avatar-upload",
+          "declaration": {
+            "name": "FzlLitAvatarUpload",
+            "module": "src/components/avatar-upload/avatar-upload.component.ts"
           }
         }
       ]
@@ -3508,382 +5901,6 @@
           "declaration": {
             "name": "anonymous_1",
             "module": "src/components/reader-chapterview/reader-chapterview.component.ts"
-          }
-        }
-      ]
-    },
-    {
-      "kind": "javascript-module",
-      "path": "src/components/crumb/crumb.component.ts",
-      "declarations": [
-        {
-          "kind": "function",
-          "name": "parseFzlCrumbItems",
-          "return": {
-            "type": {
-              "text": "FzlCrumbItem[]"
-            }
-          },
-          "parameters": [
-            {
-              "name": "items",
-              "type": {
-                "text": "FzlCrumbItem[] | string | null | undefined"
-              }
-            },
-            {
-              "name": "pathStr",
-              "optional": true,
-              "type": {
-                "text": "string"
-              }
-            }
-          ]
-        },
-        {
-          "kind": "class",
-          "description": "Reactive Lit-based Breadcrumb (\"Crumb\") Custom Element showing current navigation path\nand providing back navigation to the previous view.",
-          "name": "FzlLitCrumb",
-          "cssParts": [
-            {
-              "description": "The outer `<nav>` landmark element",
-              "name": "nav"
-            },
-            {
-              "description": "The back navigation `<button>` element",
-              "name": "back-button"
-            },
-            {
-              "description": "The `<ol>` breadcrumb trail list",
-              "name": "list"
-            },
-            {
-              "description": "Each `<li>` breadcrumb item",
-              "name": "item"
-            },
-            {
-              "description": "Interactive `<a>` link for ancestor items",
-              "name": "link"
-            },
-            {
-              "description": "Visual separator `<span>` between items",
-              "name": "separator"
-            },
-            {
-              "description": "The `<span aria-current=\"page\">` active view label",
-              "name": "current"
-            }
-          ],
-          "members": [
-            {
-              "kind": "field",
-              "name": "items",
-              "type": {
-                "text": "FzlCrumbItem[]"
-              },
-              "default": "[]",
-              "description": "Breadcrumb items array or JSON/delimited string",
-              "attribute": "items"
-            },
-            {
-              "kind": "field",
-              "name": "path",
-              "type": {
-                "text": "string"
-              },
-              "default": "''",
-              "description": "Path string shorthand (e.g. \"Início / Config / Backend\")",
-              "attribute": "path",
-              "reflects": true
-            },
-            {
-              "kind": "field",
-              "name": "separator",
-              "type": {
-                "text": "string"
-              },
-              "default": "'›'",
-              "description": "Visual separator between breadcrumb items",
-              "attribute": "separator",
-              "reflects": true
-            },
-            {
-              "kind": "field",
-              "name": "showBack",
-              "type": {
-                "text": "boolean"
-              },
-              "default": "true",
-              "description": "Whether to display the back button",
-              "attribute": "show-back",
-              "reflects": true
-            },
-            {
-              "kind": "field",
-              "name": "backDisabled",
-              "type": {
-                "text": "boolean"
-              },
-              "default": "false",
-              "description": "Whether the back button is disabled",
-              "attribute": "back-disabled",
-              "reflects": true
-            },
-            {
-              "kind": "field",
-              "name": "backLabel",
-              "type": {
-                "text": "string"
-              },
-              "default": "'Voltar'",
-              "description": "Label for the back navigation button",
-              "attribute": "back-label",
-              "reflects": true
-            },
-            {
-              "kind": "field",
-              "name": "backHref",
-              "type": {
-                "text": "string"
-              },
-              "default": "''",
-              "description": "Optional explicit target URL/hash for the back button",
-              "attribute": "back-href",
-              "reflects": true
-            },
-            {
-              "kind": "field",
-              "name": "ariaLabel",
-              "type": {
-                "text": "string"
-              },
-              "default": "'Navegação estrutural'",
-              "description": "Accessible label for the `<nav>` landmark",
-              "attribute": "aria-label",
-              "reflects": true
-            },
-            {
-              "kind": "field",
-              "name": "_keyNav",
-              "privacy": "private",
-              "default": "new FzlKeyNavController(this, { orientation: 'horizontal', rovingTabIndex: true, getItems: () => Array.from( this.renderRoot.querySelectorAll<HTMLElement>( '.back-btn:not([disabled]):not([hidden]), a.crumb-link' ) ), })"
-            },
-            {
-              "kind": "method",
-              "name": "_handleKeyDown",
-              "privacy": "private",
-              "return": {
-                "type": {
-                  "text": "void"
-                }
-              },
-              "parameters": [
-                {
-                  "name": "event",
-                  "type": {
-                    "text": "KeyboardEvent"
-                  }
-                }
-              ]
-            },
-            {
-              "kind": "method",
-              "name": "_resolvedItems",
-              "privacy": "private",
-              "return": {
-                "type": {
-                  "text": "FzlCrumbItem[]"
-                }
-              }
-            },
-            {
-              "kind": "method",
-              "name": "_handleBack",
-              "privacy": "private",
-              "parameters": [
-                {
-                  "name": "event",
-                  "type": {
-                    "text": "MouseEvent"
-                  }
-                }
-              ]
-            },
-            {
-              "kind": "method",
-              "name": "_handleItemClick",
-              "privacy": "private",
-              "parameters": [
-                {
-                  "name": "event",
-                  "type": {
-                    "text": "MouseEvent"
-                  }
-                },
-                {
-                  "name": "item",
-                  "type": {
-                    "text": "FzlCrumbItem"
-                  }
-                },
-                {
-                  "name": "index",
-                  "type": {
-                    "text": "number"
-                  }
-                }
-              ]
-            }
-          ],
-          "events": [
-            {
-              "type": {
-                "text": "CustomEvent<{ backHref: string; originalEvent: MouseEvent }>"
-              },
-              "description": "Dispatched when the back button is activated",
-              "name": "fzl-back"
-            },
-            {
-              "type": {
-                "text": "CustomEvent<{ item: FzlCrumbItem; index: number; href?: string; originalEvent: MouseEvent }>"
-              },
-              "description": "Dispatched when a breadcrumb link item is clicked",
-              "name": "fzl-navigate"
-            },
-            {
-              "type": {
-                "text": "CustomEvent<{ widgetId: string; originalEvent: FocusEvent }>"
-              },
-              "description": "Dispatched when the widget gains focus",
-              "name": "fzl-focus"
-            },
-            {
-              "type": {
-                "text": "CustomEvent<{ widgetId: string; originalEvent: FocusEvent }>"
-              },
-              "description": "Dispatched when the widget loses focus",
-              "name": "fzl-blur"
-            }
-          ],
-          "attributes": [
-            {
-              "name": "items",
-              "type": {
-                "text": "FzlCrumbItem[]"
-              },
-              "default": "[]",
-              "description": "Breadcrumb items array or JSON/delimited string",
-              "fieldName": "items",
-              "attribute": "items"
-            },
-            {
-              "name": "path",
-              "type": {
-                "text": "string"
-              },
-              "default": "''",
-              "description": "Path string shorthand (e.g. \"Início / Config / Backend\")",
-              "fieldName": "path",
-              "attribute": "path"
-            },
-            {
-              "name": "separator",
-              "type": {
-                "text": "string"
-              },
-              "default": "'›'",
-              "description": "Visual separator between breadcrumb items",
-              "fieldName": "separator",
-              "attribute": "separator"
-            },
-            {
-              "name": "show-back",
-              "type": {
-                "text": "boolean"
-              },
-              "default": "true",
-              "description": "Whether to display the back button",
-              "fieldName": "showBack",
-              "attribute": "show-back"
-            },
-            {
-              "name": "back-disabled",
-              "type": {
-                "text": "boolean"
-              },
-              "default": "false",
-              "description": "Whether the back button is disabled",
-              "fieldName": "backDisabled",
-              "attribute": "back-disabled"
-            },
-            {
-              "name": "back-label",
-              "type": {
-                "text": "string"
-              },
-              "default": "'Voltar'",
-              "description": "Label for the back navigation button",
-              "fieldName": "backLabel",
-              "attribute": "back-label"
-            },
-            {
-              "name": "back-href",
-              "type": {
-                "text": "string"
-              },
-              "default": "''",
-              "description": "Optional explicit target URL/hash for the back button",
-              "fieldName": "backHref",
-              "attribute": "back-href"
-            },
-            {
-              "name": "aria-label",
-              "type": {
-                "text": "string"
-              },
-              "default": "'Navegação estrutural'",
-              "description": "Accessible label for the `<nav>` landmark",
-              "fieldName": "ariaLabel",
-              "attribute": "aria-label"
-            }
-          ],
-          "mixins": [
-            {
-              "name": "FzlWidgetMixin",
-              "package": "@fzl/core"
-            }
-          ],
-          "superclass": {
-            "name": "LitElement",
-            "package": "lit"
-          },
-          "tagName": "fzl-lit-crumb",
-          "customElement": true
-        }
-      ],
-      "exports": [
-        {
-          "kind": "js",
-          "name": "parseFzlCrumbItems",
-          "declaration": {
-            "name": "parseFzlCrumbItems",
-            "module": "src/components/crumb/crumb.component.ts"
-          }
-        },
-        {
-          "kind": "js",
-          "name": "FzlLitCrumb",
-          "declaration": {
-            "name": "FzlLitCrumb",
-            "module": "src/components/crumb/crumb.component.ts"
-          }
-        },
-        {
-          "kind": "custom-element-definition",
-          "name": "fzl-lit-crumb",
-          "declaration": {
-            "name": "FzlLitCrumb",
-            "module": "src/components/crumb/crumb.component.ts"
           }
         }
       ]

@@ -50,9 +50,31 @@ createAppShell({
       render: ({ params }) =>
         html`<component-docs-view .component=${findComponent(params.id)}></component-docs-view>`,
     },
+    // Rota dedicada para o Explorador de Malhas Territoriais IBGE & SIG
+    {
+      name: 'mapas',
+      match: pattern('mapas'),
+      title: 'Explorador de Malhas IBGE & SIG',
+      crumb: [{ label: 'Mapas IBGE & SIG' }],
+      render: () => {
+        import('@fzl/webcomponents-lit/geo-explorer')
+        return html`
+          <div style="height: calc(100vh - 110px); min-height: 600px; padding: 12px; box-sizing: border-box;">
+            <fzl-geo-explorer style="width: 100%; height: 100%;"></fzl-geo-explorer>
+          </div>
+        `
+      },
+    },
   ],
   drawer: {
     sections: [
+      {
+        id: 'gis',
+        label: 'Geoprocessamento & SIG',
+        items: [
+          { label: 'Explorador de Malhas IBGE', icon: 'map', href: '#/mapas' },
+        ],
+      },
       {
         id: 'componentes',
         label: 'Componentes (Multi-Engine)',

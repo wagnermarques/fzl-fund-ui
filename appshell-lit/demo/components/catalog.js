@@ -17,6 +17,7 @@ import consentBannerDoc from '../../../docs/components/consent-banner.md?raw'
 import userStatusDoc from '../../../docs/components/user-status.md?raw'
 import webPushDoc from '../../../docs/components/web-push.md?raw'
 import avatarUploadDoc from '../../../docs/components/avatar-upload.md?raw'
+import geoExplorerDoc from '../../../docs/components/geo-explorer.md?raw'
 
 /** Catálogo da documentação viva (#/componentes). Cada componente aponta
  *  para a sua especificação em docs/components/ (o texto) e para as
@@ -491,6 +492,33 @@ export const catalog = [
         packageName: 'fzl-fund-appshell--lit',
         manifest: appshellManifest,
         load: () => import('../../src/webcomponents/web-push.js'),
+      },
+    ],
+  },
+  {
+    id: 'geo-explorer',
+    name: 'Explorador Geográfico & Malhas IBGE',
+    icon: 'map',
+    summary:
+      'Suíte de componentes cartográficos e SIG com Leaflet, grade de tiles Slippy Map (Z/X/Y), Auto-LOD e malhas territoriais do IBGE.',
+    doc: geoExplorerDoc,
+    slotText: '',
+    initialValues: {
+      lat: -14.235,
+      lng: -51.925,
+      zoom: 4,
+      basemap: 'carto-positron',
+      'show-debug-grid': false,
+      'auto-lod': true,
+    },
+    implementations: [
+      {
+        id: 'lit',
+        label: 'Lit',
+        tag: 'fzl-geo-explorer',
+        packageName: '@fzl/webcomponents-lit',
+        manifest: litManifest,
+        load: () => import('@fzl/webcomponents-lit/geo-explorer'),
       },
     ],
   },

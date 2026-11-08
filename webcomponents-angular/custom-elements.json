@@ -418,6 +418,30 @@
           ]
         },
         {
+          "kind": "function",
+          "name": "applyPersistedCardOrder",
+          "return": {
+            "type": {
+              "text": "FzlCardItem[]"
+            }
+          },
+          "parameters": [
+            {
+              "name": "items",
+              "type": {
+                "text": "FzlCardItem[]"
+              }
+            },
+            {
+              "name": "orderIds",
+              "type": {
+                "text": "string[]"
+              }
+            }
+          ],
+          "description": "Reorders a list of cards according to a sequence of saved IDs."
+        },
+        {
           "kind": "class",
           "description": "Angular Elements Card List Custom Element (`fzl-ng-card-list`)\nDisplays structured cards with sorting, filtering, and responsive scrolling.",
           "name": "FzlNgCardListComponent",
@@ -495,6 +519,15 @@
             },
             {
               "kind": "field",
+              "name": "_initialItems",
+              "type": {
+                "text": "FzlCardItem[] | null"
+              },
+              "privacy": "private",
+              "default": "null"
+            },
+            {
+              "kind": "field",
               "name": "items",
               "type": {
                 "text": "FzlCardItem[] | string"
@@ -558,6 +591,22 @@
             },
             {
               "kind": "field",
+              "name": "storageKey",
+              "type": {
+                "text": "string"
+              },
+              "default": "''"
+            },
+            {
+              "kind": "field",
+              "name": "storageType",
+              "type": {
+                "text": "'local' | 'session'"
+              },
+              "default": "'local'"
+            },
+            {
+              "kind": "field",
               "name": "emptyText",
               "type": {
                 "text": "string"
@@ -587,7 +636,7 @@
             {
               "kind": "field",
               "name": "fzlCardsReorder",
-              "default": "new EventEmitter<{ items: FzlCardItem[]; fromIndex: number; toIndex: number; item: FzlCardItem; }>()"
+              "default": "new EventEmitter<{ items: FzlCardItem[]; orderIds: string[]; fromIndex: number; toIndex: number; item: FzlCardItem; }>()"
             },
             {
               "kind": "field",
@@ -704,6 +753,64 @@
                 "text": "string"
               },
               "readonly": true
+            },
+            {
+              "kind": "method",
+              "name": "_getStorage",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "Storage | null"
+                }
+              }
+            },
+            {
+              "kind": "method",
+              "name": "_getPersistedOrderIds",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "string[] | null"
+                }
+              }
+            },
+            {
+              "kind": "method",
+              "name": "_persistOrderIds",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "orderIds",
+                  "type": {
+                    "text": "string[]"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "clearPersistedOrder",
+              "privacy": "public",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              }
+            },
+            {
+              "kind": "method",
+              "name": "_getEffectiveItems",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "FzlCardItem[]"
+                }
+              }
             },
             {
               "kind": "field",
@@ -1077,6 +1184,14 @@
           "name": "filterFzlCardItems",
           "declaration": {
             "name": "filterFzlCardItems",
+            "module": "src/components/card-list/card-list.component.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "applyPersistedCardOrder",
+          "declaration": {
+            "name": "applyPersistedCardOrder",
             "module": "src/components/card-list/card-list.component.ts"
           }
         },

@@ -115,6 +115,31 @@ export function filterFzlCardItems(items: FzlCardItem[], query: string): FzlCard
 }
 
 /**
+ * Reorders a list of cards according to a sequence of saved IDs.
+ */
+export function applyPersistedCardOrder(items: FzlCardItem[], orderIds: string[]): FzlCardItem[] {
+  if (!Array.isArray(orderIds) || orderIds.length === 0 || items.length <= 1) return items;
+  const itemMap = new Map<string, FzlCardItem>();
+  for (const item of items) {
+    if (item && item.id !== undefined && item.id !== null) {
+      itemMap.set(String(item.id), item);
+    }
+  }
+  const reordered: FzlCardItem[] = [];
+  for (const id of orderIds) {
+    const found = itemMap.get(String(id));
+    if (found) {
+      reordered.push(found);
+      itemMap.delete(String(id));
+    }
+  }
+  for (const remaining of itemMap.values()) {
+    reordered.push(remaining);
+  }
+  return reordered;
+}
+
+/**
  * Angular Elements Card List Custom Element (`fzl-ng-card-list`)
  * Displays structured cards with sorting, filtering, and responsive scrolling.
  *
@@ -627,6 +652,7 @@ export class FzlNgCardListComponent implements OnInit, AfterViewChecked, OnDestr
   private readonly _keyNav: FzlKeyNavController;
   private _pendingFocusIndex: number | null = null;
   private _items: FzlCardItem[] | string = [];
+  private _initialItems: FzlCardItem[] | null = null;
 
   constructor(private readonly _host: ElementRef<HTMLElement>) {
     this.fzlWidget = new FzlWidgetController(_host.nativeElement);
@@ -649,6 +675,9 @@ export class FzlNgCardListComponent implements OnInit, AfterViewChecked, OnDestr
     const parsedOld = parseFzlCardItems(this._items);
     if (JSON.stringify(parsedNew) !== JSON.stringify(parsedOld)) {
       this._items = val;
+      if (!this._initialItems) {
+        this._initialItems = [...parsedNew];
+      }
       this.cdr?.detectChanges();
     }
   }
@@ -660,6 +689,8 @@ export class FzlNgCardListComponent implements OnInit, AfterViewChecked, OnDestr
   @Input('allow-sort') allowSort: boolean | string = false;
   @Input('allow-filter') allowFilter: boolean | string = false;
   @Input('allow-reorder') allowReorder: boolean | string = false;
+  @Input('storage-key') storageKey: string = '';
+  @Input('storage-type') storageType: 'local' | 'session' = 'local';
   @Input('empty-text') emptyText: string = 'Nenhum item encontrado';
 
   @Output('fzl-card-click') fzlCardClick = new EventEmitter<{
@@ -686,6 +717,7 @@ export class FzlNgCardListComponent implements OnInit, AfterViewChecked, OnDestr
 
   @Output('fzl-cards-reorder') fzlCardsReorder = new EventEmitter<{
     items: FzlCardItem[];
+    orderIds: string[];
     fromIndex: number;
     toIndex: number;
     item: FzlCardItem;
@@ -741,8 +773,65 @@ export class FzlNgCardListComponent implements OnInit, AfterViewChecked, OnDestr
     return this.maxHeight && this.maxHeight !== 'none' ? this.maxHeight : '';
   }
 
-  get displayedItems(): FzlCardItem[] {
+  private _getStorage(): Storage | null {
+    if (typeof window === 'undefined') return null;
+    try {
+      return this.storageType === 'session' ? window.sessionStorage : window.localStorage;
+    } catch {
+      return null;
+    }
+  }
+
+  private _getPersistedOrderIds(): string[] | null {
+    if (!this.storageKey) return null;
+    const storage = this._getStorage();
+    if (!storage) return null;
+    try {
+      const raw = storage.getItem(this.storageKey);
+      if (!raw) return null;
+      const parsed = JSON.parse(raw);
+      return Array.isArray(parsed) ? parsed.map(String) : null;
+    } catch {
+      return null;
+    }
+  }
+
+  private _persistOrderIds(orderIds: string[]): void {
+    if (!this.storageKey) return;
+    const storage = this._getStorage();
+    if (!storage) return;
+    try {
+      storage.setItem(this.storageKey, JSON.stringify(orderIds));
+    } catch (e) {
+      console.warn('[fzl-ng-card-list] Failed to persist card order:', e);
+    }
+  }
+
+  public clearPersistedOrder(): void {
+    if (this.storageKey) {
+      const storage = this._getStorage();
+      if (storage) {
+        try {
+          storage.removeItem(this.storageKey);
+        } catch {}
+      }
+    }
+    if (this._initialItems && this._initialItems.length > 0) {
+      this._items = typeof this._items === 'string'
+        ? JSON.stringify(this._initialItems)
+        : [...this._initialItems];
+    }
+    this.cdr.detectChanges();
+  }
+
+  private _getEffectiveItems(): FzlCardItem[] {
     const raw = parseFzlCardItems(this.items);
+    const savedOrder = this._getPersistedOrderIds();
+    return savedOrder ? applyPersistedCardOrder(raw, savedOrder) : raw;
+  }
+
+  get displayedItems(): FzlCardItem[] {
+    const raw = this._getEffectiveItems();
     const filtered = filterFzlCardItems(raw, this.filterQuery);
     return sortFzlCardItems(filtered, this.currentSortBy || this.sortBy, this.currentSortOrder);
   }
@@ -794,12 +883,12 @@ export class FzlNgCardListComponent implements OnInit, AfterViewChecked, OnDestr
   }
 
   reorderCards(fromIndex: number, toIndex: number) {
-    const raw = parseFzlCardItems(this._items);
-    if (fromIndex < 0 || fromIndex >= raw.length) return;
-    if (toIndex < 0 || toIndex >= raw.length) return;
+    const currentItems = this._getEffectiveItems();
+    if (fromIndex < 0 || fromIndex >= currentItems.length) return;
+    if (toIndex < 0 || toIndex >= currentItems.length) return;
     if (fromIndex === toIndex) return;
 
-    const updated = [...raw];
+    const updated = [...currentItems];
     const [moved] = updated.splice(fromIndex, 1);
     updated.splice(toIndex, 0, moved);
 
@@ -808,10 +897,14 @@ export class FzlNgCardListComponent implements OnInit, AfterViewChecked, OnDestr
     this._pendingFocusIndex = toIndex;
     this._keyNav.focusedIndex = toIndex;
 
+    const orderIds = updated.map((item) => String(item.id));
+    this._persistOrderIds(orderIds);
+
     this._items = updated;
 
     this.fzlCardsReorder.emit({
       items: updated,
+      orderIds,
       fromIndex,
       toIndex,
       item: moved,

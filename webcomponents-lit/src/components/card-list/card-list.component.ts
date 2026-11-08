@@ -102,6 +102,33 @@ export function filterFzlCardItems(items: FzlCardItem[], query: string): FzlCard
 }
 
 /**
+ * Reorders a list of cards according to a sequence of saved IDs.
+ * Items present in `orderIds` are placed first in that exact sequence;
+ * any new items not in `orderIds` are appended at the end.
+ */
+export function applyPersistedCardOrder(items: FzlCardItem[], orderIds: string[]): FzlCardItem[] {
+  if (!Array.isArray(orderIds) || orderIds.length === 0 || items.length <= 1) return items;
+  const itemMap = new Map<string, FzlCardItem>();
+  for (const item of items) {
+    if (item && item.id !== undefined && item.id !== null) {
+      itemMap.set(String(item.id), item);
+    }
+  }
+  const reordered: FzlCardItem[] = [];
+  for (const id of orderIds) {
+    const found = itemMap.get(String(id));
+    if (found) {
+      reordered.push(found);
+      itemMap.delete(String(id));
+    }
+  }
+  for (const remaining of itemMap.values()) {
+    reordered.push(remaining);
+  }
+  return reordered;
+}
+
+/**
  * Multi-Engine Card List Custom Element (`fzl-lit-card-list`)
  * Displays structured cards with responsive layouts, sorting, filtering and scroll container.
  *
@@ -112,7 +139,7 @@ export function filterFzlCardItems(items: FzlCardItem[], query: string): FzlCard
  * @fires {CustomEvent<{ action: string; item: FzlCardItem; index: number; originalEvent: MouseEvent }>} fzl-card-action - Dispatched when card action button is clicked
  * @fires {CustomEvent<{ sortBy: string; sortOrder: FzlSortOrder }>} fzl-sort-change - Dispatched when sorting criteria changes
  * @fires {CustomEvent<{ filter: string }>} fzl-filter-change - Dispatched when search filter text changes
- * @fires {CustomEvent<{ items: FzlCardItem[]; fromIndex: number; toIndex: number; item: FzlCardItem }>} fzl-cards-reorder - Dispatched when cards are reordered
+ * @fires {CustomEvent<{ items: FzlCardItem[]; orderIds: string[]; fromIndex: number; toIndex: number; item: FzlCardItem }>} fzl-cards-reorder - Dispatched when cards are reordered
  * @fires {CustomEvent<{ widgetId: string; originalEvent: FocusEvent }>} fzl-focus - Dispatched when the widget gains focus
  * @fires {CustomEvent<{ widgetId: string; originalEvent: FocusEvent }>} fzl-blur - Dispatched when the widget loses focus
  *
@@ -489,6 +516,14 @@ export class FzlLitCardList extends FzlWidgetMixin(LitElement) {
   @property({ type: Boolean, attribute: 'allow-reorder' })
   allowReorder: boolean = false;
 
+  /** Unique storage key for local browser persistence of manual card order */
+  @property({ type: String, attribute: 'storage-key' })
+  storageKey: string = '';
+
+  /** Type of browser storage to use: 'local' | 'session' (default: 'local') */
+  @property({ type: String, attribute: 'storage-type' })
+  storageType: 'local' | 'session' = 'local';
+
   /** Text displayed when list is empty */
   @property({ type: String, attribute: 'empty-text' })
   emptyText: string = 'Nenhum item encontrado';
@@ -503,12 +538,82 @@ export class FzlLitCardList extends FzlWidgetMixin(LitElement) {
   private _dragOverIndex: number | null = null;
 
   private _pendingFocusIndex: number | null = null;
+  private _initialRawItems: FzlCardItem[] | null = null;
+  private _isInternalReordering = false;
 
   private _keyNav = new FzlKeyNavController(this, {
     orientation: 'both',
     rovingTabIndex: true,
     getItems: () => Array.from(this.renderRoot.querySelectorAll<HTMLElement>('.fzl-card')),
   });
+
+  private _getStorage(): Storage | null {
+    if (typeof window === 'undefined') return null;
+    try {
+      return this.storageType === 'session' ? window.sessionStorage : window.localStorage;
+    } catch {
+      return null;
+    }
+  }
+
+  private _getPersistedOrderIds(): string[] | null {
+    if (!this.storageKey) return null;
+    const storage = this._getStorage();
+    if (!storage) return null;
+    try {
+      const raw = storage.getItem(this.storageKey);
+      if (!raw) return null;
+      const parsed = JSON.parse(raw);
+      return Array.isArray(parsed) ? parsed.map(String) : null;
+    } catch {
+      return null;
+    }
+  }
+
+  private _persistOrderIds(orderIds: string[]): void {
+    if (!this.storageKey) return;
+    const storage = this._getStorage();
+    if (!storage) return;
+    try {
+      storage.setItem(this.storageKey, JSON.stringify(orderIds));
+    } catch (e) {
+      console.warn('[fzl-card-list] Failed to persist card order:', e);
+    }
+  }
+
+  /**
+   * Resets any persisted card sequence from browser storage
+   * and restores initial cards order.
+   */
+  public clearPersistedOrder(): void {
+    if (this.storageKey) {
+      const storage = this._getStorage();
+      if (storage) {
+        try {
+          storage.removeItem(this.storageKey);
+        } catch {}
+      }
+    }
+    if (this._initialRawItems && this._initialRawItems.length > 0) {
+      this.items = typeof this.items === 'string'
+        ? JSON.stringify(this._initialRawItems)
+        : [...this._initialRawItems];
+    }
+    this.requestUpdate();
+  }
+
+  private _getEffectiveItems(): FzlCardItem[] {
+    const raw = parseFzlCardItems(this.items);
+    const savedOrder = this._getPersistedOrderIds();
+    return savedOrder ? applyPersistedCardOrder(raw, savedOrder) : raw;
+  }
+
+  override willUpdate(changedProperties: PropertyValues): void {
+    super.willUpdate(changedProperties);
+    if (changedProperties.has('items') && !this._isInternalReordering) {
+      this._initialRawItems = parseFzlCardItems(this.items);
+    }
+  }
 
   override updated(_changedProperties: PropertyValues): void {
     super.updated(_changedProperties);
@@ -525,12 +630,12 @@ export class FzlLitCardList extends FzlWidgetMixin(LitElement) {
   }
 
   private _reorderCards(fromIndex: number, toIndex: number) {
-    const rawItems = parseFzlCardItems(this.items);
-    if (fromIndex < 0 || fromIndex >= rawItems.length) return;
-    if (toIndex < 0 || toIndex >= rawItems.length) return;
+    const currentItems = this._getEffectiveItems();
+    if (fromIndex < 0 || fromIndex >= currentItems.length) return;
+    if (toIndex < 0 || toIndex >= currentItems.length) return;
     if (fromIndex === toIndex) return;
 
-    const updated = [...rawItems];
+    const updated = [...currentItems];
     const [moved] = updated.splice(fromIndex, 1);
     updated.splice(toIndex, 0, moved);
 
@@ -539,14 +644,20 @@ export class FzlLitCardList extends FzlWidgetMixin(LitElement) {
     this._pendingFocusIndex = toIndex;
     this._keyNav.focusedIndex = toIndex;
 
+    const orderIds = updated.map((item) => String(item.id));
+    this._persistOrderIds(orderIds);
+
+    this._isInternalReordering = true;
     if (typeof this.items === 'string') {
       this.items = JSON.stringify(updated);
     } else {
       this.items = updated;
     }
+    this._isInternalReordering = false;
 
     this.emit('fzl-cards-reorder', {
       items: updated,
+      orderIds,
       fromIndex,
       toIndex,
       item: moved,
@@ -658,7 +769,7 @@ export class FzlLitCardList extends FzlWidgetMixin(LitElement) {
   }
 
   override render() {
-    const rawItems = parseFzlCardItems(this.items);
+    const rawItems = this._getEffectiveItems();
     const filtered = filterFzlCardItems(rawItems, this._filterQuery);
     const displayedItems = sortFzlCardItems(filtered, this.sortBy, this.sortOrder);
 

@@ -99,6 +99,31 @@ export function filterFzlCardItems(items: FzlCardItem[], query: string): FzlCard
   });
 }
 
+/**
+ * Reorders a list of cards according to a sequence of saved IDs.
+ */
+export function applyPersistedCardOrder(items: FzlCardItem[], orderIds: string[]): FzlCardItem[] {
+  if (!Array.isArray(orderIds) || orderIds.length === 0 || items.length <= 1) return items;
+  const itemMap = new Map<string, FzlCardItem>();
+  for (const item of items) {
+    if (item && item.id !== undefined && item.id !== null) {
+      itemMap.set(String(item.id), item);
+    }
+  }
+  const reordered: FzlCardItem[] = [];
+  for (const id of orderIds) {
+    const found = itemMap.get(String(id));
+    if (found) {
+      reordered.push(found);
+      itemMap.delete(String(id));
+    }
+  }
+  for (const remaining of itemMap.values()) {
+    reordered.push(remaining);
+  }
+  return reordered;
+}
+
 const template = document.createElement('template');
 template.innerHTML = `
   <style>
@@ -444,7 +469,7 @@ template.innerHTML = `
  * @fires {CustomEvent<{ action: string; item: FzlCardItem; index: number; originalEvent: MouseEvent }>} fzl-card-action - Dispatched when card action button is clicked
  * @fires {CustomEvent<{ sortBy: string; sortOrder: FzlSortOrder }>} fzl-sort-change - Dispatched when sorting criteria changes
  * @fires {CustomEvent<{ filter: string }>} fzl-filter-change - Dispatched when search filter text changes
- * @fires {CustomEvent<{ items: FzlCardItem[]; fromIndex: number; toIndex: number; item: FzlCardItem }>} fzl-cards-reorder - Dispatched when cards are reordered
+ * @fires {CustomEvent<{ items: FzlCardItem[]; orderIds: string[]; fromIndex: number; toIndex: number; item: FzlCardItem }>} fzl-cards-reorder - Dispatched when cards are reordered
  * @fires {CustomEvent<{ widgetId: string; originalEvent: FocusEvent }>} fzl-focus - Dispatched when the widget gains focus
  * @fires {CustomEvent<{ widgetId: string; originalEvent: FocusEvent }>} fzl-blur - Dispatched when the widget loses focus
  *
@@ -468,11 +493,14 @@ export class FzlEs6CardList extends FzlWidgetMixin(HTMLElement) {
       'allow-sort',
       'allow-filter',
       'allow-reorder',
+      'storage-key',
+      'storage-type',
       'empty-text',
     ];
   }
 
   private _items: FzlCardItem[] = [];
+  private _initialItems: FzlCardItem[] | null = null;
   private _layout: FzlCardLayout = 'grid';
   private _maxHeight: string = 'none';
   private _sortBy: string = '';
@@ -480,6 +508,8 @@ export class FzlEs6CardList extends FzlWidgetMixin(HTMLElement) {
   private _allowSort: boolean = false;
   private _allowFilter: boolean = false;
   private _allowReorder: boolean = false;
+  private _storageKey: string = '';
+  private _storageType: 'local' | 'session' = 'local';
   private _emptyText: string = 'Nenhum item encontrado';
   private _filterQuery: string = '';
   private _draggedIndex: number | null = null;
@@ -515,6 +545,7 @@ export class FzlEs6CardList extends FzlWidgetMixin(HTMLElement) {
 
   set items(val: FzlCardItem[] | string) {
     this._items = parseFzlCardItems(val);
+    this._initialItems = [...this._items];
     this._render();
   }
 
@@ -583,6 +614,24 @@ export class FzlEs6CardList extends FzlWidgetMixin(HTMLElement) {
     this._render();
   }
 
+  get storageKey(): string {
+    return this._storageKey;
+  }
+
+  set storageKey(val: string) {
+    this._storageKey = val || '';
+    this._render();
+  }
+
+  get storageType(): 'local' | 'session' {
+    return this._storageType;
+  }
+
+  set storageType(val: 'local' | 'session') {
+    this._storageType = val === 'session' ? 'session' : 'local';
+    this._render();
+  }
+
   get emptyText(): string {
     return this._emptyText;
   }
@@ -592,8 +641,65 @@ export class FzlEs6CardList extends FzlWidgetMixin(HTMLElement) {
     this._render();
   }
 
+  private _getStorage(): Storage | null {
+    if (typeof window === 'undefined') return null;
+    try {
+      return this._storageType === 'session' ? window.sessionStorage : window.localStorage;
+    } catch {
+      return null;
+    }
+  }
+
+  private _getPersistedOrderIds(): string[] | null {
+    if (!this._storageKey) return null;
+    const storage = this._getStorage();
+    if (!storage) return null;
+    try {
+      const raw = storage.getItem(this._storageKey);
+      if (!raw) return null;
+      const parsed = JSON.parse(raw);
+      return Array.isArray(parsed) ? parsed.map(String) : null;
+    } catch {
+      return null;
+    }
+  }
+
+  private _persistOrderIds(orderIds: string[]): void {
+    if (!this._storageKey) return;
+    const storage = this._getStorage();
+    if (!storage) return;
+    try {
+      storage.setItem(this._storageKey, JSON.stringify(orderIds));
+    } catch (e) {
+      console.warn('[fzl-es6-card-list] Failed to persist card order:', e);
+    }
+  }
+
+  public clearPersistedOrder(): void {
+    if (this._storageKey) {
+      const storage = this._getStorage();
+      if (storage) {
+        try {
+          storage.removeItem(this._storageKey);
+        } catch {}
+      }
+    }
+    if (this._initialItems && this._initialItems.length > 0) {
+      this._items = [...this._initialItems];
+    }
+    this._render();
+  }
+
+  private _getEffectiveItems(): FzlCardItem[] {
+    const savedOrder = this._getPersistedOrderIds();
+    return savedOrder ? applyPersistedCardOrder(this._items, savedOrder) : this._items;
+  }
+
   override connectedCallback(): void {
     super.connectedCallback();
+    if (!this._initialItems && this._items.length > 0) {
+      this._initialItems = [...this._items];
+    }
     this._updateLayoutClass();
     this._updateFeedHeight();
     this._renderToolbar();
@@ -606,6 +712,7 @@ export class FzlEs6CardList extends FzlWidgetMixin(HTMLElement) {
         const parsed = parseFzlCardItems(newValue);
         if (JSON.stringify(parsed) !== JSON.stringify(this._items)) {
           this._items = parsed;
+          this._initialItems = [...parsed];
           this._render();
         }
         return;
@@ -635,6 +742,12 @@ export class FzlEs6CardList extends FzlWidgetMixin(HTMLElement) {
       case 'allow-reorder':
         this._allowReorder = newValue !== null && newValue !== 'false';
         break;
+      case 'storage-key':
+        this._storageKey = newValue || '';
+        break;
+      case 'storage-type':
+        this._storageType = newValue === 'session' ? 'session' : 'local';
+        break;
       case 'empty-text':
         this._emptyText = newValue || 'Nenhum item encontrado';
         break;
@@ -643,11 +756,12 @@ export class FzlEs6CardList extends FzlWidgetMixin(HTMLElement) {
   }
 
   private _reorderCards(fromIndex: number, toIndex: number): void {
-    if (fromIndex < 0 || fromIndex >= this._items.length) return;
-    if (toIndex < 0 || toIndex >= this._items.length) return;
+    const currentItems = this._getEffectiveItems();
+    if (fromIndex < 0 || fromIndex >= currentItems.length) return;
+    if (toIndex < 0 || toIndex >= currentItems.length) return;
     if (fromIndex === toIndex) return;
 
-    const updated = [...this._items];
+    const updated = [...currentItems];
     const [moved] = updated.splice(fromIndex, 1);
     updated.splice(toIndex, 0, moved);
 
@@ -655,8 +769,12 @@ export class FzlEs6CardList extends FzlWidgetMixin(HTMLElement) {
     this._items = updated;
     this._keyNav.focusedIndex = toIndex;
 
+    const orderIds = updated.map((item) => String(item.id));
+    this._persistOrderIds(orderIds);
+
     this.emit('fzl-cards-reorder', {
       items: updated,
+      orderIds,
       fromIndex,
       toIndex,
       item: moved,
@@ -788,7 +906,8 @@ export class FzlEs6CardList extends FzlWidgetMixin(HTMLElement) {
   private _render(): void {
     this._feedEl.innerHTML = '';
 
-    const filtered = filterFzlCardItems(this._items, this._filterQuery);
+    const effective = this._getEffectiveItems();
+    const filtered = filterFzlCardItems(effective, this._filterQuery);
     const displayed = sortFzlCardItems(filtered, this._sortBy, this._sortOrder);
 
     if (displayed.length === 0) {

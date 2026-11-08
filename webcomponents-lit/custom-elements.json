@@ -211,1283 +211,6 @@
     },
     {
       "kind": "javascript-module",
-      "path": "src/components/card-list/card-list.component.ts",
-      "declarations": [
-        {
-          "kind": "function",
-          "name": "parseFzlCardItems",
-          "return": {
-            "type": {
-              "text": "FzlCardItem[]"
-            }
-          },
-          "parameters": [
-            {
-              "name": "items",
-              "type": {
-                "text": "FzlCardItem[] | string | null | undefined"
-              }
-            }
-          ]
-        },
-        {
-          "kind": "function",
-          "name": "sortFzlCardItems",
-          "return": {
-            "type": {
-              "text": "FzlCardItem[]"
-            }
-          },
-          "parameters": [
-            {
-              "name": "items",
-              "type": {
-                "text": "FzlCardItem[]"
-              }
-            },
-            {
-              "name": "sortBy",
-              "type": {
-                "text": "string"
-              }
-            },
-            {
-              "name": "sortOrder",
-              "default": "'asc'",
-              "type": {
-                "text": "FzlSortOrder"
-              }
-            }
-          ]
-        },
-        {
-          "kind": "function",
-          "name": "filterFzlCardItems",
-          "return": {
-            "type": {
-              "text": "FzlCardItem[]"
-            }
-          },
-          "parameters": [
-            {
-              "name": "items",
-              "type": {
-                "text": "FzlCardItem[]"
-              }
-            },
-            {
-              "name": "query",
-              "type": {
-                "text": "string"
-              }
-            }
-          ]
-        },
-        {
-          "kind": "class",
-          "description": "Multi-Engine Card List Custom Element (`fzl-lit-card-list`)\nDisplays structured cards with responsive layouts, sorting, filtering and scroll container.",
-          "name": "FzlLitCardList",
-          "cssParts": [
-            {
-              "description": "The outer root container",
-              "name": "container"
-            },
-            {
-              "description": "The top sorting and filtering toolbar",
-              "name": "toolbar"
-            },
-            {
-              "description": "The scrollable card container element",
-              "name": "list"
-            },
-            {
-              "description": "Each card element in the collection",
-              "name": "card"
-            },
-            {
-              "description": "Card header element",
-              "name": "card-header"
-            },
-            {
-              "description": "Card description/body element",
-              "name": "card-body"
-            },
-            {
-              "description": "Card footer containing tags and action",
-              "name": "card-footer"
-            },
-            {
-              "description": "Reordering buttons container on each card",
-              "name": "reorder-controls"
-            }
-          ],
-          "members": [
-            {
-              "kind": "field",
-              "name": "items",
-              "type": {
-                "text": "FzlCardItem[] | string"
-              },
-              "default": "[]",
-              "description": "Array of card items or JSON string",
-              "attribute": "items"
-            },
-            {
-              "kind": "field",
-              "name": "layout",
-              "type": {
-                "text": "FzlCardLayout"
-              },
-              "default": "'grid'",
-              "description": "Layout mode: 'vertical' | 'grid' | 'horizontal'",
-              "attribute": "layout",
-              "reflects": true
-            },
-            {
-              "kind": "field",
-              "name": "maxHeight",
-              "type": {
-                "text": "string"
-              },
-              "default": "'none'",
-              "description": "Max height of the scrollable feed (e.g. '500px', '100%')",
-              "attribute": "max-height"
-            },
-            {
-              "kind": "field",
-              "name": "sortBy",
-              "type": {
-                "text": "string"
-              },
-              "default": "''",
-              "description": "Field to sort by ('title', 'date', 'priority', 'status', 'category')",
-              "attribute": "sort-by"
-            },
-            {
-              "kind": "field",
-              "name": "sortOrder",
-              "type": {
-                "text": "FzlSortOrder"
-              },
-              "default": "'asc'",
-              "description": "Sorting order: 'asc' | 'desc'",
-              "attribute": "sort-order"
-            },
-            {
-              "kind": "field",
-              "name": "allowSort",
-              "type": {
-                "text": "boolean"
-              },
-              "default": "false",
-              "description": "Whether to display the built-in sorting toolbar",
-              "attribute": "allow-sort"
-            },
-            {
-              "kind": "field",
-              "name": "allowFilter",
-              "type": {
-                "text": "boolean"
-              },
-              "default": "false",
-              "description": "Whether to display the search filter input",
-              "attribute": "allow-filter"
-            },
-            {
-              "kind": "field",
-              "name": "allowReorder",
-              "type": {
-                "text": "boolean"
-              },
-              "default": "false",
-              "description": "Whether cards can be manually reordered by the user",
-              "attribute": "allow-reorder"
-            },
-            {
-              "kind": "field",
-              "name": "emptyText",
-              "type": {
-                "text": "string"
-              },
-              "default": "'Nenhum item encontrado'",
-              "description": "Text displayed when list is empty",
-              "attribute": "empty-text"
-            },
-            {
-              "kind": "field",
-              "name": "_filterQuery",
-              "type": {
-                "text": "string"
-              },
-              "privacy": "private",
-              "default": "''"
-            },
-            {
-              "kind": "field",
-              "name": "_draggedIndex",
-              "type": {
-                "text": "number | null"
-              },
-              "privacy": "private",
-              "default": "null"
-            },
-            {
-              "kind": "field",
-              "name": "_dragOverIndex",
-              "type": {
-                "text": "number | null"
-              },
-              "privacy": "private",
-              "default": "null"
-            },
-            {
-              "kind": "field",
-              "name": "_pendingFocusIndex",
-              "type": {
-                "text": "number | null"
-              },
-              "privacy": "private",
-              "default": "null"
-            },
-            {
-              "kind": "field",
-              "name": "_keyNav",
-              "privacy": "private",
-              "default": "new FzlKeyNavController(this, { orientation: 'both', rovingTabIndex: true, getItems: () => Array.from(this.renderRoot.querySelectorAll<HTMLElement>('.fzl-card')), })"
-            },
-            {
-              "kind": "method",
-              "name": "_handleFeedKeyDown",
-              "privacy": "private",
-              "return": {
-                "type": {
-                  "text": "void"
-                }
-              },
-              "parameters": [
-                {
-                  "name": "event",
-                  "type": {
-                    "text": "KeyboardEvent"
-                  }
-                }
-              ]
-            },
-            {
-              "kind": "method",
-              "name": "_reorderCards",
-              "privacy": "private",
-              "parameters": [
-                {
-                  "name": "fromIndex",
-                  "type": {
-                    "text": "number"
-                  }
-                },
-                {
-                  "name": "toIndex",
-                  "type": {
-                    "text": "number"
-                  }
-                }
-              ]
-            },
-            {
-              "kind": "method",
-              "name": "_moveCard",
-              "privacy": "private",
-              "parameters": [
-                {
-                  "name": "fromIndex",
-                  "type": {
-                    "text": "number"
-                  }
-                },
-                {
-                  "name": "delta",
-                  "type": {
-                    "text": "number"
-                  }
-                },
-                {
-                  "name": "event",
-                  "type": {
-                    "text": "MouseEvent"
-                  }
-                }
-              ]
-            },
-            {
-              "kind": "method",
-              "name": "_handleDragStart",
-              "privacy": "private",
-              "parameters": [
-                {
-                  "name": "index",
-                  "type": {
-                    "text": "number"
-                  }
-                },
-                {
-                  "name": "event",
-                  "type": {
-                    "text": "DragEvent"
-                  }
-                }
-              ]
-            },
-            {
-              "kind": "method",
-              "name": "_handleDragOver",
-              "privacy": "private",
-              "parameters": [
-                {
-                  "name": "index",
-                  "type": {
-                    "text": "number"
-                  }
-                },
-                {
-                  "name": "event",
-                  "type": {
-                    "text": "DragEvent"
-                  }
-                }
-              ]
-            },
-            {
-              "kind": "method",
-              "name": "_handleDragLeave",
-              "privacy": "private",
-              "parameters": [
-                {
-                  "name": "_index",
-                  "type": {
-                    "text": "number"
-                  }
-                }
-              ]
-            },
-            {
-              "kind": "method",
-              "name": "_handleDrop",
-              "privacy": "private",
-              "parameters": [
-                {
-                  "name": "targetIndex",
-                  "type": {
-                    "text": "number"
-                  }
-                },
-                {
-                  "name": "event",
-                  "type": {
-                    "text": "DragEvent"
-                  }
-                }
-              ]
-            },
-            {
-              "kind": "method",
-              "name": "_handleDragEnd",
-              "privacy": "private"
-            },
-            {
-              "kind": "method",
-              "name": "_handleCardClick",
-              "privacy": "private",
-              "parameters": [
-                {
-                  "name": "item",
-                  "type": {
-                    "text": "FzlCardItem"
-                  }
-                },
-                {
-                  "name": "index",
-                  "type": {
-                    "text": "number"
-                  }
-                },
-                {
-                  "name": "event",
-                  "type": {
-                    "text": "MouseEvent"
-                  }
-                }
-              ]
-            },
-            {
-              "kind": "method",
-              "name": "_handleCardAction",
-              "privacy": "private",
-              "parameters": [
-                {
-                  "name": "item",
-                  "type": {
-                    "text": "FzlCardItem"
-                  }
-                },
-                {
-                  "name": "index",
-                  "type": {
-                    "text": "number"
-                  }
-                },
-                {
-                  "name": "event",
-                  "type": {
-                    "text": "MouseEvent"
-                  }
-                }
-              ]
-            },
-            {
-              "kind": "method",
-              "name": "_handleSortFieldChange",
-              "privacy": "private",
-              "parameters": [
-                {
-                  "name": "event",
-                  "type": {
-                    "text": "Event"
-                  }
-                }
-              ]
-            },
-            {
-              "kind": "method",
-              "name": "_toggleSortOrder",
-              "privacy": "private"
-            },
-            {
-              "kind": "method",
-              "name": "_handleFilterInput",
-              "privacy": "private",
-              "parameters": [
-                {
-                  "name": "event",
-                  "type": {
-                    "text": "Event"
-                  }
-                }
-              ]
-            }
-          ],
-          "events": [
-            {
-              "name": "fzl-card-click",
-              "type": {
-                "text": "CustomEvent<{ item: FzlCardItem; index: number; originalEvent: MouseEvent }>"
-              },
-              "description": "Dispatched when a card is clicked"
-            },
-            {
-              "name": "fzl-card-action",
-              "type": {
-                "text": "CustomEvent<{ action: string; item: FzlCardItem; index: number; originalEvent: MouseEvent }>"
-              },
-              "description": "Dispatched when card action button is clicked"
-            },
-            {
-              "name": "fzl-sort-change",
-              "type": {
-                "text": "CustomEvent<{ sortBy: string; sortOrder: FzlSortOrder }>"
-              },
-              "description": "Dispatched when sorting criteria changes"
-            },
-            {
-              "name": "fzl-filter-change",
-              "type": {
-                "text": "CustomEvent<{ filter: string }>"
-              },
-              "description": "Dispatched when search filter text changes"
-            },
-            {
-              "type": {
-                "text": "CustomEvent<{ items: FzlCardItem[]; fromIndex: number; toIndex: number; item: FzlCardItem }>"
-              },
-              "description": "Dispatched when cards are reordered",
-              "name": "fzl-cards-reorder"
-            },
-            {
-              "type": {
-                "text": "CustomEvent<{ widgetId: string; originalEvent: FocusEvent }>"
-              },
-              "description": "Dispatched when the widget gains focus",
-              "name": "fzl-focus"
-            },
-            {
-              "type": {
-                "text": "CustomEvent<{ widgetId: string; originalEvent: FocusEvent }>"
-              },
-              "description": "Dispatched when the widget loses focus",
-              "name": "fzl-blur"
-            }
-          ],
-          "attributes": [
-            {
-              "name": "items",
-              "type": {
-                "text": "FzlCardItem[] | string"
-              },
-              "default": "[]",
-              "description": "Array of card items or JSON string",
-              "fieldName": "items"
-            },
-            {
-              "name": "layout",
-              "type": {
-                "text": "FzlCardLayout"
-              },
-              "default": "'grid'",
-              "description": "Layout mode: 'vertical' | 'grid' | 'horizontal'",
-              "fieldName": "layout"
-            },
-            {
-              "name": "max-height",
-              "type": {
-                "text": "string"
-              },
-              "default": "'none'",
-              "description": "Max height of the scrollable feed (e.g. '500px', '100%')",
-              "fieldName": "maxHeight"
-            },
-            {
-              "name": "sort-by",
-              "type": {
-                "text": "string"
-              },
-              "default": "''",
-              "description": "Field to sort by ('title', 'date', 'priority', 'status', 'category')",
-              "fieldName": "sortBy"
-            },
-            {
-              "name": "sort-order",
-              "type": {
-                "text": "FzlSortOrder"
-              },
-              "default": "'asc'",
-              "description": "Sorting order: 'asc' | 'desc'",
-              "fieldName": "sortOrder"
-            },
-            {
-              "name": "allow-sort",
-              "type": {
-                "text": "boolean"
-              },
-              "default": "false",
-              "description": "Whether to display the built-in sorting toolbar",
-              "fieldName": "allowSort"
-            },
-            {
-              "name": "allow-filter",
-              "type": {
-                "text": "boolean"
-              },
-              "default": "false",
-              "description": "Whether to display the search filter input",
-              "fieldName": "allowFilter"
-            },
-            {
-              "name": "allow-reorder",
-              "type": {
-                "text": "boolean"
-              },
-              "default": "false",
-              "description": "Whether cards can be manually reordered by the user",
-              "fieldName": "allowReorder"
-            },
-            {
-              "name": "empty-text",
-              "type": {
-                "text": "string"
-              },
-              "default": "'Nenhum item encontrado'",
-              "description": "Text displayed when list is empty",
-              "fieldName": "emptyText"
-            }
-          ],
-          "mixins": [
-            {
-              "name": "FzlWidgetMixin",
-              "package": "@fzl/core"
-            }
-          ],
-          "superclass": {
-            "name": "LitElement",
-            "package": "lit"
-          },
-          "tagName": "fzl-lit-card-list",
-          "customElement": true
-        }
-      ],
-      "exports": [
-        {
-          "kind": "js",
-          "name": "parseFzlCardItems",
-          "declaration": {
-            "name": "parseFzlCardItems",
-            "module": "src/components/card-list/card-list.component.ts"
-          }
-        },
-        {
-          "kind": "js",
-          "name": "sortFzlCardItems",
-          "declaration": {
-            "name": "sortFzlCardItems",
-            "module": "src/components/card-list/card-list.component.ts"
-          }
-        },
-        {
-          "kind": "js",
-          "name": "filterFzlCardItems",
-          "declaration": {
-            "name": "filterFzlCardItems",
-            "module": "src/components/card-list/card-list.component.ts"
-          }
-        },
-        {
-          "kind": "js",
-          "name": "FzlLitCardList",
-          "declaration": {
-            "name": "FzlLitCardList",
-            "module": "src/components/card-list/card-list.component.ts"
-          }
-        },
-        {
-          "kind": "custom-element-definition",
-          "name": "fzl-lit-card-list",
-          "declaration": {
-            "name": "FzlLitCardList",
-            "module": "src/components/card-list/card-list.component.ts"
-          }
-        }
-      ]
-    },
-    {
-      "kind": "javascript-module",
-      "path": "src/components/button/button.component.ts",
-      "declarations": [
-        {
-          "kind": "class",
-          "description": "Reactive Lit-based Custom Element button with Shadow DOM encapsulation.",
-          "name": "FzlLitButton",
-          "cssParts": [
-            {
-              "description": "The internal native `<button>` element",
-              "name": "button"
-            }
-          ],
-          "slots": [
-            {
-              "description": "Content to be displayed inside the button",
-              "name": ""
-            }
-          ],
-          "members": [
-            {
-              "kind": "field",
-              "name": "shadowRootOptions",
-              "type": {
-                "text": "ShadowRootInit"
-              },
-              "static": true,
-              "default": "{ ...LitElement.shadowRootOptions, delegatesFocus: true, }"
-            },
-            {
-              "kind": "field",
-              "name": "variant",
-              "type": {
-                "text": "FzlButtonVariant"
-              },
-              "default": "'primary'",
-              "description": "Visual appearance variant",
-              "attribute": "variant",
-              "reflects": true
-            },
-            {
-              "kind": "field",
-              "name": "size",
-              "type": {
-                "text": "FzlButtonSize"
-              },
-              "default": "'md'",
-              "description": "Size scale of the button",
-              "attribute": "size",
-              "reflects": true
-            },
-            {
-              "kind": "field",
-              "name": "disabled",
-              "type": {
-                "text": "boolean"
-              },
-              "default": "false",
-              "description": "Whether the button is disabled",
-              "attribute": "disabled",
-              "reflects": true
-            },
-            {
-              "kind": "field",
-              "name": "type",
-              "type": {
-                "text": "'button' | 'submit' | 'reset'"
-              },
-              "default": "'button'",
-              "description": "Form button behavior",
-              "attribute": "type",
-              "reflects": true
-            },
-            {
-              "kind": "field",
-              "name": "typematic",
-              "type": {
-                "text": "boolean"
-              },
-              "default": "false",
-              "description": "Enables typematic repeat firing of `fzl-click` while held down",
-              "attribute": "typematic",
-              "reflects": true
-            },
-            {
-              "kind": "field",
-              "name": "_typematicCleanup",
-              "type": {
-                "text": "(() => void) | null"
-              },
-              "privacy": "private",
-              "default": "null"
-            },
-            {
-              "kind": "field",
-              "name": "_lastTypematicTick",
-              "type": {
-                "text": "boolean"
-              },
-              "privacy": "private",
-              "default": "false"
-            },
-            {
-              "kind": "method",
-              "name": "_clearTypematic",
-              "privacy": "private",
-              "return": {
-                "type": {
-                  "text": "void"
-                }
-              }
-            },
-            {
-              "kind": "method",
-              "name": "_syncTypematic",
-              "privacy": "private",
-              "return": {
-                "type": {
-                  "text": "void"
-                }
-              }
-            },
-            {
-              "kind": "method",
-              "name": "_handleClick",
-              "privacy": "private",
-              "parameters": [
-                {
-                  "name": "event",
-                  "type": {
-                    "text": "MouseEvent"
-                  }
-                }
-              ]
-            }
-          ],
-          "events": [
-            {
-              "type": {
-                "text": "CustomEvent<{ originalEvent: MouseEvent | KeyboardEvent; repeatCount?: number }>"
-              },
-              "description": "Dispatched when the button is activated",
-              "name": "fzl-click"
-            },
-            {
-              "type": {
-                "text": "CustomEvent<{ widgetId: string; originalEvent: FocusEvent }>"
-              },
-              "description": "Dispatched when the widget gains focus",
-              "name": "fzl-focus"
-            },
-            {
-              "type": {
-                "text": "CustomEvent<{ widgetId: string; originalEvent: FocusEvent }>"
-              },
-              "description": "Dispatched when the widget loses focus",
-              "name": "fzl-blur"
-            }
-          ],
-          "attributes": [
-            {
-              "name": "variant",
-              "type": {
-                "text": "FzlButtonVariant"
-              },
-              "default": "'primary'",
-              "description": "Visual appearance variant",
-              "fieldName": "variant",
-              "attribute": "variant"
-            },
-            {
-              "name": "size",
-              "type": {
-                "text": "FzlButtonSize"
-              },
-              "default": "'md'",
-              "description": "Size scale of the button",
-              "fieldName": "size",
-              "attribute": "size"
-            },
-            {
-              "name": "disabled",
-              "type": {
-                "text": "boolean"
-              },
-              "default": "false",
-              "description": "Whether the button is disabled",
-              "fieldName": "disabled",
-              "attribute": "disabled"
-            },
-            {
-              "name": "type",
-              "type": {
-                "text": "'button' | 'submit' | 'reset'"
-              },
-              "default": "'button'",
-              "description": "Form button behavior",
-              "fieldName": "type",
-              "attribute": "type"
-            },
-            {
-              "name": "typematic",
-              "type": {
-                "text": "boolean"
-              },
-              "default": "false",
-              "description": "Enables typematic repeat firing of `fzl-click` while held down",
-              "fieldName": "typematic",
-              "attribute": "typematic"
-            }
-          ],
-          "mixins": [
-            {
-              "name": "FzlWidgetMixin",
-              "package": "@fzl/core"
-            }
-          ],
-          "superclass": {
-            "name": "LitElement",
-            "package": "lit"
-          },
-          "tagName": "fzl-lit-button",
-          "customElement": true
-        }
-      ],
-      "exports": [
-        {
-          "kind": "js",
-          "name": "FzlLitButton",
-          "declaration": {
-            "name": "FzlLitButton",
-            "module": "src/components/button/button.component.ts"
-          }
-        },
-        {
-          "kind": "custom-element-definition",
-          "name": "fzl-lit-button",
-          "declaration": {
-            "name": "FzlLitButton",
-            "module": "src/components/button/button.component.ts"
-          }
-        }
-      ]
-    },
-    {
-      "kind": "javascript-module",
-      "path": "src/components/crumb/crumb.component.ts",
-      "declarations": [
-        {
-          "kind": "function",
-          "name": "parseFzlCrumbItems",
-          "return": {
-            "type": {
-              "text": "FzlCrumbItem[]"
-            }
-          },
-          "parameters": [
-            {
-              "name": "items",
-              "type": {
-                "text": "FzlCrumbItem[] | string | null | undefined"
-              }
-            },
-            {
-              "name": "pathStr",
-              "optional": true,
-              "type": {
-                "text": "string"
-              }
-            }
-          ]
-        },
-        {
-          "kind": "class",
-          "description": "Reactive Lit-based Breadcrumb (\"Crumb\") Custom Element showing current navigation path\nand providing back navigation to the previous view.",
-          "name": "FzlLitCrumb",
-          "cssParts": [
-            {
-              "description": "The outer `<nav>` landmark element",
-              "name": "nav"
-            },
-            {
-              "description": "The back navigation `<button>` element",
-              "name": "back-button"
-            },
-            {
-              "description": "The `<ol>` breadcrumb trail list",
-              "name": "list"
-            },
-            {
-              "description": "Each `<li>` breadcrumb item",
-              "name": "item"
-            },
-            {
-              "description": "Interactive `<a>` link for ancestor items",
-              "name": "link"
-            },
-            {
-              "description": "Visual separator `<span>` between items",
-              "name": "separator"
-            },
-            {
-              "description": "The `<span aria-current=\"page\">` active view label",
-              "name": "current"
-            }
-          ],
-          "members": [
-            {
-              "kind": "field",
-              "name": "items",
-              "type": {
-                "text": "FzlCrumbItem[]"
-              },
-              "default": "[]",
-              "description": "Breadcrumb items array or JSON/delimited string",
-              "attribute": "items"
-            },
-            {
-              "kind": "field",
-              "name": "path",
-              "type": {
-                "text": "string"
-              },
-              "default": "''",
-              "description": "Path string shorthand (e.g. \"Início / Config / Backend\")",
-              "attribute": "path",
-              "reflects": true
-            },
-            {
-              "kind": "field",
-              "name": "separator",
-              "type": {
-                "text": "string"
-              },
-              "default": "'›'",
-              "description": "Visual separator between breadcrumb items",
-              "attribute": "separator",
-              "reflects": true
-            },
-            {
-              "kind": "field",
-              "name": "showBack",
-              "type": {
-                "text": "boolean"
-              },
-              "default": "true",
-              "description": "Whether to display the back button",
-              "attribute": "show-back",
-              "reflects": true
-            },
-            {
-              "kind": "field",
-              "name": "backDisabled",
-              "type": {
-                "text": "boolean"
-              },
-              "default": "false",
-              "description": "Whether the back button is disabled",
-              "attribute": "back-disabled",
-              "reflects": true
-            },
-            {
-              "kind": "field",
-              "name": "backLabel",
-              "type": {
-                "text": "string"
-              },
-              "default": "'Voltar'",
-              "description": "Label for the back navigation button",
-              "attribute": "back-label",
-              "reflects": true
-            },
-            {
-              "kind": "field",
-              "name": "backHref",
-              "type": {
-                "text": "string"
-              },
-              "default": "''",
-              "description": "Optional explicit target URL/hash for the back button",
-              "attribute": "back-href",
-              "reflects": true
-            },
-            {
-              "kind": "field",
-              "name": "ariaLabel",
-              "type": {
-                "text": "string"
-              },
-              "default": "'Navegação estrutural'",
-              "description": "Accessible label for the `<nav>` landmark",
-              "attribute": "aria-label",
-              "reflects": true
-            },
-            {
-              "kind": "field",
-              "name": "_keyNav",
-              "privacy": "private",
-              "default": "new FzlKeyNavController(this, { orientation: 'horizontal', rovingTabIndex: true, getItems: () => Array.from( this.renderRoot.querySelectorAll<HTMLElement>( '.back-btn:not([disabled]):not([hidden]), a.crumb-link' ) ), })"
-            },
-            {
-              "kind": "method",
-              "name": "_handleKeyDown",
-              "privacy": "private",
-              "return": {
-                "type": {
-                  "text": "void"
-                }
-              },
-              "parameters": [
-                {
-                  "name": "event",
-                  "type": {
-                    "text": "KeyboardEvent"
-                  }
-                }
-              ]
-            },
-            {
-              "kind": "method",
-              "name": "_resolvedItems",
-              "privacy": "private",
-              "return": {
-                "type": {
-                  "text": "FzlCrumbItem[]"
-                }
-              }
-            },
-            {
-              "kind": "method",
-              "name": "_handleBack",
-              "privacy": "private",
-              "parameters": [
-                {
-                  "name": "event",
-                  "type": {
-                    "text": "MouseEvent"
-                  }
-                }
-              ]
-            },
-            {
-              "kind": "method",
-              "name": "_handleItemClick",
-              "privacy": "private",
-              "parameters": [
-                {
-                  "name": "event",
-                  "type": {
-                    "text": "MouseEvent"
-                  }
-                },
-                {
-                  "name": "item",
-                  "type": {
-                    "text": "FzlCrumbItem"
-                  }
-                },
-                {
-                  "name": "index",
-                  "type": {
-                    "text": "number"
-                  }
-                }
-              ]
-            }
-          ],
-          "events": [
-            {
-              "type": {
-                "text": "CustomEvent<{ backHref: string; originalEvent: MouseEvent }>"
-              },
-              "description": "Dispatched when the back button is activated",
-              "name": "fzl-back"
-            },
-            {
-              "type": {
-                "text": "CustomEvent<{ item: FzlCrumbItem; index: number; href?: string; originalEvent: MouseEvent }>"
-              },
-              "description": "Dispatched when a breadcrumb link item is clicked",
-              "name": "fzl-navigate"
-            },
-            {
-              "type": {
-                "text": "CustomEvent<{ widgetId: string; originalEvent: FocusEvent }>"
-              },
-              "description": "Dispatched when the widget gains focus",
-              "name": "fzl-focus"
-            },
-            {
-              "type": {
-                "text": "CustomEvent<{ widgetId: string; originalEvent: FocusEvent }>"
-              },
-              "description": "Dispatched when the widget loses focus",
-              "name": "fzl-blur"
-            }
-          ],
-          "attributes": [
-            {
-              "name": "items",
-              "type": {
-                "text": "FzlCrumbItem[]"
-              },
-              "default": "[]",
-              "description": "Breadcrumb items array or JSON/delimited string",
-              "fieldName": "items",
-              "attribute": "items"
-            },
-            {
-              "name": "path",
-              "type": {
-                "text": "string"
-              },
-              "default": "''",
-              "description": "Path string shorthand (e.g. \"Início / Config / Backend\")",
-              "fieldName": "path",
-              "attribute": "path"
-            },
-            {
-              "name": "separator",
-              "type": {
-                "text": "string"
-              },
-              "default": "'›'",
-              "description": "Visual separator between breadcrumb items",
-              "fieldName": "separator",
-              "attribute": "separator"
-            },
-            {
-              "name": "show-back",
-              "type": {
-                "text": "boolean"
-              },
-              "default": "true",
-              "description": "Whether to display the back button",
-              "fieldName": "showBack",
-              "attribute": "show-back"
-            },
-            {
-              "name": "back-disabled",
-              "type": {
-                "text": "boolean"
-              },
-              "default": "false",
-              "description": "Whether the back button is disabled",
-              "fieldName": "backDisabled",
-              "attribute": "back-disabled"
-            },
-            {
-              "name": "back-label",
-              "type": {
-                "text": "string"
-              },
-              "default": "'Voltar'",
-              "description": "Label for the back navigation button",
-              "fieldName": "backLabel",
-              "attribute": "back-label"
-            },
-            {
-              "name": "back-href",
-              "type": {
-                "text": "string"
-              },
-              "default": "''",
-              "description": "Optional explicit target URL/hash for the back button",
-              "fieldName": "backHref",
-              "attribute": "back-href"
-            },
-            {
-              "name": "aria-label",
-              "type": {
-                "text": "string"
-              },
-              "default": "'Navegação estrutural'",
-              "description": "Accessible label for the `<nav>` landmark",
-              "fieldName": "ariaLabel",
-              "attribute": "aria-label"
-            }
-          ],
-          "mixins": [
-            {
-              "name": "FzlWidgetMixin",
-              "package": "@fzl/core"
-            }
-          ],
-          "superclass": {
-            "name": "LitElement",
-            "package": "lit"
-          },
-          "tagName": "fzl-lit-crumb",
-          "customElement": true
-        }
-      ],
-      "exports": [
-        {
-          "kind": "js",
-          "name": "parseFzlCrumbItems",
-          "declaration": {
-            "name": "parseFzlCrumbItems",
-            "module": "src/components/crumb/crumb.component.ts"
-          }
-        },
-        {
-          "kind": "js",
-          "name": "FzlLitCrumb",
-          "declaration": {
-            "name": "FzlLitCrumb",
-            "module": "src/components/crumb/crumb.component.ts"
-          }
-        },
-        {
-          "kind": "custom-element-definition",
-          "name": "fzl-lit-crumb",
-          "declaration": {
-            "name": "FzlLitCrumb",
-            "module": "src/components/crumb/crumb.component.ts"
-          }
-        }
-      ]
-    },
-    {
-      "kind": "javascript-module",
       "path": "src/components/availability-grid/availability-grid.component.ts",
       "declarations": [
         {
@@ -2154,6 +877,2170 @@
           "declaration": {
             "name": "FzlLitAvailabilityGrid",
             "module": "src/components/availability-grid/availability-grid.component.ts"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/components/button/button.component.ts",
+      "declarations": [
+        {
+          "kind": "class",
+          "description": "Reactive Lit-based Custom Element button with Shadow DOM encapsulation.",
+          "name": "FzlLitButton",
+          "cssParts": [
+            {
+              "description": "The internal native `<button>` element",
+              "name": "button"
+            }
+          ],
+          "slots": [
+            {
+              "description": "Content to be displayed inside the button",
+              "name": ""
+            }
+          ],
+          "members": [
+            {
+              "kind": "field",
+              "name": "shadowRootOptions",
+              "type": {
+                "text": "ShadowRootInit"
+              },
+              "static": true,
+              "default": "{ ...LitElement.shadowRootOptions, delegatesFocus: true, }"
+            },
+            {
+              "kind": "field",
+              "name": "variant",
+              "type": {
+                "text": "FzlButtonVariant"
+              },
+              "default": "'primary'",
+              "description": "Visual appearance variant",
+              "attribute": "variant",
+              "reflects": true
+            },
+            {
+              "kind": "field",
+              "name": "size",
+              "type": {
+                "text": "FzlButtonSize"
+              },
+              "default": "'md'",
+              "description": "Size scale of the button",
+              "attribute": "size",
+              "reflects": true
+            },
+            {
+              "kind": "field",
+              "name": "disabled",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false",
+              "description": "Whether the button is disabled",
+              "attribute": "disabled",
+              "reflects": true
+            },
+            {
+              "kind": "field",
+              "name": "type",
+              "type": {
+                "text": "'button' | 'submit' | 'reset'"
+              },
+              "default": "'button'",
+              "description": "Form button behavior",
+              "attribute": "type",
+              "reflects": true
+            },
+            {
+              "kind": "field",
+              "name": "typematic",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false",
+              "description": "Enables typematic repeat firing of `fzl-click` while held down",
+              "attribute": "typematic",
+              "reflects": true
+            },
+            {
+              "kind": "field",
+              "name": "_typematicCleanup",
+              "type": {
+                "text": "(() => void) | null"
+              },
+              "privacy": "private",
+              "default": "null"
+            },
+            {
+              "kind": "field",
+              "name": "_lastTypematicTick",
+              "type": {
+                "text": "boolean"
+              },
+              "privacy": "private",
+              "default": "false"
+            },
+            {
+              "kind": "method",
+              "name": "_clearTypematic",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              }
+            },
+            {
+              "kind": "method",
+              "name": "_syncTypematic",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              }
+            },
+            {
+              "kind": "method",
+              "name": "_handleClick",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "event",
+                  "type": {
+                    "text": "MouseEvent"
+                  }
+                }
+              ]
+            }
+          ],
+          "events": [
+            {
+              "type": {
+                "text": "CustomEvent<{ originalEvent: MouseEvent | KeyboardEvent; repeatCount?: number }>"
+              },
+              "description": "Dispatched when the button is activated",
+              "name": "fzl-click"
+            },
+            {
+              "type": {
+                "text": "CustomEvent<{ widgetId: string; originalEvent: FocusEvent }>"
+              },
+              "description": "Dispatched when the widget gains focus",
+              "name": "fzl-focus"
+            },
+            {
+              "type": {
+                "text": "CustomEvent<{ widgetId: string; originalEvent: FocusEvent }>"
+              },
+              "description": "Dispatched when the widget loses focus",
+              "name": "fzl-blur"
+            }
+          ],
+          "attributes": [
+            {
+              "name": "variant",
+              "type": {
+                "text": "FzlButtonVariant"
+              },
+              "default": "'primary'",
+              "description": "Visual appearance variant",
+              "fieldName": "variant",
+              "attribute": "variant"
+            },
+            {
+              "name": "size",
+              "type": {
+                "text": "FzlButtonSize"
+              },
+              "default": "'md'",
+              "description": "Size scale of the button",
+              "fieldName": "size",
+              "attribute": "size"
+            },
+            {
+              "name": "disabled",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false",
+              "description": "Whether the button is disabled",
+              "fieldName": "disabled",
+              "attribute": "disabled"
+            },
+            {
+              "name": "type",
+              "type": {
+                "text": "'button' | 'submit' | 'reset'"
+              },
+              "default": "'button'",
+              "description": "Form button behavior",
+              "fieldName": "type",
+              "attribute": "type"
+            },
+            {
+              "name": "typematic",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false",
+              "description": "Enables typematic repeat firing of `fzl-click` while held down",
+              "fieldName": "typematic",
+              "attribute": "typematic"
+            }
+          ],
+          "mixins": [
+            {
+              "name": "FzlWidgetMixin",
+              "package": "@fzl/core"
+            }
+          ],
+          "superclass": {
+            "name": "LitElement",
+            "package": "lit"
+          },
+          "tagName": "fzl-lit-button",
+          "customElement": true
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "FzlLitButton",
+          "declaration": {
+            "name": "FzlLitButton",
+            "module": "src/components/button/button.component.ts"
+          }
+        },
+        {
+          "kind": "custom-element-definition",
+          "name": "fzl-lit-button",
+          "declaration": {
+            "name": "FzlLitButton",
+            "module": "src/components/button/button.component.ts"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/components/avatar-upload/avatar-upload.component.ts",
+      "declarations": [
+        {
+          "kind": "class",
+          "description": "Reactive Lit-based Avatar Upload & Circular Crop Web Component.\n\nProvides a round avatar preview with drag-and-drop, file picker,\nand an interactive circular crop modal (pan, zoom, rotation) that\ngenerates both Data URL and Blob outputs for backend integration.",
+          "name": "FzlLitAvatarUpload",
+          "cssParts": [
+            {
+              "description": "The root container",
+              "name": "container"
+            },
+            {
+              "description": "The circular avatar trigger element",
+              "name": "avatar"
+            },
+            {
+              "description": "The cropped avatar image element",
+              "name": "image"
+            },
+            {
+              "description": "The camera badge icon overlay",
+              "name": "badge"
+            },
+            {
+              "description": "The crop modal overlay",
+              "name": "modal"
+            },
+            {
+              "description": "The modal dialog box",
+              "name": "dialog"
+            },
+            {
+              "description": "The action buttons below the avatar",
+              "name": "actions"
+            }
+          ],
+          "members": [
+            {
+              "kind": "field",
+              "name": "src",
+              "type": {
+                "text": "string"
+              },
+              "default": "''",
+              "description": "Current avatar image source (URL or Data URL)",
+              "attribute": "src",
+              "reflects": true
+            },
+            {
+              "kind": "field",
+              "name": "name",
+              "type": {
+                "text": "string"
+              },
+              "default": "''",
+              "description": "User name (used for alt text and fallback initials)",
+              "attribute": "name"
+            },
+            {
+              "kind": "field",
+              "name": "size",
+              "type": {
+                "text": "number"
+              },
+              "default": "120",
+              "description": "Diameter of the avatar in pixels",
+              "attribute": "size"
+            },
+            {
+              "kind": "field",
+              "name": "outputSize",
+              "type": {
+                "text": "number"
+              },
+              "default": "360",
+              "description": "Width and height of the exported square image in pixels",
+              "attribute": "outputSize"
+            },
+            {
+              "kind": "field",
+              "name": "outputFormat",
+              "type": {
+                "text": "'image/png' | 'image/jpeg' | 'image/webp'"
+              },
+              "default": "'image/png'",
+              "description": "Format of the exported image",
+              "attribute": "outputFormat"
+            },
+            {
+              "kind": "field",
+              "name": "outputQuality",
+              "type": {
+                "text": "number"
+              },
+              "default": "0.92",
+              "description": "Compression quality (0 to 1) for JPEG/WebP",
+              "attribute": "outputQuality"
+            },
+            {
+              "kind": "field",
+              "name": "accept",
+              "type": {
+                "text": "string"
+              },
+              "default": "'image/png, image/jpeg, image/webp, image/gif'",
+              "description": "Accepted MIME types for the file picker",
+              "attribute": "accept"
+            },
+            {
+              "kind": "field",
+              "name": "maxFileSize",
+              "description": "Maximum allowed file size in bytes (default: 5MB)",
+              "attribute": "maxFileSize"
+            },
+            {
+              "kind": "field",
+              "name": "disabled",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false",
+              "description": "Whether the component is disabled",
+              "attribute": "disabled",
+              "reflects": true
+            },
+            {
+              "kind": "field",
+              "name": "readonly",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false",
+              "description": "Whether the avatar is read-only (displays avatar without edit actions)",
+              "attribute": "readonly",
+              "reflects": true
+            },
+            {
+              "kind": "field",
+              "name": "buttonLabel",
+              "type": {
+                "text": "string"
+              },
+              "default": "'Alterar foto'",
+              "description": "Label for the edit button",
+              "attribute": "buttonLabel"
+            },
+            {
+              "kind": "field",
+              "name": "cropTitle",
+              "type": {
+                "text": "string"
+              },
+              "default": "'Recortar foto de perfil'",
+              "description": "Modal title",
+              "attribute": "cropTitle"
+            },
+            {
+              "kind": "field",
+              "name": "_isDragOver",
+              "type": {
+                "text": "boolean"
+              },
+              "privacy": "private",
+              "default": "false"
+            },
+            {
+              "kind": "field",
+              "name": "_isCropModalOpen",
+              "type": {
+                "text": "boolean"
+              },
+              "privacy": "private",
+              "default": "false"
+            },
+            {
+              "kind": "field",
+              "name": "_zoom",
+              "type": {
+                "text": "number"
+              },
+              "privacy": "private",
+              "default": "1"
+            },
+            {
+              "kind": "field",
+              "name": "_minZoom",
+              "type": {
+                "text": "number"
+              },
+              "privacy": "private",
+              "default": "1"
+            },
+            {
+              "kind": "field",
+              "name": "_maxZoom",
+              "type": {
+                "text": "number"
+              },
+              "privacy": "private",
+              "default": "4"
+            },
+            {
+              "kind": "field",
+              "name": "_panX",
+              "type": {
+                "text": "number"
+              },
+              "privacy": "private",
+              "default": "0"
+            },
+            {
+              "kind": "field",
+              "name": "_panY",
+              "type": {
+                "text": "number"
+              },
+              "privacy": "private",
+              "default": "0"
+            },
+            {
+              "kind": "field",
+              "name": "_rotation",
+              "type": {
+                "text": "number"
+              },
+              "privacy": "private",
+              "default": "0"
+            },
+            {
+              "kind": "field",
+              "name": "_isPanning",
+              "type": {
+                "text": "boolean"
+              },
+              "privacy": "private",
+              "default": "false"
+            },
+            {
+              "kind": "field",
+              "name": "_rawLoadedImage",
+              "type": {
+                "text": "HTMLImageElement | null"
+              },
+              "privacy": "private",
+              "default": "null"
+            },
+            {
+              "kind": "field",
+              "name": "_selectedFile",
+              "type": {
+                "text": "File | null"
+              },
+              "privacy": "private",
+              "default": "null"
+            },
+            {
+              "kind": "field",
+              "name": "_pointerStartX",
+              "type": {
+                "text": "number"
+              },
+              "privacy": "private",
+              "default": "0"
+            },
+            {
+              "kind": "field",
+              "name": "_pointerStartY",
+              "type": {
+                "text": "number"
+              },
+              "privacy": "private",
+              "default": "0"
+            },
+            {
+              "kind": "field",
+              "name": "_panStartX",
+              "type": {
+                "text": "number"
+              },
+              "privacy": "private",
+              "default": "0"
+            },
+            {
+              "kind": "field",
+              "name": "_panStartY",
+              "type": {
+                "text": "number"
+              },
+              "privacy": "private",
+              "default": "0"
+            },
+            {
+              "kind": "method",
+              "name": "_cleanupCropState",
+              "privacy": "private"
+            },
+            {
+              "kind": "method",
+              "name": "_computeInitials",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "string"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "name",
+                  "type": {
+                    "text": "string"
+                  }
+                }
+              ],
+              "description": "Compute initials from the user name"
+            },
+            {
+              "kind": "method",
+              "name": "_triggerFileInput",
+              "privacy": "private",
+              "description": "Open file picker"
+            },
+            {
+              "kind": "method",
+              "name": "_handleFileSelected",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "e",
+                  "type": {
+                    "text": "Event"
+                  }
+                }
+              ],
+              "description": "Handle file input selection"
+            },
+            {
+              "kind": "method",
+              "name": "_processSelectedFile",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "file",
+                  "type": {
+                    "text": "File"
+                  }
+                }
+              ],
+              "description": "Validate and prepare the selected image file"
+            },
+            {
+              "kind": "method",
+              "name": "_emitError",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "error",
+                  "type": {
+                    "text": "FzlAvatarErrorEventDetail['error']"
+                  }
+                },
+                {
+                  "name": "message",
+                  "type": {
+                    "text": "string"
+                  }
+                },
+                {
+                  "name": "file",
+                  "optional": true,
+                  "type": {
+                    "text": "File"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "_initCropState",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "img",
+                  "type": {
+                    "text": "HTMLImageElement"
+                  }
+                }
+              ],
+              "description": "Calculate initial zoom and bounds"
+            },
+            {
+              "kind": "method",
+              "name": "_drawCropCanvas",
+              "privacy": "private",
+              "description": "Draw image and circular crop guide on the modal canvas"
+            },
+            {
+              "kind": "method",
+              "name": "_handlePointerDown",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "e",
+                  "type": {
+                    "text": "PointerEvent"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "_handlePointerMove",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "e",
+                  "type": {
+                    "text": "PointerEvent"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "_handlePointerUp",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "e",
+                  "type": {
+                    "text": "PointerEvent"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "_handleWheel",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "e",
+                  "type": {
+                    "text": "WheelEvent"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "_handleZoomSliderChange",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "e",
+                  "type": {
+                    "text": "Event"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "_rotateClockwise",
+              "privacy": "private"
+            },
+            {
+              "kind": "method",
+              "name": "_zoomIn",
+              "privacy": "private"
+            },
+            {
+              "kind": "method",
+              "name": "_zoomOut",
+              "privacy": "private"
+            },
+            {
+              "kind": "method",
+              "name": "_closeCropModal",
+              "privacy": "private"
+            },
+            {
+              "kind": "method",
+              "name": "_applyCrop",
+              "privacy": "private",
+              "description": "Apply crop, export Data URL and Blob, and dispatch change event"
+            },
+            {
+              "kind": "method",
+              "name": "_handleRemoveAvatar",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "e",
+                  "type": {
+                    "text": "Event"
+                  }
+                }
+              ],
+              "description": "Remove avatar"
+            },
+            {
+              "kind": "method",
+              "name": "_handleDragOver",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "e",
+                  "type": {
+                    "text": "DragEvent"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "_handleDragLeave",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "e",
+                  "type": {
+                    "text": "DragEvent"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "_handleDrop",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "e",
+                  "type": {
+                    "text": "DragEvent"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "_handleKeyDown",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "e",
+                  "type": {
+                    "text": "KeyboardEvent"
+                  }
+                }
+              ]
+            }
+          ],
+          "events": [
+            {
+              "name": "fzl-avatar-error",
+              "type": {
+                "text": "CustomEvent<FzlAvatarErrorEventDetail>"
+              },
+              "description": "Dispatched when validation fails (size, type)"
+            },
+            {
+              "name": "fzl-avatar-change",
+              "type": {
+                "text": "CustomEvent<FzlAvatarChangeEventDetail>"
+              },
+              "description": "Dispatched when the user crops and applies a new avatar"
+            },
+            {
+              "name": "fzl-avatar-remove",
+              "type": {
+                "text": "CustomEvent<void>"
+              },
+              "description": "Dispatched when the user removes their avatar"
+            },
+            {
+              "type": {
+                "text": "CustomEvent<{ widgetId: string; originalEvent: FocusEvent }>"
+              },
+              "description": "Dispatched when the widget gains focus",
+              "name": "fzl-focus"
+            },
+            {
+              "type": {
+                "text": "CustomEvent<{ widgetId: string; originalEvent: FocusEvent }>"
+              },
+              "description": "Dispatched when the widget loses focus",
+              "name": "fzl-blur"
+            }
+          ],
+          "attributes": [
+            {
+              "name": "src",
+              "type": {
+                "text": "string"
+              },
+              "default": "''",
+              "description": "Current avatar image source (URL or Data URL)",
+              "fieldName": "src"
+            },
+            {
+              "name": "name",
+              "type": {
+                "text": "string"
+              },
+              "default": "''",
+              "description": "User name (used for alt text and fallback initials)",
+              "fieldName": "name"
+            },
+            {
+              "name": "size",
+              "type": {
+                "text": "number"
+              },
+              "default": "120",
+              "description": "Diameter of the avatar in pixels",
+              "fieldName": "size"
+            },
+            {
+              "name": "outputSize",
+              "type": {
+                "text": "number"
+              },
+              "default": "360",
+              "description": "Width and height of the exported square image in pixels",
+              "fieldName": "outputSize"
+            },
+            {
+              "name": "outputFormat",
+              "type": {
+                "text": "'image/png' | 'image/jpeg' | 'image/webp'"
+              },
+              "default": "'image/png'",
+              "description": "Format of the exported image",
+              "fieldName": "outputFormat"
+            },
+            {
+              "name": "outputQuality",
+              "type": {
+                "text": "number"
+              },
+              "default": "0.92",
+              "description": "Compression quality (0 to 1) for JPEG/WebP",
+              "fieldName": "outputQuality"
+            },
+            {
+              "name": "accept",
+              "type": {
+                "text": "string"
+              },
+              "default": "'image/png, image/jpeg, image/webp, image/gif'",
+              "description": "Accepted MIME types for the file picker",
+              "fieldName": "accept"
+            },
+            {
+              "name": "maxFileSize",
+              "description": "Maximum allowed file size in bytes (default: 5MB)",
+              "fieldName": "maxFileSize"
+            },
+            {
+              "name": "disabled",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false",
+              "description": "Whether the component is disabled",
+              "fieldName": "disabled"
+            },
+            {
+              "name": "readonly",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false",
+              "description": "Whether the avatar is read-only (displays avatar without edit actions)",
+              "fieldName": "readonly"
+            },
+            {
+              "name": "buttonLabel",
+              "type": {
+                "text": "string"
+              },
+              "default": "'Alterar foto'",
+              "description": "Label for the edit button",
+              "fieldName": "buttonLabel"
+            },
+            {
+              "name": "cropTitle",
+              "type": {
+                "text": "string"
+              },
+              "default": "'Recortar foto de perfil'",
+              "description": "Modal title",
+              "fieldName": "cropTitle"
+            }
+          ],
+          "mixins": [
+            {
+              "name": "FzlWidgetMixin",
+              "package": "@fzl/core"
+            }
+          ],
+          "superclass": {
+            "name": "LitElement",
+            "package": "lit"
+          },
+          "tagName": "fzl-lit-avatar-upload",
+          "customElement": true
+        },
+        {
+          "kind": "variable",
+          "name": "dataUrl"
+        },
+        {
+          "kind": "variable",
+          "name": "blob",
+          "default": "await new Promise<Blob | null>((resolve) => { exportCanvas.toBlob(resolve, this.outputFormat, this.outputQuality); })"
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "FzlLitAvatarUpload",
+          "declaration": {
+            "name": "FzlLitAvatarUpload",
+            "module": "src/components/avatar-upload/avatar-upload.component.ts"
+          }
+        },
+        {
+          "kind": "custom-element-definition",
+          "name": "fzl-lit-avatar-upload",
+          "declaration": {
+            "name": "FzlLitAvatarUpload",
+            "module": "src/components/avatar-upload/avatar-upload.component.ts"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/components/card-list/card-list.component.ts",
+      "declarations": [
+        {
+          "kind": "function",
+          "name": "parseFzlCardItems",
+          "return": {
+            "type": {
+              "text": "FzlCardItem[]"
+            }
+          },
+          "parameters": [
+            {
+              "name": "items",
+              "type": {
+                "text": "FzlCardItem[] | string | null | undefined"
+              }
+            }
+          ]
+        },
+        {
+          "kind": "function",
+          "name": "sortFzlCardItems",
+          "return": {
+            "type": {
+              "text": "FzlCardItem[]"
+            }
+          },
+          "parameters": [
+            {
+              "name": "items",
+              "type": {
+                "text": "FzlCardItem[]"
+              }
+            },
+            {
+              "name": "sortBy",
+              "type": {
+                "text": "string"
+              }
+            },
+            {
+              "name": "sortOrder",
+              "default": "'asc'",
+              "type": {
+                "text": "FzlSortOrder"
+              }
+            }
+          ]
+        },
+        {
+          "kind": "function",
+          "name": "filterFzlCardItems",
+          "return": {
+            "type": {
+              "text": "FzlCardItem[]"
+            }
+          },
+          "parameters": [
+            {
+              "name": "items",
+              "type": {
+                "text": "FzlCardItem[]"
+              }
+            },
+            {
+              "name": "query",
+              "type": {
+                "text": "string"
+              }
+            }
+          ]
+        },
+        {
+          "kind": "function",
+          "name": "applyPersistedCardOrder",
+          "return": {
+            "type": {
+              "text": "FzlCardItem[]"
+            }
+          },
+          "parameters": [
+            {
+              "name": "items",
+              "type": {
+                "text": "FzlCardItem[]"
+              }
+            },
+            {
+              "name": "orderIds",
+              "type": {
+                "text": "string[]"
+              }
+            }
+          ],
+          "description": "Reorders a list of cards according to a sequence of saved IDs.\nItems present in `orderIds` are placed first in that exact sequence;\nany new items not in `orderIds` are appended at the end."
+        },
+        {
+          "kind": "class",
+          "description": "Multi-Engine Card List Custom Element (`fzl-lit-card-list`)\nDisplays structured cards with responsive layouts, sorting, filtering and scroll container.",
+          "name": "FzlLitCardList",
+          "cssParts": [
+            {
+              "description": "The outer root container",
+              "name": "container"
+            },
+            {
+              "description": "The top sorting and filtering toolbar",
+              "name": "toolbar"
+            },
+            {
+              "description": "The scrollable card container element",
+              "name": "list"
+            },
+            {
+              "description": "Each card element in the collection",
+              "name": "card"
+            },
+            {
+              "description": "Card header element",
+              "name": "card-header"
+            },
+            {
+              "description": "Card description/body element",
+              "name": "card-body"
+            },
+            {
+              "description": "Card footer containing tags and action",
+              "name": "card-footer"
+            },
+            {
+              "description": "Reordering buttons container on each card",
+              "name": "reorder-controls"
+            }
+          ],
+          "members": [
+            {
+              "kind": "field",
+              "name": "items",
+              "type": {
+                "text": "FzlCardItem[] | string"
+              },
+              "default": "[]",
+              "description": "Array of card items or JSON string",
+              "attribute": "items"
+            },
+            {
+              "kind": "field",
+              "name": "layout",
+              "type": {
+                "text": "FzlCardLayout"
+              },
+              "default": "'grid'",
+              "description": "Layout mode: 'vertical' | 'grid' | 'horizontal'",
+              "attribute": "layout",
+              "reflects": true
+            },
+            {
+              "kind": "field",
+              "name": "maxHeight",
+              "type": {
+                "text": "string"
+              },
+              "default": "'none'",
+              "description": "Max height of the scrollable feed (e.g. '500px', '100%')",
+              "attribute": "max-height"
+            },
+            {
+              "kind": "field",
+              "name": "sortBy",
+              "type": {
+                "text": "string"
+              },
+              "default": "''",
+              "description": "Field to sort by ('title', 'date', 'priority', 'status', 'category')",
+              "attribute": "sort-by"
+            },
+            {
+              "kind": "field",
+              "name": "sortOrder",
+              "type": {
+                "text": "FzlSortOrder"
+              },
+              "default": "'asc'",
+              "description": "Sorting order: 'asc' | 'desc'",
+              "attribute": "sort-order"
+            },
+            {
+              "kind": "field",
+              "name": "allowSort",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false",
+              "description": "Whether to display the built-in sorting toolbar",
+              "attribute": "allow-sort"
+            },
+            {
+              "kind": "field",
+              "name": "allowFilter",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false",
+              "description": "Whether to display the search filter input",
+              "attribute": "allow-filter"
+            },
+            {
+              "kind": "field",
+              "name": "allowReorder",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false",
+              "description": "Whether cards can be manually reordered by the user",
+              "attribute": "allow-reorder"
+            },
+            {
+              "kind": "field",
+              "name": "storageKey",
+              "type": {
+                "text": "string"
+              },
+              "default": "''",
+              "description": "Unique storage key for local browser persistence of manual card order",
+              "attribute": "storage-key"
+            },
+            {
+              "kind": "field",
+              "name": "storageType",
+              "type": {
+                "text": "'local' | 'session'"
+              },
+              "default": "'local'",
+              "description": "Type of browser storage to use: 'local' | 'session' (default: 'local')",
+              "attribute": "storage-type"
+            },
+            {
+              "kind": "field",
+              "name": "emptyText",
+              "type": {
+                "text": "string"
+              },
+              "default": "'Nenhum item encontrado'",
+              "description": "Text displayed when list is empty",
+              "attribute": "empty-text"
+            },
+            {
+              "kind": "field",
+              "name": "_filterQuery",
+              "type": {
+                "text": "string"
+              },
+              "privacy": "private",
+              "default": "''"
+            },
+            {
+              "kind": "field",
+              "name": "_draggedIndex",
+              "type": {
+                "text": "number | null"
+              },
+              "privacy": "private",
+              "default": "null"
+            },
+            {
+              "kind": "field",
+              "name": "_dragOverIndex",
+              "type": {
+                "text": "number | null"
+              },
+              "privacy": "private",
+              "default": "null"
+            },
+            {
+              "kind": "field",
+              "name": "_pendingFocusIndex",
+              "type": {
+                "text": "number | null"
+              },
+              "privacy": "private",
+              "default": "null"
+            },
+            {
+              "kind": "field",
+              "name": "_initialRawItems",
+              "type": {
+                "text": "FzlCardItem[] | null"
+              },
+              "privacy": "private",
+              "default": "null"
+            },
+            {
+              "kind": "field",
+              "name": "_isInternalReordering",
+              "type": {
+                "text": "boolean"
+              },
+              "privacy": "private",
+              "default": "false"
+            },
+            {
+              "kind": "field",
+              "name": "_keyNav",
+              "privacy": "private",
+              "default": "new FzlKeyNavController(this, { orientation: 'both', rovingTabIndex: true, getItems: () => Array.from(this.renderRoot.querySelectorAll<HTMLElement>('.fzl-card')), })"
+            },
+            {
+              "kind": "method",
+              "name": "_getStorage",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "Storage | null"
+                }
+              }
+            },
+            {
+              "kind": "method",
+              "name": "_getPersistedOrderIds",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "string[] | null"
+                }
+              }
+            },
+            {
+              "kind": "method",
+              "name": "_persistOrderIds",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "orderIds",
+                  "type": {
+                    "text": "string[]"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "clearPersistedOrder",
+              "privacy": "public",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "description": "Resets any persisted card sequence from browser storage\nand restores initial cards order."
+            },
+            {
+              "kind": "method",
+              "name": "_getEffectiveItems",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "FzlCardItem[]"
+                }
+              }
+            },
+            {
+              "kind": "method",
+              "name": "_handleFeedKeyDown",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "event",
+                  "type": {
+                    "text": "KeyboardEvent"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "_reorderCards",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "fromIndex",
+                  "type": {
+                    "text": "number"
+                  }
+                },
+                {
+                  "name": "toIndex",
+                  "type": {
+                    "text": "number"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "_moveCard",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "fromIndex",
+                  "type": {
+                    "text": "number"
+                  }
+                },
+                {
+                  "name": "delta",
+                  "type": {
+                    "text": "number"
+                  }
+                },
+                {
+                  "name": "event",
+                  "type": {
+                    "text": "MouseEvent"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "_handleDragStart",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "index",
+                  "type": {
+                    "text": "number"
+                  }
+                },
+                {
+                  "name": "event",
+                  "type": {
+                    "text": "DragEvent"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "_handleDragOver",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "index",
+                  "type": {
+                    "text": "number"
+                  }
+                },
+                {
+                  "name": "event",
+                  "type": {
+                    "text": "DragEvent"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "_handleDragLeave",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "_index",
+                  "type": {
+                    "text": "number"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "_handleDrop",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "targetIndex",
+                  "type": {
+                    "text": "number"
+                  }
+                },
+                {
+                  "name": "event",
+                  "type": {
+                    "text": "DragEvent"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "_handleDragEnd",
+              "privacy": "private"
+            },
+            {
+              "kind": "method",
+              "name": "_handleCardClick",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "item",
+                  "type": {
+                    "text": "FzlCardItem"
+                  }
+                },
+                {
+                  "name": "index",
+                  "type": {
+                    "text": "number"
+                  }
+                },
+                {
+                  "name": "event",
+                  "type": {
+                    "text": "MouseEvent"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "_handleCardAction",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "item",
+                  "type": {
+                    "text": "FzlCardItem"
+                  }
+                },
+                {
+                  "name": "index",
+                  "type": {
+                    "text": "number"
+                  }
+                },
+                {
+                  "name": "event",
+                  "type": {
+                    "text": "MouseEvent"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "_handleSortFieldChange",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "event",
+                  "type": {
+                    "text": "Event"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "_toggleSortOrder",
+              "privacy": "private"
+            },
+            {
+              "kind": "method",
+              "name": "_handleFilterInput",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "event",
+                  "type": {
+                    "text": "Event"
+                  }
+                }
+              ]
+            }
+          ],
+          "events": [
+            {
+              "name": "fzl-card-click",
+              "type": {
+                "text": "CustomEvent<{ item: FzlCardItem; index: number; originalEvent: MouseEvent }>"
+              },
+              "description": "Dispatched when a card is clicked"
+            },
+            {
+              "name": "fzl-card-action",
+              "type": {
+                "text": "CustomEvent<{ action: string; item: FzlCardItem; index: number; originalEvent: MouseEvent }>"
+              },
+              "description": "Dispatched when card action button is clicked"
+            },
+            {
+              "name": "fzl-sort-change",
+              "type": {
+                "text": "CustomEvent<{ sortBy: string; sortOrder: FzlSortOrder }>"
+              },
+              "description": "Dispatched when sorting criteria changes"
+            },
+            {
+              "name": "fzl-filter-change",
+              "type": {
+                "text": "CustomEvent<{ filter: string }>"
+              },
+              "description": "Dispatched when search filter text changes"
+            },
+            {
+              "type": {
+                "text": "CustomEvent<{ items: FzlCardItem[]; orderIds: string[]; fromIndex: number; toIndex: number; item: FzlCardItem }>"
+              },
+              "description": "Dispatched when cards are reordered",
+              "name": "fzl-cards-reorder"
+            },
+            {
+              "type": {
+                "text": "CustomEvent<{ widgetId: string; originalEvent: FocusEvent }>"
+              },
+              "description": "Dispatched when the widget gains focus",
+              "name": "fzl-focus"
+            },
+            {
+              "type": {
+                "text": "CustomEvent<{ widgetId: string; originalEvent: FocusEvent }>"
+              },
+              "description": "Dispatched when the widget loses focus",
+              "name": "fzl-blur"
+            }
+          ],
+          "attributes": [
+            {
+              "name": "items",
+              "type": {
+                "text": "FzlCardItem[] | string"
+              },
+              "default": "[]",
+              "description": "Array of card items or JSON string",
+              "fieldName": "items"
+            },
+            {
+              "name": "layout",
+              "type": {
+                "text": "FzlCardLayout"
+              },
+              "default": "'grid'",
+              "description": "Layout mode: 'vertical' | 'grid' | 'horizontal'",
+              "fieldName": "layout"
+            },
+            {
+              "name": "max-height",
+              "type": {
+                "text": "string"
+              },
+              "default": "'none'",
+              "description": "Max height of the scrollable feed (e.g. '500px', '100%')",
+              "fieldName": "maxHeight"
+            },
+            {
+              "name": "sort-by",
+              "type": {
+                "text": "string"
+              },
+              "default": "''",
+              "description": "Field to sort by ('title', 'date', 'priority', 'status', 'category')",
+              "fieldName": "sortBy"
+            },
+            {
+              "name": "sort-order",
+              "type": {
+                "text": "FzlSortOrder"
+              },
+              "default": "'asc'",
+              "description": "Sorting order: 'asc' | 'desc'",
+              "fieldName": "sortOrder"
+            },
+            {
+              "name": "allow-sort",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false",
+              "description": "Whether to display the built-in sorting toolbar",
+              "fieldName": "allowSort"
+            },
+            {
+              "name": "allow-filter",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false",
+              "description": "Whether to display the search filter input",
+              "fieldName": "allowFilter"
+            },
+            {
+              "name": "allow-reorder",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false",
+              "description": "Whether cards can be manually reordered by the user",
+              "fieldName": "allowReorder"
+            },
+            {
+              "name": "storage-key",
+              "type": {
+                "text": "string"
+              },
+              "default": "''",
+              "description": "Unique storage key for local browser persistence of manual card order",
+              "fieldName": "storageKey"
+            },
+            {
+              "name": "storage-type",
+              "type": {
+                "text": "'local' | 'session'"
+              },
+              "default": "'local'",
+              "description": "Type of browser storage to use: 'local' | 'session' (default: 'local')",
+              "fieldName": "storageType"
+            },
+            {
+              "name": "empty-text",
+              "type": {
+                "text": "string"
+              },
+              "default": "'Nenhum item encontrado'",
+              "description": "Text displayed when list is empty",
+              "fieldName": "emptyText"
+            }
+          ],
+          "mixins": [
+            {
+              "name": "FzlWidgetMixin",
+              "package": "@fzl/core"
+            }
+          ],
+          "superclass": {
+            "name": "LitElement",
+            "package": "lit"
+          },
+          "tagName": "fzl-lit-card-list",
+          "customElement": true
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "parseFzlCardItems",
+          "declaration": {
+            "name": "parseFzlCardItems",
+            "module": "src/components/card-list/card-list.component.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "sortFzlCardItems",
+          "declaration": {
+            "name": "sortFzlCardItems",
+            "module": "src/components/card-list/card-list.component.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "filterFzlCardItems",
+          "declaration": {
+            "name": "filterFzlCardItems",
+            "module": "src/components/card-list/card-list.component.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "applyPersistedCardOrder",
+          "declaration": {
+            "name": "applyPersistedCardOrder",
+            "module": "src/components/card-list/card-list.component.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "FzlLitCardList",
+          "declaration": {
+            "name": "FzlLitCardList",
+            "module": "src/components/card-list/card-list.component.ts"
+          }
+        },
+        {
+          "kind": "custom-element-definition",
+          "name": "fzl-lit-card-list",
+          "declaration": {
+            "name": "FzlLitCardList",
+            "module": "src/components/card-list/card-list.component.ts"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/components/crumb/crumb.component.ts",
+      "declarations": [
+        {
+          "kind": "function",
+          "name": "parseFzlCrumbItems",
+          "return": {
+            "type": {
+              "text": "FzlCrumbItem[]"
+            }
+          },
+          "parameters": [
+            {
+              "name": "items",
+              "type": {
+                "text": "FzlCrumbItem[] | string | null | undefined"
+              }
+            },
+            {
+              "name": "pathStr",
+              "optional": true,
+              "type": {
+                "text": "string"
+              }
+            }
+          ]
+        },
+        {
+          "kind": "class",
+          "description": "Reactive Lit-based Breadcrumb (\"Crumb\") Custom Element showing current navigation path\nand providing back navigation to the previous view.",
+          "name": "FzlLitCrumb",
+          "cssParts": [
+            {
+              "description": "The outer `<nav>` landmark element",
+              "name": "nav"
+            },
+            {
+              "description": "The back navigation `<button>` element",
+              "name": "back-button"
+            },
+            {
+              "description": "The `<ol>` breadcrumb trail list",
+              "name": "list"
+            },
+            {
+              "description": "Each `<li>` breadcrumb item",
+              "name": "item"
+            },
+            {
+              "description": "Interactive `<a>` link for ancestor items",
+              "name": "link"
+            },
+            {
+              "description": "Visual separator `<span>` between items",
+              "name": "separator"
+            },
+            {
+              "description": "The `<span aria-current=\"page\">` active view label",
+              "name": "current"
+            }
+          ],
+          "members": [
+            {
+              "kind": "field",
+              "name": "items",
+              "type": {
+                "text": "FzlCrumbItem[]"
+              },
+              "default": "[]",
+              "description": "Breadcrumb items array or JSON/delimited string",
+              "attribute": "items"
+            },
+            {
+              "kind": "field",
+              "name": "path",
+              "type": {
+                "text": "string"
+              },
+              "default": "''",
+              "description": "Path string shorthand (e.g. \"Início / Config / Backend\")",
+              "attribute": "path",
+              "reflects": true
+            },
+            {
+              "kind": "field",
+              "name": "separator",
+              "type": {
+                "text": "string"
+              },
+              "default": "'›'",
+              "description": "Visual separator between breadcrumb items",
+              "attribute": "separator",
+              "reflects": true
+            },
+            {
+              "kind": "field",
+              "name": "showBack",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "true",
+              "description": "Whether to display the back button",
+              "attribute": "show-back",
+              "reflects": true
+            },
+            {
+              "kind": "field",
+              "name": "backDisabled",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false",
+              "description": "Whether the back button is disabled",
+              "attribute": "back-disabled",
+              "reflects": true
+            },
+            {
+              "kind": "field",
+              "name": "backLabel",
+              "type": {
+                "text": "string"
+              },
+              "default": "'Voltar'",
+              "description": "Label for the back navigation button",
+              "attribute": "back-label",
+              "reflects": true
+            },
+            {
+              "kind": "field",
+              "name": "backHref",
+              "type": {
+                "text": "string"
+              },
+              "default": "''",
+              "description": "Optional explicit target URL/hash for the back button",
+              "attribute": "back-href",
+              "reflects": true
+            },
+            {
+              "kind": "field",
+              "name": "ariaLabel",
+              "type": {
+                "text": "string"
+              },
+              "default": "'Navegação estrutural'",
+              "description": "Accessible label for the `<nav>` landmark",
+              "attribute": "aria-label",
+              "reflects": true
+            },
+            {
+              "kind": "field",
+              "name": "_keyNav",
+              "privacy": "private",
+              "default": "new FzlKeyNavController(this, { orientation: 'horizontal', rovingTabIndex: true, getItems: () => Array.from( this.renderRoot.querySelectorAll<HTMLElement>( '.back-btn:not([disabled]):not([hidden]), a.crumb-link' ) ), })"
+            },
+            {
+              "kind": "method",
+              "name": "_handleKeyDown",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "event",
+                  "type": {
+                    "text": "KeyboardEvent"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "_resolvedItems",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "FzlCrumbItem[]"
+                }
+              }
+            },
+            {
+              "kind": "method",
+              "name": "_handleBack",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "event",
+                  "type": {
+                    "text": "MouseEvent"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "_handleItemClick",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "event",
+                  "type": {
+                    "text": "MouseEvent"
+                  }
+                },
+                {
+                  "name": "item",
+                  "type": {
+                    "text": "FzlCrumbItem"
+                  }
+                },
+                {
+                  "name": "index",
+                  "type": {
+                    "text": "number"
+                  }
+                }
+              ]
+            }
+          ],
+          "events": [
+            {
+              "type": {
+                "text": "CustomEvent<{ backHref: string; originalEvent: MouseEvent }>"
+              },
+              "description": "Dispatched when the back button is activated",
+              "name": "fzl-back"
+            },
+            {
+              "type": {
+                "text": "CustomEvent<{ item: FzlCrumbItem; index: number; href?: string; originalEvent: MouseEvent }>"
+              },
+              "description": "Dispatched when a breadcrumb link item is clicked",
+              "name": "fzl-navigate"
+            },
+            {
+              "type": {
+                "text": "CustomEvent<{ widgetId: string; originalEvent: FocusEvent }>"
+              },
+              "description": "Dispatched when the widget gains focus",
+              "name": "fzl-focus"
+            },
+            {
+              "type": {
+                "text": "CustomEvent<{ widgetId: string; originalEvent: FocusEvent }>"
+              },
+              "description": "Dispatched when the widget loses focus",
+              "name": "fzl-blur"
+            }
+          ],
+          "attributes": [
+            {
+              "name": "items",
+              "type": {
+                "text": "FzlCrumbItem[]"
+              },
+              "default": "[]",
+              "description": "Breadcrumb items array or JSON/delimited string",
+              "fieldName": "items",
+              "attribute": "items"
+            },
+            {
+              "name": "path",
+              "type": {
+                "text": "string"
+              },
+              "default": "''",
+              "description": "Path string shorthand (e.g. \"Início / Config / Backend\")",
+              "fieldName": "path",
+              "attribute": "path"
+            },
+            {
+              "name": "separator",
+              "type": {
+                "text": "string"
+              },
+              "default": "'›'",
+              "description": "Visual separator between breadcrumb items",
+              "fieldName": "separator",
+              "attribute": "separator"
+            },
+            {
+              "name": "show-back",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "true",
+              "description": "Whether to display the back button",
+              "fieldName": "showBack",
+              "attribute": "show-back"
+            },
+            {
+              "name": "back-disabled",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false",
+              "description": "Whether the back button is disabled",
+              "fieldName": "backDisabled",
+              "attribute": "back-disabled"
+            },
+            {
+              "name": "back-label",
+              "type": {
+                "text": "string"
+              },
+              "default": "'Voltar'",
+              "description": "Label for the back navigation button",
+              "fieldName": "backLabel",
+              "attribute": "back-label"
+            },
+            {
+              "name": "back-href",
+              "type": {
+                "text": "string"
+              },
+              "default": "''",
+              "description": "Optional explicit target URL/hash for the back button",
+              "fieldName": "backHref",
+              "attribute": "back-href"
+            },
+            {
+              "name": "aria-label",
+              "type": {
+                "text": "string"
+              },
+              "default": "'Navegação estrutural'",
+              "description": "Accessible label for the `<nav>` landmark",
+              "fieldName": "ariaLabel",
+              "attribute": "aria-label"
+            }
+          ],
+          "mixins": [
+            {
+              "name": "FzlWidgetMixin",
+              "package": "@fzl/core"
+            }
+          ],
+          "superclass": {
+            "name": "LitElement",
+            "package": "lit"
+          },
+          "tagName": "fzl-lit-crumb",
+          "customElement": true
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "parseFzlCrumbItems",
+          "declaration": {
+            "name": "parseFzlCrumbItems",
+            "module": "src/components/crumb/crumb.component.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "FzlLitCrumb",
+          "declaration": {
+            "name": "FzlLitCrumb",
+            "module": "src/components/crumb/crumb.component.ts"
+          }
+        },
+        {
+          "kind": "custom-element-definition",
+          "name": "fzl-lit-crumb",
+          "declaration": {
+            "name": "FzlLitCrumb",
+            "module": "src/components/crumb/crumb.component.ts"
           }
         }
       ]
@@ -6267,746 +7154,6 @@
           "declaration": {
             "name": "FzlReaderMarkBar",
             "module": "src/components/reader/reader-mark-bar.component.ts"
-          }
-        }
-      ]
-    },
-    {
-      "kind": "javascript-module",
-      "path": "src/components/avatar-upload/avatar-upload.component.ts",
-      "declarations": [
-        {
-          "kind": "class",
-          "description": "Reactive Lit-based Avatar Upload & Circular Crop Web Component.\n\nProvides a round avatar preview with drag-and-drop, file picker,\nand an interactive circular crop modal (pan, zoom, rotation) that\ngenerates both Data URL and Blob outputs for backend integration.",
-          "name": "FzlLitAvatarUpload",
-          "cssParts": [
-            {
-              "description": "The root container",
-              "name": "container"
-            },
-            {
-              "description": "The circular avatar trigger element",
-              "name": "avatar"
-            },
-            {
-              "description": "The cropped avatar image element",
-              "name": "image"
-            },
-            {
-              "description": "The camera badge icon overlay",
-              "name": "badge"
-            },
-            {
-              "description": "The crop modal overlay",
-              "name": "modal"
-            },
-            {
-              "description": "The modal dialog box",
-              "name": "dialog"
-            },
-            {
-              "description": "The action buttons below the avatar",
-              "name": "actions"
-            }
-          ],
-          "members": [
-            {
-              "kind": "field",
-              "name": "src",
-              "type": {
-                "text": "string"
-              },
-              "default": "''",
-              "description": "Current avatar image source (URL or Data URL)",
-              "attribute": "src",
-              "reflects": true
-            },
-            {
-              "kind": "field",
-              "name": "name",
-              "type": {
-                "text": "string"
-              },
-              "default": "''",
-              "description": "User name (used for alt text and fallback initials)",
-              "attribute": "name"
-            },
-            {
-              "kind": "field",
-              "name": "size",
-              "type": {
-                "text": "number"
-              },
-              "default": "120",
-              "description": "Diameter of the avatar in pixels",
-              "attribute": "size"
-            },
-            {
-              "kind": "field",
-              "name": "outputSize",
-              "type": {
-                "text": "number"
-              },
-              "default": "360",
-              "description": "Width and height of the exported square image in pixels",
-              "attribute": "outputSize"
-            },
-            {
-              "kind": "field",
-              "name": "outputFormat",
-              "type": {
-                "text": "'image/png' | 'image/jpeg' | 'image/webp'"
-              },
-              "default": "'image/png'",
-              "description": "Format of the exported image",
-              "attribute": "outputFormat"
-            },
-            {
-              "kind": "field",
-              "name": "outputQuality",
-              "type": {
-                "text": "number"
-              },
-              "default": "0.92",
-              "description": "Compression quality (0 to 1) for JPEG/WebP",
-              "attribute": "outputQuality"
-            },
-            {
-              "kind": "field",
-              "name": "accept",
-              "type": {
-                "text": "string"
-              },
-              "default": "'image/png, image/jpeg, image/webp, image/gif'",
-              "description": "Accepted MIME types for the file picker",
-              "attribute": "accept"
-            },
-            {
-              "kind": "field",
-              "name": "maxFileSize",
-              "description": "Maximum allowed file size in bytes (default: 5MB)",
-              "attribute": "maxFileSize"
-            },
-            {
-              "kind": "field",
-              "name": "disabled",
-              "type": {
-                "text": "boolean"
-              },
-              "default": "false",
-              "description": "Whether the component is disabled",
-              "attribute": "disabled",
-              "reflects": true
-            },
-            {
-              "kind": "field",
-              "name": "readonly",
-              "type": {
-                "text": "boolean"
-              },
-              "default": "false",
-              "description": "Whether the avatar is read-only (displays avatar without edit actions)",
-              "attribute": "readonly",
-              "reflects": true
-            },
-            {
-              "kind": "field",
-              "name": "buttonLabel",
-              "type": {
-                "text": "string"
-              },
-              "default": "'Alterar foto'",
-              "description": "Label for the edit button",
-              "attribute": "buttonLabel"
-            },
-            {
-              "kind": "field",
-              "name": "cropTitle",
-              "type": {
-                "text": "string"
-              },
-              "default": "'Recortar foto de perfil'",
-              "description": "Modal title",
-              "attribute": "cropTitle"
-            },
-            {
-              "kind": "field",
-              "name": "_isDragOver",
-              "type": {
-                "text": "boolean"
-              },
-              "privacy": "private",
-              "default": "false"
-            },
-            {
-              "kind": "field",
-              "name": "_isCropModalOpen",
-              "type": {
-                "text": "boolean"
-              },
-              "privacy": "private",
-              "default": "false"
-            },
-            {
-              "kind": "field",
-              "name": "_zoom",
-              "type": {
-                "text": "number"
-              },
-              "privacy": "private",
-              "default": "1"
-            },
-            {
-              "kind": "field",
-              "name": "_minZoom",
-              "type": {
-                "text": "number"
-              },
-              "privacy": "private",
-              "default": "1"
-            },
-            {
-              "kind": "field",
-              "name": "_maxZoom",
-              "type": {
-                "text": "number"
-              },
-              "privacy": "private",
-              "default": "4"
-            },
-            {
-              "kind": "field",
-              "name": "_panX",
-              "type": {
-                "text": "number"
-              },
-              "privacy": "private",
-              "default": "0"
-            },
-            {
-              "kind": "field",
-              "name": "_panY",
-              "type": {
-                "text": "number"
-              },
-              "privacy": "private",
-              "default": "0"
-            },
-            {
-              "kind": "field",
-              "name": "_rotation",
-              "type": {
-                "text": "number"
-              },
-              "privacy": "private",
-              "default": "0"
-            },
-            {
-              "kind": "field",
-              "name": "_isPanning",
-              "type": {
-                "text": "boolean"
-              },
-              "privacy": "private",
-              "default": "false"
-            },
-            {
-              "kind": "field",
-              "name": "_rawLoadedImage",
-              "type": {
-                "text": "HTMLImageElement | null"
-              },
-              "privacy": "private",
-              "default": "null"
-            },
-            {
-              "kind": "field",
-              "name": "_selectedFile",
-              "type": {
-                "text": "File | null"
-              },
-              "privacy": "private",
-              "default": "null"
-            },
-            {
-              "kind": "field",
-              "name": "_pointerStartX",
-              "type": {
-                "text": "number"
-              },
-              "privacy": "private",
-              "default": "0"
-            },
-            {
-              "kind": "field",
-              "name": "_pointerStartY",
-              "type": {
-                "text": "number"
-              },
-              "privacy": "private",
-              "default": "0"
-            },
-            {
-              "kind": "field",
-              "name": "_panStartX",
-              "type": {
-                "text": "number"
-              },
-              "privacy": "private",
-              "default": "0"
-            },
-            {
-              "kind": "field",
-              "name": "_panStartY",
-              "type": {
-                "text": "number"
-              },
-              "privacy": "private",
-              "default": "0"
-            },
-            {
-              "kind": "method",
-              "name": "_cleanupCropState",
-              "privacy": "private"
-            },
-            {
-              "kind": "method",
-              "name": "_computeInitials",
-              "privacy": "private",
-              "return": {
-                "type": {
-                  "text": "string"
-                }
-              },
-              "parameters": [
-                {
-                  "name": "name",
-                  "type": {
-                    "text": "string"
-                  }
-                }
-              ],
-              "description": "Compute initials from the user name"
-            },
-            {
-              "kind": "method",
-              "name": "_triggerFileInput",
-              "privacy": "private",
-              "description": "Open file picker"
-            },
-            {
-              "kind": "method",
-              "name": "_handleFileSelected",
-              "privacy": "private",
-              "parameters": [
-                {
-                  "name": "e",
-                  "type": {
-                    "text": "Event"
-                  }
-                }
-              ],
-              "description": "Handle file input selection"
-            },
-            {
-              "kind": "method",
-              "name": "_processSelectedFile",
-              "privacy": "private",
-              "parameters": [
-                {
-                  "name": "file",
-                  "type": {
-                    "text": "File"
-                  }
-                }
-              ],
-              "description": "Validate and prepare the selected image file"
-            },
-            {
-              "kind": "method",
-              "name": "_emitError",
-              "privacy": "private",
-              "parameters": [
-                {
-                  "name": "error",
-                  "type": {
-                    "text": "FzlAvatarErrorEventDetail['error']"
-                  }
-                },
-                {
-                  "name": "message",
-                  "type": {
-                    "text": "string"
-                  }
-                },
-                {
-                  "name": "file",
-                  "optional": true,
-                  "type": {
-                    "text": "File"
-                  }
-                }
-              ]
-            },
-            {
-              "kind": "method",
-              "name": "_initCropState",
-              "privacy": "private",
-              "parameters": [
-                {
-                  "name": "img",
-                  "type": {
-                    "text": "HTMLImageElement"
-                  }
-                }
-              ],
-              "description": "Calculate initial zoom and bounds"
-            },
-            {
-              "kind": "method",
-              "name": "_drawCropCanvas",
-              "privacy": "private",
-              "description": "Draw image and circular crop guide on the modal canvas"
-            },
-            {
-              "kind": "method",
-              "name": "_handlePointerDown",
-              "privacy": "private",
-              "parameters": [
-                {
-                  "name": "e",
-                  "type": {
-                    "text": "PointerEvent"
-                  }
-                }
-              ]
-            },
-            {
-              "kind": "method",
-              "name": "_handlePointerMove",
-              "privacy": "private",
-              "parameters": [
-                {
-                  "name": "e",
-                  "type": {
-                    "text": "PointerEvent"
-                  }
-                }
-              ]
-            },
-            {
-              "kind": "method",
-              "name": "_handlePointerUp",
-              "privacy": "private",
-              "parameters": [
-                {
-                  "name": "e",
-                  "type": {
-                    "text": "PointerEvent"
-                  }
-                }
-              ]
-            },
-            {
-              "kind": "method",
-              "name": "_handleWheel",
-              "privacy": "private",
-              "parameters": [
-                {
-                  "name": "e",
-                  "type": {
-                    "text": "WheelEvent"
-                  }
-                }
-              ]
-            },
-            {
-              "kind": "method",
-              "name": "_handleZoomSliderChange",
-              "privacy": "private",
-              "parameters": [
-                {
-                  "name": "e",
-                  "type": {
-                    "text": "Event"
-                  }
-                }
-              ]
-            },
-            {
-              "kind": "method",
-              "name": "_rotateClockwise",
-              "privacy": "private"
-            },
-            {
-              "kind": "method",
-              "name": "_zoomIn",
-              "privacy": "private"
-            },
-            {
-              "kind": "method",
-              "name": "_zoomOut",
-              "privacy": "private"
-            },
-            {
-              "kind": "method",
-              "name": "_closeCropModal",
-              "privacy": "private"
-            },
-            {
-              "kind": "method",
-              "name": "_applyCrop",
-              "privacy": "private",
-              "description": "Apply crop, export Data URL and Blob, and dispatch change event"
-            },
-            {
-              "kind": "method",
-              "name": "_handleRemoveAvatar",
-              "privacy": "private",
-              "parameters": [
-                {
-                  "name": "e",
-                  "type": {
-                    "text": "Event"
-                  }
-                }
-              ],
-              "description": "Remove avatar"
-            },
-            {
-              "kind": "method",
-              "name": "_handleDragOver",
-              "privacy": "private",
-              "parameters": [
-                {
-                  "name": "e",
-                  "type": {
-                    "text": "DragEvent"
-                  }
-                }
-              ]
-            },
-            {
-              "kind": "method",
-              "name": "_handleDragLeave",
-              "privacy": "private",
-              "parameters": [
-                {
-                  "name": "e",
-                  "type": {
-                    "text": "DragEvent"
-                  }
-                }
-              ]
-            },
-            {
-              "kind": "method",
-              "name": "_handleDrop",
-              "privacy": "private",
-              "parameters": [
-                {
-                  "name": "e",
-                  "type": {
-                    "text": "DragEvent"
-                  }
-                }
-              ]
-            },
-            {
-              "kind": "method",
-              "name": "_handleKeyDown",
-              "privacy": "private",
-              "parameters": [
-                {
-                  "name": "e",
-                  "type": {
-                    "text": "KeyboardEvent"
-                  }
-                }
-              ]
-            }
-          ],
-          "events": [
-            {
-              "name": "fzl-avatar-error",
-              "type": {
-                "text": "CustomEvent<FzlAvatarErrorEventDetail>"
-              },
-              "description": "Dispatched when validation fails (size, type)"
-            },
-            {
-              "name": "fzl-avatar-change",
-              "type": {
-                "text": "CustomEvent<FzlAvatarChangeEventDetail>"
-              },
-              "description": "Dispatched when the user crops and applies a new avatar"
-            },
-            {
-              "name": "fzl-avatar-remove",
-              "type": {
-                "text": "CustomEvent<void>"
-              },
-              "description": "Dispatched when the user removes their avatar"
-            },
-            {
-              "type": {
-                "text": "CustomEvent<{ widgetId: string; originalEvent: FocusEvent }>"
-              },
-              "description": "Dispatched when the widget gains focus",
-              "name": "fzl-focus"
-            },
-            {
-              "type": {
-                "text": "CustomEvent<{ widgetId: string; originalEvent: FocusEvent }>"
-              },
-              "description": "Dispatched when the widget loses focus",
-              "name": "fzl-blur"
-            }
-          ],
-          "attributes": [
-            {
-              "name": "src",
-              "type": {
-                "text": "string"
-              },
-              "default": "''",
-              "description": "Current avatar image source (URL or Data URL)",
-              "fieldName": "src"
-            },
-            {
-              "name": "name",
-              "type": {
-                "text": "string"
-              },
-              "default": "''",
-              "description": "User name (used for alt text and fallback initials)",
-              "fieldName": "name"
-            },
-            {
-              "name": "size",
-              "type": {
-                "text": "number"
-              },
-              "default": "120",
-              "description": "Diameter of the avatar in pixels",
-              "fieldName": "size"
-            },
-            {
-              "name": "outputSize",
-              "type": {
-                "text": "number"
-              },
-              "default": "360",
-              "description": "Width and height of the exported square image in pixels",
-              "fieldName": "outputSize"
-            },
-            {
-              "name": "outputFormat",
-              "type": {
-                "text": "'image/png' | 'image/jpeg' | 'image/webp'"
-              },
-              "default": "'image/png'",
-              "description": "Format of the exported image",
-              "fieldName": "outputFormat"
-            },
-            {
-              "name": "outputQuality",
-              "type": {
-                "text": "number"
-              },
-              "default": "0.92",
-              "description": "Compression quality (0 to 1) for JPEG/WebP",
-              "fieldName": "outputQuality"
-            },
-            {
-              "name": "accept",
-              "type": {
-                "text": "string"
-              },
-              "default": "'image/png, image/jpeg, image/webp, image/gif'",
-              "description": "Accepted MIME types for the file picker",
-              "fieldName": "accept"
-            },
-            {
-              "name": "maxFileSize",
-              "description": "Maximum allowed file size in bytes (default: 5MB)",
-              "fieldName": "maxFileSize"
-            },
-            {
-              "name": "disabled",
-              "type": {
-                "text": "boolean"
-              },
-              "default": "false",
-              "description": "Whether the component is disabled",
-              "fieldName": "disabled"
-            },
-            {
-              "name": "readonly",
-              "type": {
-                "text": "boolean"
-              },
-              "default": "false",
-              "description": "Whether the avatar is read-only (displays avatar without edit actions)",
-              "fieldName": "readonly"
-            },
-            {
-              "name": "buttonLabel",
-              "type": {
-                "text": "string"
-              },
-              "default": "'Alterar foto'",
-              "description": "Label for the edit button",
-              "fieldName": "buttonLabel"
-            },
-            {
-              "name": "cropTitle",
-              "type": {
-                "text": "string"
-              },
-              "default": "'Recortar foto de perfil'",
-              "description": "Modal title",
-              "fieldName": "cropTitle"
-            }
-          ],
-          "mixins": [
-            {
-              "name": "FzlWidgetMixin",
-              "package": "@fzl/core"
-            }
-          ],
-          "superclass": {
-            "name": "LitElement",
-            "package": "lit"
-          },
-          "tagName": "fzl-lit-avatar-upload",
-          "customElement": true
-        },
-        {
-          "kind": "variable",
-          "name": "dataUrl"
-        },
-        {
-          "kind": "variable",
-          "name": "blob",
-          "default": "await new Promise<Blob | null>((resolve) => { exportCanvas.toBlob(resolve, this.outputFormat, this.outputQuality); })"
-        }
-      ],
-      "exports": [
-        {
-          "kind": "js",
-          "name": "FzlLitAvatarUpload",
-          "declaration": {
-            "name": "FzlLitAvatarUpload",
-            "module": "src/components/avatar-upload/avatar-upload.component.ts"
-          }
-        },
-        {
-          "kind": "custom-element-definition",
-          "name": "fzl-lit-avatar-upload",
-          "declaration": {
-            "name": "FzlLitAvatarUpload",
-            "module": "src/components/avatar-upload/avatar-upload.component.ts"
           }
         }
       ]

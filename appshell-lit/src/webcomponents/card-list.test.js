@@ -1,8 +1,10 @@
-import { describe, expect, it } from 'vitest'
+// @vitest-environment happy-dom
+import { describe, expect, it, beforeEach } from 'vitest'
 import {
   filterFzlCardItems,
   parseFzlCardItems,
   sortFzlCardItems,
+  applyPersistedCardOrder,
 } from '@fzl/webcomponents-lit/card-list'
 
 describe('CardList Helper Functions', () => {
@@ -179,6 +181,7 @@ describe('CardList Helper Functions', () => {
       // Valida estrutura do payload de evento fzl-cards-reorder
       const payload = {
         items,
+        orderIds: items.map((i) => i.id),
         fromIndex: 0,
         toIndex: 2,
         item: moved,
@@ -186,6 +189,121 @@ describe('CardList Helper Functions', () => {
       expect(payload.fromIndex).toBe(0)
       expect(payload.toIndex).toBe(2)
       expect(payload.item.title).toBe('Revisar módulo Camel')
+      expect(payload.orderIds).toEqual(['task-2', 'task-3', 'task-1', 'task-4'])
+    })
+  })
+
+  describe('Card Order Persistence (Dijit / Storage Strategies)', () => {
+    beforeEach(() => {
+      localStorage.clear()
+      sessionStorage.clear()
+    })
+
+    it('applyPersistedCardOrder() reordena os itens de acordo com a lista de IDs persistida', () => {
+      const savedIds = ['task-4', 'task-2', 'task-1']
+      const reordered = applyPersistedCardOrder(sampleItems, savedIds)
+
+      // task-4, task-2 e task-1 primeiro na ordem salva, task-3 (não listado) ao final
+      expect(reordered.map((i) => i.id)).toEqual(['task-4', 'task-2', 'task-1', 'task-3'])
+    })
+
+    it('applyPersistedCardOrder() ignora com segurança IDs inexistentes e arrays vazios', () => {
+      const withGhostIds = ['id-inexistente', 'task-3', 'task-1']
+      const reordered = applyPersistedCardOrder(sampleItems, withGhostIds)
+
+      // task-3, task-1 seguidos pelos itens restantes (task-2, task-4)
+      expect(reordered.map((i) => i.id)).toEqual(['task-3', 'task-1', 'task-2', 'task-4'])
+
+      // Array vazio retorna a lista original intacta
+      expect(applyPersistedCardOrder(sampleItems, [])).toEqual(sampleItems)
+    })
+
+    it('persiste orderIds no localStorage quando storage-key está configurado', async () => {
+      const el = document.createElement('fzl-lit-card-list')
+      el.storageKey = 'test-dashboard-tasks'
+      el.allowReorder = true
+      el.items = sampleItems
+      document.body.appendChild(el)
+      await el.updateComplete
+
+      let reorderDetail = null
+      el.addEventListener('fzl-cards-reorder', (e) => {
+        reorderDetail = e.detail
+      })
+
+      // Move task-1 (index 0) para o final (index 3)
+      el._reorderCards(0, 3)
+      await el.updateComplete
+
+      expect(reorderDetail).not.toBeNull()
+      expect(reorderDetail.orderIds).toEqual(['task-2', 'task-3', 'task-4', 'task-1'])
+
+      // Valida que foi gravado no localStorage
+      const saved = JSON.parse(localStorage.getItem('test-dashboard-tasks'))
+      expect(saved).toEqual(['task-2', 'task-3', 'task-4', 'task-1'])
+
+      document.body.removeChild(el)
+    })
+
+    it('restaura automaticamente a ordem salva no localStorage ao inicializar novo componente', async () => {
+      // Pré-grava a ordem preferida pelo usuário
+      localStorage.setItem('user-saved-order', JSON.stringify(['task-3', 'task-1', 'task-4', 'task-2']))
+
+      const el = document.createElement('fzl-lit-card-list')
+      el.storageKey = 'user-saved-order'
+      el.allowReorder = true
+      el.items = sampleItems
+      document.body.appendChild(el)
+      await el.updateComplete
+
+      const displayedTitles = Array.from(el.renderRoot.querySelectorAll('.fzl-card-title')).map((t) => t.textContent)
+      expect(displayedTitles[0]).toBe('Comprar itens de mercado') // task-3
+      expect(displayedTitles[1]).toBe('Revisar módulo Camel')      // task-1
+      expect(displayedTitles[2]).toBe('Deploy no cluster')         // task-4
+      expect(displayedTitles[3]).toBe('Pagamento Cloud')           // task-2
+
+      document.body.removeChild(el)
+    })
+
+    it('suporta sessionStorage quando storage-type="session"', async () => {
+      sessionStorage.setItem('session-tasks', JSON.stringify(['task-4', 'task-1', 'task-2', 'task-3']))
+
+      const el = document.createElement('fzl-lit-card-list')
+      el.storageKey = 'session-tasks'
+      el.storageType = 'session'
+      el.items = sampleItems
+      document.body.appendChild(el)
+      await el.updateComplete
+
+      const displayedTitles = Array.from(el.renderRoot.querySelectorAll('.fzl-card-title')).map((t) => t.textContent)
+      expect(displayedTitles[0]).toBe('Deploy no cluster') // task-4
+
+      document.body.removeChild(el)
+    })
+
+    it('clearPersistedOrder() limpa o storage e restaura a ordem inicial dos itens', async () => {
+      localStorage.setItem('clear-test-key', JSON.stringify(['task-4', 'task-3', 'task-2', 'task-1']))
+
+      const el = document.createElement('fzl-lit-card-list')
+      el.storageKey = 'clear-test-key'
+      el.items = sampleItems
+      document.body.appendChild(el)
+      await el.updateComplete
+
+      // Confirma que carregou na ordem salva
+      expect(localStorage.getItem('clear-test-key')).not.toBeNull()
+
+      // Limpa persistência
+      el.clearPersistedOrder()
+      await el.updateComplete
+
+      expect(localStorage.getItem('clear-test-key')).toBeNull()
+
+      // Ordem voltou ao padrão inicial
+      const displayedTitles = Array.from(el.renderRoot.querySelectorAll('.fzl-card-title')).map((t) => t.textContent)
+      expect(displayedTitles[0]).toBe('Revisar módulo Camel') // task-1
+
+      document.body.removeChild(el)
     })
   })
 })

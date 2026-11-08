@@ -115,6 +115,8 @@ export const catalog = [
       'allow-sort': true,
       'allow-filter': true,
       'allow-reorder': true,
+      'storage-key': 'fzl-demo-tasks-order',
+      'storage-type': 'local',
       'sort-by': '',
       'sort-order': 'asc',
       items: JSON.stringify([

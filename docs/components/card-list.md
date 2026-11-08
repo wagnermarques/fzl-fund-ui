@@ -18,6 +18,10 @@ It supports:
 - **Customizable Scrolling**: Controlled via `max-height` (e.g. `'480px'`, `'100%'`).
 - **Interactive Sorting**: Sort cards by fields (`title`, `date`, `priority`, `status`, `category`) in ascending (`asc`) or descending (`desc`) order, with an optional user-facing toolbar (`allow-sort`).
 - **Manual Reordering**: Reorder and organize cards via HTML5 drag-and-drop and accessible move buttons (▲ / ▼) (`allow-reorder`).
+- **Order Persistence (Dojo/Dijit Pattern)**:
+  - **Local Persistence**: Set `storage-key="my-key"` and `storage-type="local" | "session"` to persist user order automatically across page refreshes by saving the ID sequence.
+  - **Backend Persistence**: Consume `e.detail.orderIds` on `fzl-cards-reorder` to persist user sequence via REST backend calls.
+  - **Reset**: Call `clearPersistedOrder()` on the element to clear storage and revert to original order.
 - **Quick Filtering**: Optional search filter bar (`allow-filter`).
 - **Card Actions & Selection**: Custom events for card click (`fzl-card-click`), primary action button (`fzl-card-action`), and card reordering (`fzl-cards-reorder`).
 - **Design Tokens & Accessibility**: Themed via `@fzl/design-tokens`, WCAG compliant with `role="region"`, `role="list"`, `role="listitem"`, and keyboard navigation.
@@ -26,13 +30,15 @@ It supports:
 
 ## 2. Usage Examples
 
-### Plain HTML / BPMS
+### Plain HTML / BPMS (with Local Storage Persistence)
 ```html
 <fzl-lit-card-list
   layout="grid"
   allow-sort
   allow-filter
   allow-reorder
+  storage-key="bpms-tasktoday-order"
+  storage-type="local"
   max-height="500px"
   items='[
     {"id":"t-1","title":"Revisar módulo de Arquitetura Apache Camel","description":"Concluir refatoração de rotas","category":"Cursos","priority":"ALTA","status":"EM_ANDAMENTO","date":"2026-10-31"},
@@ -41,7 +47,7 @@ It supports:
 ></fzl-lit-card-list>
 ```
 
-### Lit / Appshell Host Application
+### Lit / Appshell Host Application (Local + Backend Persistence)
 ```js
 html`
   <fzl-lit-card-list
@@ -50,9 +56,19 @@ html`
     allow-sort
     allow-filter
     allow-reorder
+    storage-key="user-feed-order"
     @fzl-card-click=${(e) => openTask(e.detail.item)}
     @fzl-card-action=${(e) => toggleStatus(e.detail.item)}
-    @fzl-cards-reorder=${(e) => saveTaskSequence(e.detail.items)}
+    @fzl-cards-reorder=${async (e) => {
+      // 1. Array reordenado de cards
+      console.log('Novos itens:', e.detail.items);
+      // 2. Sequência de IDs para persistência em API REST do backend
+      await fetch('/api/user/preferences/card-order', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ orderIds: e.detail.orderIds })
+      });
+    }}
     @fzl-sort-change=${(e) => console.log('Sorted by', e.detail)}
   ></fzl-lit-card-list>
 `
@@ -94,6 +110,8 @@ Displays structured cards with sorting, filtering, and responsive scrolling.
 | `allow-sort` | `allow-sort` | `string` | - |  |
 | `allow-filter` | `allow-filter` | `string` | - |  |
 | `allow-reorder` | `allow-reorder` | `string` | - |  |
+| `storage-key` | `storage-key` | `string` | - |  |
+| `storage-type` | `storage-type` | `string` | - |  |
 | `empty-text` | `empty-text` | `string` | - |  |
 
 #### Events
@@ -103,7 +121,7 @@ Displays structured cards with sorting, filtering, and responsive scrolling.
 | `fzl-sort-change` | `CustomEvent<{ sortBy: string; sortOrder: FzlSortOrder }>` | Dispatched when sorting criteria changes |
 | `fzl-card-click` | `CustomEvent<{ item: FzlCardItem; index: number; originalEvent: MouseEvent }>` | Dispatched when a card is clicked |
 | `fzl-card-action` | `CustomEvent<{ action: string; item: FzlCardItem; index: number; originalEvent: MouseEvent }>` | Dispatched when card action button is clicked |
-| `fzl-cards-reorder` | `CustomEvent<{ items: FzlCardItem[]; fromIndex: number; toIndex: number; item: FzlCardItem }>` | Dispatched when cards are reordered |
+| `fzl-cards-reorder` | `CustomEvent<{ items: FzlCardItem[]; orderIds: string[]; fromIndex: number; toIndex: number; item: FzlCardItem }>` | Dispatched when cards are reordered |
 | `fzl-focus` | `CustomEvent<{ widgetId: string; originalEvent: FocusEvent }>` | Dispatched when the widget gains focus |
 | `fzl-blur` | `CustomEvent<{ widgetId: string; originalEvent: FocusEvent }>` | Dispatched when the widget loses focus |
 
@@ -137,6 +155,8 @@ Displays structured cards with responsive layouts, sorting, filtering and scroll
 | `allow-sort` | `allowSort` | `boolean` | `false` | Whether to display the built-in sorting toolbar |
 | `allow-filter` | `allowFilter` | `boolean` | `false` | Whether to display the search filter input |
 | `allow-reorder` | `allowReorder` | `boolean` | `false` | Whether cards can be manually reordered by the user |
+| `storage-key` | `storageKey` | `string` | `''` | Unique storage key for local browser persistence of manual card order |
+| `storage-type` | `storageType` | `'local' \| 'session'` | `'local'` | Type of browser storage to use: 'local' \| 'session' (default: 'local') |
 | `empty-text` | `emptyText` | `string` | `'Nenhum item encontrado'` | Text displayed when list is empty |
 
 #### Events
@@ -146,7 +166,7 @@ Displays structured cards with responsive layouts, sorting, filtering and scroll
 | `fzl-card-action` | `CustomEvent<{ action: string; item: FzlCardItem; index: number; originalEvent: MouseEvent }>` | Dispatched when card action button is clicked |
 | `fzl-sort-change` | `CustomEvent<{ sortBy: string; sortOrder: FzlSortOrder }>` | Dispatched when sorting criteria changes |
 | `fzl-filter-change` | `CustomEvent<{ filter: string }>` | Dispatched when search filter text changes |
-| `fzl-cards-reorder` | `CustomEvent<{ items: FzlCardItem[]; fromIndex: number; toIndex: number; item: FzlCardItem }>` | Dispatched when cards are reordered |
+| `fzl-cards-reorder` | `CustomEvent<{ items: FzlCardItem[]; orderIds: string[]; fromIndex: number; toIndex: number; item: FzlCardItem }>` | Dispatched when cards are reordered |
 | `fzl-focus` | `CustomEvent<{ widgetId: string; originalEvent: FocusEvent }>` | Dispatched when the widget gains focus |
 | `fzl-blur` | `CustomEvent<{ widgetId: string; originalEvent: FocusEvent }>` | Dispatched when the widget loses focus |
 

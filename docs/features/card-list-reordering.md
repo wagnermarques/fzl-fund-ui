@@ -36,7 +36,13 @@ Task management applications (such as `fzl-tasktodayapp`), workflow dashboards, 
   - Move Up is disabled on the first card; Move Down is disabled on the last card.
   - Activating a button swaps the card's position with its adjacent neighbor and dispatches `fzl-cards-reorder`.
 - [x] **Event Contract**:
-  - Dispatches `fzl-cards-reorder` with detail `{ items: FzlCardItem[], fromIndex: number, toIndex: number, item: FzlCardItem }`.
+  - Dispatches `fzl-cards-reorder` with detail `{ items: FzlCardItem[], orderIds: string[], fromIndex: number, toIndex: number, item: FzlCardItem }`.
+- [x] **Card Order Persistence (Dojo/Dijit Pattern)**:
+  - `storage-key` (string, default `''`): Unique key for automatic local browser persistence.
+  - `storage-type` (`'local' | 'session'`, default `'local'`): Storage engine selector.
+  - Resilient ID sequence mapping (`applyPersistedCardOrder`): Preserves user's manual ordering while safely incorporating newly added cards at the end and skipping deleted IDs.
+  - Public method `clearPersistedOrder()`: Clears storage item and restores initial order.
+  - Backend integration: Payload `orderIds` allows one-step serialization for REST API endpoints.
 - [x] **Multi-Engine Consistency**:
   - Lit (`@fzl/webcomponents-lit`)
   - Vanilla ES6 (`@fzl/webcomponents-es6`)

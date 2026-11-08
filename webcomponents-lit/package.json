@@ -55,6 +55,14 @@
       "types": "./dist/data-grid.d.ts",
       "import": "./dist/data-grid.js"
     },
+    "./reader-mark-bar": {
+      "types": "./dist/reader-mark-bar.d.ts",
+      "import": "./dist/reader-mark-bar.js"
+    },
+    "./reader-content": {
+      "types": "./dist/reader-content.d.ts",
+      "import": "./dist/reader-content.js"
+    },
     "./custom-elements.json": "./custom-elements.json"
   },
   "scripts": {

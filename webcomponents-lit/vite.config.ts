@@ -18,7 +18,9 @@ export default defineConfig({
         'geo-map': resolve(__dirname, 'src/components/geo/geo-map.component.ts'),
         'geo-explorer': resolve(__dirname, 'src/components/geo/geo-explorer.component.ts'),
         form: resolve(__dirname, 'src/components/form/form.component.ts'),
-        'data-grid': resolve(__dirname, 'src/components/grid/data-grid.component.ts')
+        'data-grid': resolve(__dirname, 'src/components/grid/data-grid.component.ts'),
+        'reader-mark-bar': resolve(__dirname, 'src/components/reader/reader-mark-bar.component.ts'),
+        'reader-content': resolve(__dirname, 'src/components/reader/reader-content.component.ts')
       },
       formats: ['es']
     },

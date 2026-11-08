@@ -20,6 +20,7 @@ import avatarUploadDoc from '../../../docs/components/avatar-upload.md?raw'
 import geoExplorerDoc from '../../../docs/components/geo-explorer.md?raw'
 import formDoc from '../../../docs/components/form.md?raw'
 import dataGridDoc from '../../../docs/components/data-grid.md?raw'
+import readerMarkBarDoc from '../../../docs/components/reader-mark-bar.md?raw'
 
 /** Catálogo da documentação viva (#/componentes). Cada componente aponta
  *  para a sua especificação em docs/components/ (o texto) e para as
@@ -559,6 +560,53 @@ export const catalog = [
         packageName: '@fzl/webcomponents-lit',
         manifest: litManifest,
         load: () => import('@fzl/webcomponents-lit/data-grid'),
+      },
+    ],
+  },
+  {
+    id: 'reader-mark-bar',
+    name: 'Barra de Marcação do Leitor (Draggable Floating Island)',
+    icon: 'brush',
+    summary:
+      'Barra flutuante arrastável com paleta de cores e ações de estudo bíblico/leitura, sem conflito com o Touch-to-Search do Android e gestos do sistema.',
+    doc: readerMarkBarDoc,
+    slotText: '',
+    initialValues: {
+      mode: 'floating',
+      visible: true,
+      'selected-text': 'O Senhor é o meu pastor; de nada terei falta.',
+    },
+    implementations: [
+      {
+        id: 'lit',
+        label: 'Lit',
+        tag: 'fzl-reader-mark-bar',
+        packageName: '@fzl/webcomponents-lit',
+        manifest: litManifest,
+        load: () => import('@fzl/webcomponents-lit/reader-mark-bar'),
+      },
+    ],
+  },
+  {
+    id: 'reader-content',
+    name: 'Área de Leitura & Grifos Interativos',
+    icon: 'menu_book',
+    summary:
+      'Container interativo de leitura com seleção de texto em tempo real, suporte aos 3 modos de barra (flutuante arrastável, topo e balão) e aplicação persistente de grifos.',
+    doc: readerMarkBarDoc,
+    slotText: '',
+    initialValues: {
+      mode: 'floating',
+      'passage-title': 'Salmos 23',
+    },
+    implementations: [
+      {
+        id: 'lit',
+        label: 'Lit',
+        tag: 'fzl-reader-content',
+        packageName: '@fzl/webcomponents-lit',
+        manifest: litManifest,
+        load: () => import('@fzl/webcomponents-lit/reader-content'),
       },
     ],
   },

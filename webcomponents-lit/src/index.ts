@@ -21,3 +21,5 @@ export * from './components/form/select.component';
 export * from './components/form/checkbox.component';
 export * from './components/form/form.component';
 export * from './components/grid/data-grid.component';
+export * from './components/reader/reader-mark-bar.component';
+export * from './components/reader/reader-content.component';

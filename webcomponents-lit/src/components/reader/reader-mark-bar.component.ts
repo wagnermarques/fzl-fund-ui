@@ -269,7 +269,27 @@ export class FzlReaderMarkBar extends FzlWidgetMixin(LitElement) {
 
   @property({ type: String, reflect: true }) mode: FzlMarkBarMode = 'floating';
   @property({ type: Boolean, reflect: true }) visible = false;
-  @property({ type: Array }) colors: MarkColorItem[] = DEFAULT_MARK_COLORS;
+  @property({
+    type: Array,
+    converter: {
+      fromAttribute(value: string | null): MarkColorItem[] {
+        if (!value || typeof value !== 'string') return DEFAULT_MARK_COLORS;
+        const trimmed = value.trim();
+        if (!trimmed || trimmed === 'DEFAULT_MARK_COLORS') return DEFAULT_MARK_COLORS;
+        try {
+          const parsed = JSON.parse(trimmed);
+          return Array.isArray(parsed) && parsed.length > 0 ? parsed : DEFAULT_MARK_COLORS;
+        } catch {
+          return DEFAULT_MARK_COLORS;
+        }
+      },
+      toAttribute(value: MarkColorItem[] | null | undefined): string | null {
+        if (!value || !Array.isArray(value)) return null;
+        return JSON.stringify(value);
+      },
+    },
+  })
+  colors: MarkColorItem[] = [...DEFAULT_MARK_COLORS];
   @property({ type: String, attribute: 'selected-text' }) selectedText = '';
   @property({ type: String }) target = '';
   @property({ type: Boolean, attribute: 'watch-selection' }) watchSelection = false;
@@ -491,6 +511,8 @@ export class FzlReaderMarkBar extends FzlWidgetMixin(LitElement) {
   }
 
   override render() {
+    const activeColors = Array.isArray(this.colors) && this.colors.length > 0 ? this.colors : DEFAULT_MARK_COLORS;
+
     return html`
       <div class="mark-bar" role="toolbar" aria-label="Ações de marcação de texto">
         ${this.mode === 'floating'
@@ -514,7 +536,7 @@ export class FzlReaderMarkBar extends FzlWidgetMixin(LitElement) {
 
         <!-- Color Swatches -->
         <div class="colors-group" role="group" aria-label="Cores de destaque">
-          ${this.colors.map(
+          ${activeColors.map(
             (c) => html`
               <button
                 type="button"

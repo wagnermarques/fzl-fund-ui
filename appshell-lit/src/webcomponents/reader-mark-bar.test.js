@@ -115,9 +115,64 @@ describe('Reader Selection & Mark Bar (<fzl-reader-mark-bar>)', () => {
 
     document.body.removeChild(bar);
   });
+
+  it('handles invalid or non-JSON colors attribute gracefully without crashing', async () => {
+    const bar = document.createElement('fzl-reader-mark-bar');
+    bar.setAttribute('colors', 'DEFAULT_MARK_COLORS');
+    document.body.appendChild(bar);
+    await bar.updateComplete;
+
+    expect(bar.colors).toEqual(DEFAULT_MARK_COLORS);
+    const colorBtns = bar.renderRoot.querySelectorAll('.color-btn');
+    expect(colorBtns.length).toBe(6);
+
+    // Test with invalid arbitrary string
+    bar.setAttribute('colors', 'invalid-non-json');
+    await bar.updateComplete;
+    expect(bar.colors).toEqual(DEFAULT_MARK_COLORS);
+
+    // Test defensive rendering when property is forced to null
+    // @ts-ignore
+    bar.colors = null;
+    await bar.updateComplete;
+    const fallbackBtns = bar.renderRoot.querySelectorAll('.color-btn');
+    expect(fallbackBtns.length).toBe(6);
+
+    document.body.removeChild(bar);
+  });
+
+  it('parses custom JSON array in colors attribute correctly', async () => {
+    const bar = document.createElement('fzl-reader-mark-bar');
+    const customColors = [
+      { id: 'gold', name: 'Ouro', bg: '#ffd700', border: '#b8860b' },
+      { id: 'cyan', name: 'Ciano', bg: '#00ffff', border: '#008b8b' },
+    ];
+    bar.setAttribute('colors', JSON.stringify(customColors));
+    document.body.appendChild(bar);
+    await bar.updateComplete;
+
+    expect(bar.colors.length).toBe(2);
+    expect(bar.colors[0].id).toBe('gold');
+    const colorBtns = bar.renderRoot.querySelectorAll('.color-btn');
+    expect(colorBtns.length).toBe(2);
+
+    document.body.removeChild(bar);
+  });
 });
 
 describe('Reader Content Container (<fzl-reader-content>)', () => {
+  it('handles non-JSON verses attribute gracefully without crashing', async () => {
+    const reader = document.createElement('fzl-reader-content');
+    reader.setAttribute('verses', 'DEFAULT_PASSAGE');
+    document.body.appendChild(reader);
+    await reader.updateComplete;
+
+    const verses = reader.renderRoot.querySelectorAll('.verse');
+    expect(verses.length).toBe(6);
+
+    document.body.removeChild(reader);
+  });
+
   it('renders passage title, metadata and verses correctly', async () => {
     const reader = document.createElement('fzl-reader-content');
     reader.passageTitle = 'Salmos 23';

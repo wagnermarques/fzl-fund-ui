@@ -349,7 +349,14 @@ export function literalOptions(typeText) {
 function parseDefault(text) {
   if (text === undefined) return undefined
   if (text === 'true' || text === 'false') return text === 'true'
-  return /^(['"])(.*)\1$/.exec(text)?.[2] ?? text
+  const match = /^(['"])(.*)\1$/.exec(text)
+  if (match) return match[2]
+  // Se for um identificador JS (ex.: DEFAULT_MARK_COLORS, DEFAULT_PASSAGE)
+  // ou código não avaliado, não deve virar valor padrão de atributo HTML.
+  if (/^[A-Z][A-Z0-9_]*$/.test(text) || text.startsWith('[') || text.startsWith('{')) {
+    return undefined
+  }
+  return text
 }
 
 /** Os atributos de uma implementação como controles do palco:

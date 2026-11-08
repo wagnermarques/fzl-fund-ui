@@ -186,7 +186,27 @@ export class FzlReaderContent extends FzlWidgetMixin(LitElement) {
   @property({ type: String, attribute: 'passage-title' }) passageTitle = 'Salmos 23';
   @property({ type: String, attribute: 'passage-meta' }) passageMeta = 'Nova Versão Internacional (NVI)';
   @property({ type: String }) mode: 'floating' | 'top' | 'bubble' = 'floating';
-  @property({ type: Array }) verses = DEFAULT_PASSAGE;
+  @property({
+    type: Array,
+    converter: {
+      fromAttribute(value: string | null) {
+        if (!value || typeof value !== 'string') return DEFAULT_PASSAGE;
+        const trimmed = value.trim();
+        if (!trimmed || trimmed === 'DEFAULT_PASSAGE') return DEFAULT_PASSAGE;
+        try {
+          const parsed = JSON.parse(trimmed);
+          return Array.isArray(parsed) && parsed.length > 0 ? parsed : DEFAULT_PASSAGE;
+        } catch {
+          return DEFAULT_PASSAGE;
+        }
+      },
+      toAttribute(value: unknown) {
+        if (!value || !Array.isArray(value)) return null;
+        return JSON.stringify(value);
+      },
+    },
+  })
+  verses = [...DEFAULT_PASSAGE];
 
   @query('fzl-reader-mark-bar') private _markBar!: FzlReaderMarkBar;
   @query('.verses-container') private _versesContainer!: HTMLElement;
@@ -387,7 +407,7 @@ export class FzlReaderContent extends FzlWidgetMixin(LitElement) {
 
       <!-- Verses text area -->
       <div class="verses-container" role="article" aria-label="Texto de leitura bíblica">
-        ${this.verses.map(
+        ${(Array.isArray(this.verses) && this.verses.length > 0 ? this.verses : DEFAULT_PASSAGE).map(
           (v) => html`
             <span class="verse" data-verse=${v.num}>
               <span class="verse-num">${v.num}</span>${v.text}

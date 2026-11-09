@@ -7,6 +7,10 @@ import './app-version.js'
  *  (conexão, relógio, versão) e expõe um <slot> para que um projeto que use
  *  este appshell acrescente outros — sem precisar editar este arquivo. */
 export class AppFooter extends LitElement {
+  static properties = {
+    footerText: { type: String },
+  }
+
   static styles = css`
     :host {
       display: flex;
@@ -29,7 +33,21 @@ export class AppFooter extends LitElement {
       overflow: hidden;
       white-space: nowrap;
     }
+    .center {
+      text-align: center;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      padding: 0 8px;
+      flex: 1 1 auto;
+      max-width: 600px;
+    }
   `
+
+  constructor() {
+    super()
+    this.footerText = ''
+  }
 
   render() {
     return html`
@@ -37,6 +55,7 @@ export class AppFooter extends LitElement {
         <connection-status></connection-status>
         <app-clock></app-clock>
       </div>
+      ${this.footerText ? html`<div class="center">${this.footerText}</div>` : ''}
       <div class="end">
         <slot></slot>
         <app-version></app-version>

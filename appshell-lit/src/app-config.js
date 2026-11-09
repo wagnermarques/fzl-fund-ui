@@ -47,6 +47,7 @@ const KNOWN_KEYS = [
   'share',
   'debug',
   'i18n',
+  'organization',
   'base',
   'manifest',
   'includeAssets',
@@ -58,6 +59,35 @@ const PUSH_KEYS = ['vapidPublicKey', 'backend', 'path']
 const BACKEND_KEYS = ['url', 'auth', 'health', 'timeoutMs']
 const SHARE_KEYS = ['enabled', 'title', 'networks', 'text', 'url']
 const I18N_KEYS = ['defaultLocale', 'fallbackLocale', 'supportedLocales', 'autoDetect']
+export const ORGANIZATION_KEYS = [
+  'enabled',
+  'name',
+  'logo',
+  'logoDark',
+  'tagline',
+  'primaryColor',
+  'accentColor',
+  'supportEmail',
+  'website',
+  'footerText',
+  'backendUrl',
+  'allowRuntimeEdit',
+]
+
+export const DEFAULT_MOCK_ORGANIZATION = {
+  enabled: true,
+  name: 'FZL Capital & Investimentos',
+  tagline: 'Gestão Estratégica de Fundos & Ativos',
+  logo: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="32" height="32"><defs><linearGradient id="fzlGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="%230284c7"/><stop offset="100%" stop-color="%230369a1"/></linearGradient></defs><rect width="40" height="40" rx="8" fill="url(%23fzlGrad)"/><path d="M10 13 H24 V17 H15 V20 H22 V24 H15 V28 H10 Z" fill="%23ffffff"/><circle cx="28" cy="25" r="3.5" fill="%2338bdf8"/></svg>',
+  logoDark: '',
+  primaryColor: '#0284c7',
+  accentColor: '#38bdf8',
+  supportEmail: 'contato@fzlcapital.com.br',
+  website: 'https://fzlcapital.com.br',
+  footerText: '© 2026 FZL Capital & Investimentos S.A. Todos os direitos reservados.',
+  allowRuntimeEdit: true,
+  backendUrl: '',
+}
 export const SUPPORTED_SHARE_NETWORKS = [
   'whatsapp',
   'telegram',
@@ -86,6 +116,8 @@ export const OVERRIDABLE_PATHS = [
   'share.text',
   'share.url',
   'i18n.defaultLocale',
+  'organization.name',
+  'organization.primaryColor',
 ]
 
 /** Nomes antigos, aceitos abaixo dos VITE_APPSHELL_*. */
@@ -232,6 +264,61 @@ function validateI18n(i18n) {
   }
 }
 
+export function validateOrganization(org, where = CONFIG_FILE) {
+  const err = (message) => {
+    throw new Error(`${where}: ${message}`)
+  }
+  if (org === undefined || org === null || org === false) return null
+  if (org === true) return { ...DEFAULT_MOCK_ORGANIZATION }
+  if (!isPlainObject(org)) err('"organization" deve ser um objeto ou boolean')
+  requireKnownKeys(org, ORGANIZATION_KEYS, 'organization: ')
+
+  const {
+    enabled = true,
+    name = DEFAULT_MOCK_ORGANIZATION.name,
+    logo = DEFAULT_MOCK_ORGANIZATION.logo,
+    logoDark = '',
+    tagline = DEFAULT_MOCK_ORGANIZATION.tagline,
+    primaryColor = DEFAULT_MOCK_ORGANIZATION.primaryColor,
+    accentColor = DEFAULT_MOCK_ORGANIZATION.accentColor,
+    supportEmail = DEFAULT_MOCK_ORGANIZATION.supportEmail,
+    website = DEFAULT_MOCK_ORGANIZATION.website,
+    footerText = DEFAULT_MOCK_ORGANIZATION.footerText,
+    backendUrl = '',
+    allowRuntimeEdit = true,
+  } = org
+
+  if (typeof enabled !== 'boolean') err('"organization.enabled" deve ser true ou false')
+  if (enabled === false) return { enabled: false }
+
+  optionalString(name, 'organization.name')
+  optionalString(logo, 'organization.logo')
+  optionalString(logoDark, 'organization.logoDark')
+  optionalString(tagline, 'organization.tagline')
+  optionalString(primaryColor, 'organization.primaryColor')
+  optionalString(accentColor, 'organization.accentColor')
+  optionalString(supportEmail, 'organization.supportEmail')
+  optionalString(website, 'organization.website')
+  optionalString(footerText, 'organization.footerText')
+  optionalString(backendUrl, 'organization.backendUrl')
+  if (typeof allowRuntimeEdit !== 'boolean') err('"organization.allowRuntimeEdit" deve ser true ou false')
+
+  return {
+    enabled,
+    name,
+    logo,
+    logoDark,
+    tagline,
+    primaryColor,
+    accentColor,
+    supportEmail,
+    website,
+    footerText,
+    backendUrl,
+    allowRuntimeEdit,
+  }
+}
+
 /** Valida o appshell.config.js (as opções de acessibilidade ficam com
  *  resolveAccessibility, no defineAppShellConfig). Devolve a própria config. */
 export function validateAppConfig(config) {
@@ -270,6 +357,7 @@ export function validateAppConfig(config) {
 
   if (backends !== undefined) validateBackends(backends)
   if (config.i18n !== undefined) validateI18n(config.i18n)
+  if (config.organization !== undefined) validateOrganization(config.organization, CONFIG_FILE)
 
   if (share !== undefined) {
     if (typeof share !== 'boolean') {
@@ -405,6 +493,25 @@ export function mergeAppConfig(config, file = appConfig.config) {
   }
   if (config.i18n !== null && (file.i18n || config.i18n)) {
     merged.i18n = { ...file.i18n, ...config.i18n }
+  }
+  if (config.organization !== null && (file.organization !== undefined || config.organization !== undefined)) {
+    if (config.organization === false || (config.organization === undefined && file.organization === false)) {
+      merged.organization = false
+    } else {
+      const fileOrg = isPlainObject(file.organization)
+        ? file.organization
+        : file.organization
+          ? { ...DEFAULT_MOCK_ORGANIZATION }
+          : {}
+      const configOrg = isPlainObject(config.organization)
+        ? config.organization
+        : config.organization
+          ? { ...DEFAULT_MOCK_ORGANIZATION }
+          : {}
+      merged.organization = { ...fileOrg, ...configOrg }
+    }
+  } else if (config.organization === null) {
+    merged.organization = null
   }
   return merged
 }

@@ -74,6 +74,10 @@ export const shellRoutes = [
   { name: 'config-notificacoes', match: pattern('config/notificacoes') },
   { name: 'config-web-push', match: pattern('config/web-push') },
   { name: 'config-idioma', match: pattern('config/idioma') },
+  {
+    name: 'config-organizacao',
+    match: (segments) => pattern('config/organizacao')(segments) ?? pattern('config/organization')(segments),
+  },
 ]
 
 // Redirecionamentos de confirmação de e-mail/magic link/reset de senha de
@@ -202,4 +206,8 @@ export function navigateToConfigWebPush() {
 
 export function navigateToConfigLanguage() {
   navigate('config/idioma')
+}
+
+export function navigateToConfigOrganization() {
+  navigate('config/organizacao')
 }

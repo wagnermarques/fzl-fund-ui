@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
+import { DEFAULT_MOCK_ORGANIZATION } from './app-config.js'
 import { validateConfig, withPushBackend } from './create-app-shell.js'
 
 const noop = () => {}
@@ -24,6 +25,7 @@ describe('validateConfig', () => {
         text: '',
         url: '',
       },
+      organization: null,
       on: {},
       debug: false,
     })
@@ -329,6 +331,36 @@ describe('validateConfig — share', () => {
       config: true,
       share: false,
     })
+  })
+})
+
+describe('validateConfig — organization', () => {
+  it('desliga quando organization é false, null ou omitido', () => {
+    expect(validateConfig({ ...base, organization: false }).organization).toBeNull()
+    expect(validateConfig({ ...base, organization: null }).organization).toBeNull()
+    expect(validateConfig(base).organization).toBeNull()
+  })
+
+  it('preenche com os padrões de demonstração quando organization é true', () => {
+    expect(validateConfig({ ...base, organization: true }).organization).toEqual(DEFAULT_MOCK_ORGANIZATION)
+  })
+
+  it('aceita configuração customizada de organização', () => {
+    const org = {
+      enabled: true,
+      name: 'Fundos Brasil S.A.',
+      primaryColor: '#00629e',
+      tagline: 'Excelência em Investimentos',
+    }
+    const validated = validateConfig({ ...base, organization: org }).organization
+    expect(validated.name).toBe('Fundos Brasil S.A.')
+    expect(validated.primaryColor).toBe('#00629e')
+    expect(validated.enabled).toBe(true)
+  })
+
+  it('recusa tipo inválido de organization', () => {
+    expect(() => validateConfig({ ...base, organization: 'sim' })).toThrow(/"organization" deve ser um objeto ou boolean/)
+    expect(() => validateConfig({ ...base, organization: { invalidProp: 123 } })).toThrow(/organization: "invalidProp"/)
   })
 })
 

@@ -1,12 +1,14 @@
 import { describe, expect, it } from 'vitest'
 import {
   CONFIG_FILE,
+  DEFAULT_MOCK_ORGANIZATION,
   applyEnvOverrides,
   configSource,
   envName,
   mergeAppConfig,
   resolveAppConfig,
   validateAppConfig,
+  validateOrganization,
 } from './app-config.js'
 
 describe('validateAppConfig', () => {
@@ -225,6 +227,53 @@ describe('validateAppConfig — i18n', () => {
     expect(() => validateAppConfig({ i18n: 'pt-BR' })).toThrow(/"i18n" deve ser um objeto/)
     expect(() => validateAppConfig({ i18n: { unknown: 'val' } })).toThrow(/i18n: "unknown" não é uma opção conhecida/)
     expect(() => validateAppConfig({ i18n: { autoDetect: 'sim' } })).toThrow(/"i18n.autoDetect" deve ser true ou false/)
+  })
+})
+
+describe('validateAppConfig — organization', () => {
+  it('aceita organization booleano true, false ou objeto completo', () => {
+    expect(validateOrganization(false)).toBeNull()
+    expect(validateOrganization(null)).toBeNull()
+    expect(validateOrganization(true)).toEqual(DEFAULT_MOCK_ORGANIZATION)
+    const custom = {
+      name: 'Minha Empresa S.A.',
+      tagline: 'Soluções em Crédito',
+      primaryColor: '#059669',
+      footerText: '© 2026 Minha Empresa',
+    }
+    const validated = validateOrganization(custom)
+    expect(validated.name).toBe('Minha Empresa S.A.')
+    expect(validated.primaryColor).toBe('#059669')
+    expect(validated.enabled).toBe(true)
+  })
+
+  it('recusa tipo inválido e chaves desconhecidas em organization', () => {
+    expect(() => validateAppConfig({ organization: 'invalido' })).toThrow(/"organization" deve ser um objeto ou boolean/)
+    expect(() => validateAppConfig({ organization: { unknownKey: 'val' } })).toThrow(/organization: "unknownKey" não é uma opção conhecida/)
+    expect(() => validateAppConfig({ organization: { enabled: 'sim' } })).toThrow(/"organization.enabled" deve ser true ou false/)
+    expect(() => validateAppConfig({ organization: { allowRuntimeEdit: 'nao' } })).toThrow(/"organization.allowRuntimeEdit" deve ser true ou false/)
+  })
+
+  it('mergeAppConfig mescla organization ou desliga com false/null', () => {
+    const file = { organization: { name: 'Empresa A', primaryColor: '#123456' } }
+    const app = { organization: { primaryColor: '#654321' } }
+    expect(mergeAppConfig(app, file).organization).toEqual({
+      name: 'Empresa A',
+      primaryColor: '#654321',
+    })
+    expect(mergeAppConfig({ organization: false }, file).organization).toBe(false)
+    expect(mergeAppConfig({ organization: null }, file).organization).toBeNull()
+  })
+
+  it('sobrescreve organization.name e organization.primaryColor por variável de ambiente', () => {
+    const file = { organization: { name: 'Base', primaryColor: '#111111' } }
+    const { config, sources } = applyEnvOverrides(file, {
+      VITE_APPSHELL_ORGANIZATION_NAME: 'Empresa Env',
+      VITE_APPSHELL_ORGANIZATION_PRIMARY_COLOR: '#222222',
+    })
+    expect(config.organization.name).toBe('Empresa Env')
+    expect(config.organization.primaryColor).toBe('#222222')
+    expect(sources['organization.name']).toBe('VITE_APPSHELL_ORGANIZATION_NAME')
   })
 })
 

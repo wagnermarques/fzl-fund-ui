@@ -3,6 +3,7 @@ import {
   bridgeAuth,
   bridgeNetwork,
   bridgeNotifications,
+  bridgeOrganization,
   bridgePreferences,
   bridgePush,
   createShellEvents,
@@ -244,5 +245,19 @@ describe('bridgeNetwork e bridgePreferences', () => {
     off()
     expect(i18n.size).toBe(0)
     expect(log.mock.calls).toEqual([['i18n:locale-change', { locale: 'en-US', dir: 'ltr' }]])
+  })
+
+  it('mudança de organização vira organization:change', () => {
+    const events = createShellEvents()
+    const org = fakeService()
+    const log = vi.fn()
+    events.onAny(log)
+    const off = bridgeOrganization(events, org)
+    org.push({ name: 'Nova Org', primaryColor: '#00629e' })
+    off()
+    expect(org.size).toBe(0)
+    expect(log.mock.calls).toEqual([
+      ['organization:change', { config: { name: 'Nova Org', primaryColor: '#00629e' } }],
+    ])
   })
 })

@@ -6,6 +6,7 @@ import './config-web-push-view.js'
 import './config-privacy-view.js'
 import './config-backend-view.js'
 import './config-language-view.js'
+import './config-organization-view.js'
 import './consent-banner.js'
 import './nav-accordion.js'
 import './app-footer.js'
@@ -20,6 +21,7 @@ import { analyticsService } from '../services/analytics-service.js'
 import { authService } from '../services/auth-service.js'
 import { accessibilityService } from '../services/accessibility-service.js'
 import { consentService } from '../services/consent-service.js'
+import { organizationService } from '../services/organization-service.js'
 import { pushService } from '../services/push-service.js'
 import { shellEvents } from '../services/shell-events.js'
 import {
@@ -29,6 +31,7 @@ import {
   navigateToAccount,
   navigateToConfigAccessibility,
   navigateToConfigNotifications,
+  navigateToConfigOrganization,
   navigateToConfigWebPush,
   navigateToConfigPrivacy,
   navigateToConfigBackend,
@@ -52,6 +55,7 @@ const SHELL_ROUTE_TITLES = {
   'config-notificacoes': 'Notificações',
   'config-web-push': 'Web Push',
   'config-idioma': 'Idioma',
+  'config-organizacao': 'Organização',
   [NOT_FOUND]: 'Página não encontrada',
 }
 
@@ -69,6 +73,7 @@ export class AppShell extends LitElement {
     _updateAvailable: { state: true },
     _user: { state: true },
     _consent: { state: true },
+    _orgConfig: { state: true },
   }
 
   static styles = css`
@@ -197,6 +202,7 @@ export class AppShell extends LitElement {
     this._updateAvailable = false
     this._user = null
     this._consent = null
+    this._orgConfig = organizationService.getConfig()
     this._swRegistration = null
     this._updateSW = registerSW({
       onNeedRefresh: () => {
@@ -255,6 +261,7 @@ export class AppShell extends LitElement {
       { routes: this.routes },
     )
     this._unsubscribeAuth = authService.subscribe((user) => (this._user = user))
+    this._unsubscribeOrg = organizationService.subscribe((cfg) => (this._orgConfig = cfg))
 
     // Android PWAs são normalmente retomadas da memória em vez de
     // reiniciadas, então a checagem de atualização do próprio navegador
@@ -278,6 +285,7 @@ export class AppShell extends LitElement {
     this._unsubscribe?.()
     this._unsubscribeAuth?.()
     this._unsubscribeConsent?.()
+    this._unsubscribeOrg?.()
     document.removeEventListener('visibilitychange', this._onVisibilityChange)
     window.removeEventListener('appinstalled', this._onAppInstalled)
   }
@@ -363,7 +371,12 @@ export class AppShell extends LitElement {
         >Ir para o conteúdo</a
       >
 
-      <app-header .heading=${this.title} @menu-toggle=${() => (this._drawerOpen = !this._drawerOpen)}>
+      <app-header
+        .heading=${this._orgConfig?.enabled && this._orgConfig?.name ? this._orgConfig.name : this.title}
+        .logo=${this._orgConfig?.enabled ? (this._orgConfig.logo || '') : ''}
+        .tagline=${this._orgConfig?.enabled ? (this._orgConfig.tagline || '') : ''}
+        @menu-toggle=${() => (this._drawerOpen = !this._drawerOpen)}
+      >
         ${this.headerActions ? this.headerActions() : ''}
       </app-header>
 
@@ -399,6 +412,17 @@ export class AppShell extends LitElement {
                       <md-icon slot="start">language</md-icon>
                       Idioma
                     </md-list-item>
+                    ${organizationService.isConfigured()
+                      ? html`
+                          <md-list-item
+                            type="button"
+                            @click=${() => this._selectDrawerItem(navigateToConfigOrganization)}
+                          >
+                            <md-icon slot="start">corporate_fare</md-icon>
+                            Organização
+                          </md-list-item>
+                        `
+                      : ''}
                     ${accessibilityService.config.enabled
                       ? html`
                           <md-list-item
@@ -456,7 +480,12 @@ export class AppShell extends LitElement {
         ? html`<consent-banner ?inert=${this._drawerOpen} .privacyUrl=${this.analytics.privacyUrl}></consent-banner>`
         : ''}
 
-      <app-footer ?inert=${this._drawerOpen}>${this.footerItems ? this.footerItems() : ''}</app-footer>
+      <app-footer
+        ?inert=${this._drawerOpen}
+        .footerText=${this._orgConfig?.enabled ? (this._orgConfig.footerText || '') : ''}
+      >
+        ${this.footerItems ? this.footerItems() : ''}
+      </app-footer>
 
       ${this._updateAvailable
         ? html`
@@ -701,6 +730,11 @@ export class AppShell extends LitElement {
         return html`<config-backend-view></config-backend-view>`
       case 'config-idioma':
         return html`<config-language-view></config-language-view>`
+      case 'config-organizacao':
+        if (organizationService.isConfigured()) {
+          return html`<config-organization-view></config-organization-view>`
+        }
+        return html`<not-found-view .path=${this._route.segments.join('/')}></not-found-view>`
       case 'config-acessibilidade':
         if (accessibilityService.config.enabled) {
           return html`<config-accessibility-view></config-accessibility-view>`

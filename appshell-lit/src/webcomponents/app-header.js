@@ -12,6 +12,8 @@ import './user-status.js'
 export class AppHeader extends LitElement {
   static properties = {
     heading: {},
+    logo: { type: String },
+    tagline: { type: String },
   }
 
   static styles = css`
@@ -26,15 +28,44 @@ export class AppHeader extends LitElement {
       color: var(--md-sys-color-on-surface);
       border-bottom: 1px solid var(--md-sys-color-outline);
     }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex: 1;
+      min-width: 0;
+      cursor: pointer;
+      user-select: none;
+    }
+    .brand-logo {
+      height: 32px;
+      max-width: 120px;
+      object-fit: contain;
+      flex-shrink: 0;
+      border-radius: 4px;
+    }
+    .brand-titles {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      overflow: hidden;
+    }
     h1 {
       font-size: 1.1rem;
       margin: 0;
-      flex: 1;
-      min-width: 0;
+      line-height: 1.2;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
-      cursor: pointer;
+    }
+    .brand-tagline {
+      font-size: 0.72rem;
+      color: var(--md-sys-color-on-surface-variant);
+      margin: 0;
+      line-height: 1.1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
     .actions {
       display: flex;
@@ -46,6 +77,8 @@ export class AppHeader extends LitElement {
   constructor() {
     super()
     this.heading = 'Fund Appshell'
+    this.logo = ''
+    this.tagline = ''
   }
 
   render() {
@@ -56,7 +89,13 @@ export class AppHeader extends LitElement {
       >
         <md-icon>menu</md-icon>
       </md-icon-button>
-      <h1 @click=${navigateHome}>${this.heading}</h1>
+      <div class="brand" @click=${navigateHome} role="button" tabindex="0">
+        ${this.logo ? html`<img class="brand-logo" src=${this.logo} alt="" />` : ''}
+        <div class="brand-titles">
+          <h1>${this.heading}</h1>
+          ${this.tagline ? html`<span class="brand-tagline">${this.tagline}</span>` : ''}
+        </div>
+      </div>
       <div class="actions">
         <slot></slot>
         <user-status></user-status>

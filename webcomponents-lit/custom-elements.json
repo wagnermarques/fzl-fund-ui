@@ -883,251 +883,6 @@
     },
     {
       "kind": "javascript-module",
-      "path": "src/components/button/button.component.ts",
-      "declarations": [
-        {
-          "kind": "class",
-          "description": "Reactive Lit-based Custom Element button with Shadow DOM encapsulation.",
-          "name": "FzlLitButton",
-          "cssParts": [
-            {
-              "description": "The internal native `<button>` element",
-              "name": "button"
-            }
-          ],
-          "slots": [
-            {
-              "description": "Content to be displayed inside the button",
-              "name": ""
-            }
-          ],
-          "members": [
-            {
-              "kind": "field",
-              "name": "shadowRootOptions",
-              "type": {
-                "text": "ShadowRootInit"
-              },
-              "static": true,
-              "default": "{ ...LitElement.shadowRootOptions, delegatesFocus: true, }"
-            },
-            {
-              "kind": "field",
-              "name": "variant",
-              "type": {
-                "text": "FzlButtonVariant"
-              },
-              "default": "'primary'",
-              "description": "Visual appearance variant",
-              "attribute": "variant",
-              "reflects": true
-            },
-            {
-              "kind": "field",
-              "name": "size",
-              "type": {
-                "text": "FzlButtonSize"
-              },
-              "default": "'md'",
-              "description": "Size scale of the button",
-              "attribute": "size",
-              "reflects": true
-            },
-            {
-              "kind": "field",
-              "name": "disabled",
-              "type": {
-                "text": "boolean"
-              },
-              "default": "false",
-              "description": "Whether the button is disabled",
-              "attribute": "disabled",
-              "reflects": true
-            },
-            {
-              "kind": "field",
-              "name": "type",
-              "type": {
-                "text": "'button' | 'submit' | 'reset'"
-              },
-              "default": "'button'",
-              "description": "Form button behavior",
-              "attribute": "type",
-              "reflects": true
-            },
-            {
-              "kind": "field",
-              "name": "typematic",
-              "type": {
-                "text": "boolean"
-              },
-              "default": "false",
-              "description": "Enables typematic repeat firing of `fzl-click` while held down",
-              "attribute": "typematic",
-              "reflects": true
-            },
-            {
-              "kind": "field",
-              "name": "_typematicCleanup",
-              "type": {
-                "text": "(() => void) | null"
-              },
-              "privacy": "private",
-              "default": "null"
-            },
-            {
-              "kind": "field",
-              "name": "_lastTypematicTick",
-              "type": {
-                "text": "boolean"
-              },
-              "privacy": "private",
-              "default": "false"
-            },
-            {
-              "kind": "method",
-              "name": "_clearTypematic",
-              "privacy": "private",
-              "return": {
-                "type": {
-                  "text": "void"
-                }
-              }
-            },
-            {
-              "kind": "method",
-              "name": "_syncTypematic",
-              "privacy": "private",
-              "return": {
-                "type": {
-                  "text": "void"
-                }
-              }
-            },
-            {
-              "kind": "method",
-              "name": "_handleClick",
-              "privacy": "private",
-              "parameters": [
-                {
-                  "name": "event",
-                  "type": {
-                    "text": "MouseEvent"
-                  }
-                }
-              ]
-            }
-          ],
-          "events": [
-            {
-              "type": {
-                "text": "CustomEvent<{ originalEvent: MouseEvent | KeyboardEvent; repeatCount?: number }>"
-              },
-              "description": "Dispatched when the button is activated",
-              "name": "fzl-click"
-            },
-            {
-              "type": {
-                "text": "CustomEvent<{ widgetId: string; originalEvent: FocusEvent }>"
-              },
-              "description": "Dispatched when the widget gains focus",
-              "name": "fzl-focus"
-            },
-            {
-              "type": {
-                "text": "CustomEvent<{ widgetId: string; originalEvent: FocusEvent }>"
-              },
-              "description": "Dispatched when the widget loses focus",
-              "name": "fzl-blur"
-            }
-          ],
-          "attributes": [
-            {
-              "name": "variant",
-              "type": {
-                "text": "FzlButtonVariant"
-              },
-              "default": "'primary'",
-              "description": "Visual appearance variant",
-              "fieldName": "variant",
-              "attribute": "variant"
-            },
-            {
-              "name": "size",
-              "type": {
-                "text": "FzlButtonSize"
-              },
-              "default": "'md'",
-              "description": "Size scale of the button",
-              "fieldName": "size",
-              "attribute": "size"
-            },
-            {
-              "name": "disabled",
-              "type": {
-                "text": "boolean"
-              },
-              "default": "false",
-              "description": "Whether the button is disabled",
-              "fieldName": "disabled",
-              "attribute": "disabled"
-            },
-            {
-              "name": "type",
-              "type": {
-                "text": "'button' | 'submit' | 'reset'"
-              },
-              "default": "'button'",
-              "description": "Form button behavior",
-              "fieldName": "type",
-              "attribute": "type"
-            },
-            {
-              "name": "typematic",
-              "type": {
-                "text": "boolean"
-              },
-              "default": "false",
-              "description": "Enables typematic repeat firing of `fzl-click` while held down",
-              "fieldName": "typematic",
-              "attribute": "typematic"
-            }
-          ],
-          "mixins": [
-            {
-              "name": "FzlWidgetMixin",
-              "package": "@fzl/core"
-            }
-          ],
-          "superclass": {
-            "name": "LitElement",
-            "package": "lit"
-          },
-          "tagName": "fzl-lit-button",
-          "customElement": true
-        }
-      ],
-      "exports": [
-        {
-          "kind": "js",
-          "name": "FzlLitButton",
-          "declaration": {
-            "name": "FzlLitButton",
-            "module": "src/components/button/button.component.ts"
-          }
-        },
-        {
-          "kind": "custom-element-definition",
-          "name": "fzl-lit-button",
-          "declaration": {
-            "name": "FzlLitButton",
-            "module": "src/components/button/button.component.ts"
-          }
-        }
-      ]
-    },
-    {
-      "kind": "javascript-module",
       "path": "src/components/avatar-upload/avatar-upload.component.ts",
       "declarations": [
         {
@@ -6299,6 +6054,251 @@
           "declaration": {
             "name": "fetchIbgeLayer",
             "module": "src/components/geo/ibge-service.ts"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/components/button/button.component.ts",
+      "declarations": [
+        {
+          "kind": "class",
+          "description": "Reactive Lit-based Custom Element button with Shadow DOM encapsulation.",
+          "name": "FzlLitButton",
+          "cssParts": [
+            {
+              "description": "The internal native `<button>` element",
+              "name": "button"
+            }
+          ],
+          "slots": [
+            {
+              "description": "Content to be displayed inside the button",
+              "name": ""
+            }
+          ],
+          "members": [
+            {
+              "kind": "field",
+              "name": "shadowRootOptions",
+              "type": {
+                "text": "ShadowRootInit"
+              },
+              "static": true,
+              "default": "{ ...LitElement.shadowRootOptions, delegatesFocus: true, }"
+            },
+            {
+              "kind": "field",
+              "name": "variant",
+              "type": {
+                "text": "FzlButtonVariant"
+              },
+              "default": "'primary'",
+              "description": "Visual appearance variant",
+              "attribute": "variant",
+              "reflects": true
+            },
+            {
+              "kind": "field",
+              "name": "size",
+              "type": {
+                "text": "FzlButtonSize"
+              },
+              "default": "'md'",
+              "description": "Size scale of the button",
+              "attribute": "size",
+              "reflects": true
+            },
+            {
+              "kind": "field",
+              "name": "disabled",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false",
+              "description": "Whether the button is disabled",
+              "attribute": "disabled",
+              "reflects": true
+            },
+            {
+              "kind": "field",
+              "name": "type",
+              "type": {
+                "text": "'button' | 'submit' | 'reset'"
+              },
+              "default": "'button'",
+              "description": "Form button behavior",
+              "attribute": "type",
+              "reflects": true
+            },
+            {
+              "kind": "field",
+              "name": "typematic",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false",
+              "description": "Enables typematic repeat firing of `fzl-click` while held down",
+              "attribute": "typematic",
+              "reflects": true
+            },
+            {
+              "kind": "field",
+              "name": "_typematicCleanup",
+              "type": {
+                "text": "(() => void) | null"
+              },
+              "privacy": "private",
+              "default": "null"
+            },
+            {
+              "kind": "field",
+              "name": "_lastTypematicTick",
+              "type": {
+                "text": "boolean"
+              },
+              "privacy": "private",
+              "default": "false"
+            },
+            {
+              "kind": "method",
+              "name": "_clearTypematic",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              }
+            },
+            {
+              "kind": "method",
+              "name": "_syncTypematic",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              }
+            },
+            {
+              "kind": "method",
+              "name": "_handleClick",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "event",
+                  "type": {
+                    "text": "MouseEvent"
+                  }
+                }
+              ]
+            }
+          ],
+          "events": [
+            {
+              "type": {
+                "text": "CustomEvent<{ originalEvent: MouseEvent | KeyboardEvent; repeatCount?: number }>"
+              },
+              "description": "Dispatched when the button is activated",
+              "name": "fzl-click"
+            },
+            {
+              "type": {
+                "text": "CustomEvent<{ widgetId: string; originalEvent: FocusEvent }>"
+              },
+              "description": "Dispatched when the widget gains focus",
+              "name": "fzl-focus"
+            },
+            {
+              "type": {
+                "text": "CustomEvent<{ widgetId: string; originalEvent: FocusEvent }>"
+              },
+              "description": "Dispatched when the widget loses focus",
+              "name": "fzl-blur"
+            }
+          ],
+          "attributes": [
+            {
+              "name": "variant",
+              "type": {
+                "text": "FzlButtonVariant"
+              },
+              "default": "'primary'",
+              "description": "Visual appearance variant",
+              "fieldName": "variant",
+              "attribute": "variant"
+            },
+            {
+              "name": "size",
+              "type": {
+                "text": "FzlButtonSize"
+              },
+              "default": "'md'",
+              "description": "Size scale of the button",
+              "fieldName": "size",
+              "attribute": "size"
+            },
+            {
+              "name": "disabled",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false",
+              "description": "Whether the button is disabled",
+              "fieldName": "disabled",
+              "attribute": "disabled"
+            },
+            {
+              "name": "type",
+              "type": {
+                "text": "'button' | 'submit' | 'reset'"
+              },
+              "default": "'button'",
+              "description": "Form button behavior",
+              "fieldName": "type",
+              "attribute": "type"
+            },
+            {
+              "name": "typematic",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false",
+              "description": "Enables typematic repeat firing of `fzl-click` while held down",
+              "fieldName": "typematic",
+              "attribute": "typematic"
+            }
+          ],
+          "mixins": [
+            {
+              "name": "FzlWidgetMixin",
+              "package": "@fzl/core"
+            }
+          ],
+          "superclass": {
+            "name": "LitElement",
+            "package": "lit"
+          },
+          "tagName": "fzl-lit-button",
+          "customElement": true
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "FzlLitButton",
+          "declaration": {
+            "name": "FzlLitButton",
+            "module": "src/components/button/button.component.ts"
+          }
+        },
+        {
+          "kind": "custom-element-definition",
+          "name": "fzl-lit-button",
+          "declaration": {
+            "name": "FzlLitButton",
+            "module": "src/components/button/button.component.ts"
           }
         }
       ]

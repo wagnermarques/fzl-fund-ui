@@ -83,6 +83,8 @@ describe('resolveRoute', () => {
     expect(resolveRoute('#/config/privacidade').name).toBe('config-privacidade')
     expect(resolveRoute('#/config/acessibilidade').name).toBe('config-acessibilidade')
     expect(resolveRoute('#/config/idioma').name).toBe('config-idioma')
+    expect(resolveRoute('#/config/organizacao').name).toBe('config-organizacao')
+    expect(resolveRoute('#/config/organization').name).toBe('config-organizacao')
   })
 
   it('devolve not-found em vez de cair na home', () => {

@@ -50,6 +50,7 @@ export const SHELL_EVENTS = {
   'backend:unauthorized': '{ backend, url, status } — o backend respondeu 401 (sessão vencida ou ausente)',
   'share:click': '{ network, url } — o usuário clicou em uma opção de compartilhamento',
   'i18n:locale-change': '{ locale, dir } — o idioma ou direção da escrita mudou',
+  'organization:change': '{ config } — configurações de organização alteradas',
 }
 
 function requireKnown(name, where) {
@@ -198,4 +199,10 @@ export function bridgePreferences(events, { consent, accessibility, i18n }) {
 export function bridgeLocale(events, i18n) {
   if (!i18n?.subscribe) return () => {}
   return i18n.subscribe(({ locale, dir }) => events.emit('i18n:locale-change', { locale, dir }))
+}
+
+/** organization:change a partir do organizationService. */
+export function bridgeOrganization(events, organization) {
+  if (!organization?.subscribe) return () => {}
+  return organization.subscribe((config) => events.emit('organization:change', { config }))
 }

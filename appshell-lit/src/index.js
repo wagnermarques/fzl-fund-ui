@@ -7,6 +7,7 @@
 // pelo preset do Vite a partir do appshell.config.js).
 import 'virtual:appshell-fonts'
 import { accessibilityService } from './services/accessibility-service.js'
+import { organizationService } from './services/organization-service.js'
 import './webcomponents/md-imports.js'
 import './webcomponents/app-shell.js'
 import './webcomponents/web-push.js'
@@ -14,12 +15,17 @@ import './webcomponents/web-push.js'
 // Antes de qualquer componente renderizar: tema, fonte e tamanho de texto
 // salvos já valem no primeiro quadro, sem piscar no tema padrão.
 accessibilityService.apply()
+if (organizationService.isConfigured()) {
+  organizationService.apply()
+}
 
 export { createAppShell, validateConfig } from './create-app-shell.js'
-export { href, navigate, navigateHome, navigateToLogin, navigateToSignup, navigateToAccount, pattern } from './router.js'
+export { href, navigate, navigateHome, navigateToLogin, navigateToSignup, navigateToAccount, navigateToConfigOrganization, pattern } from './router.js'
 export { analyticsService, track } from './services/analytics-service.js'
 export { consentService } from './services/consent-service.js'
 export { accessibilityService }
+export { organizationService }
+export { DEFAULT_MOCK_ORGANIZATION } from './app-config.js'
 export { i18nService } from './services/i18n-service.js'
 export { authService, localProvider } from './services/auth-service.js'
 export { BackendError, backend, backendService } from './services/backend-service.js'

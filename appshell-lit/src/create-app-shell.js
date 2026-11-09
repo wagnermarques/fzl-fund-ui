@@ -4,7 +4,7 @@
  * DOM) e assim ser testável em Node puro.
  */
 
-import { appConfig, mergeAppConfig, validateAnalytics } from './app-config.js'
+import { appConfig, mergeAppConfig, validateAnalytics, validateOrganization } from './app-config.js'
 import { accessibilityService } from './services/accessibility-service.js'
 import { authService, validateAuthProvider } from './services/auth-service.js'
 import { backend, backendService } from './services/backend-service.js'
@@ -12,6 +12,7 @@ import { consentService } from './services/consent-service.js'
 import { i18nService } from './services/i18n-service.js'
 import { networkService } from './services/network-service.js'
 import { notificationService } from './services/notification-service.js'
+import { organizationService } from './services/organization-service.js'
 import { pushService, validatePushConfig } from './services/push-service.js'
 import {
   SHELL_EVENTS,
@@ -19,6 +20,7 @@ import {
   bridgeBackends,
   bridgeNetwork,
   bridgeNotifications,
+  bridgeOrganization,
   bridgePush,
   bridgePreferences,
   shellEvents,
@@ -204,6 +206,7 @@ export function validateConfig(config) {
     auth = null,
     push = null,
     share = undefined,
+    organization = null,
     on = {},
     debug = false,
   } = config
@@ -244,6 +247,7 @@ export function validateConfig(config) {
     auth,
     push: validatePushConfig(push),
     share: validateShareConfig(share),
+    organization: validateOrganization(organization, 'createAppShell'),
     on: validateListeners(on),
     debug,
   }
@@ -265,6 +269,7 @@ function connectEvents({ on, debug }) {
     bridgeNetwork(shellEvents, networkService),
     bridgeNotifications(shellEvents, notificationService),
     bridgePush(shellEvents, pushService),
+    bridgeOrganization(shellEvents, organizationService),
     bridgeBackends(shellEvents, backendService),
     // Checagem de saúde dos backends quando faz sentido de novo: a rede
     // voltou (sempre) ou o app voltou ao primeiro plano (no máximo a cada
@@ -311,13 +316,30 @@ export function createAppShell(config) {
   // O que o app pôs no appshell.config.js (título, analytics, push...) vem
   // do build; o que veio aqui vence campo a campo.
   const merged = mergeAppConfig(config)
-  const { mount, routes, home, title, drawer, headerActions, footerItems, analytics, auth, push, share, on, debug } =
-    validateConfig({ ...merged, push: withPushBackend(merged?.push) })
+  const {
+    mount,
+    routes,
+    home,
+    title,
+    drawer,
+    headerActions,
+    footerItems,
+    analytics,
+    auth,
+    push,
+    share,
+    organization,
+    on,
+    debug,
+  } = validateConfig({ ...merged, push: withPushBackend(merged?.push) })
 
   const container = typeof mount === 'string' ? document.querySelector(mount) : mount
   if (!container) {
     throw new Error(`createAppShell: elemento não encontrado para mount "${mount}"`)
   }
+
+  // Configura a identidade institucional (ou mantém desabilitada se null/false)
+  organizationService.use(organization)
 
   // Antes de criar o <app-shell>: ele e o header já leem o usuário atual
   // ao conectar, e esse usuário tem de vir do provedor do app.

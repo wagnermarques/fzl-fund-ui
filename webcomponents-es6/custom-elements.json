@@ -36,6 +36,14 @@
           "name": "*",
           "declaration": {
             "name": "*",
+            "module": "src/components/card-list/card.component"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "*",
+          "declaration": {
+            "name": "*",
             "module": "src/components/card-list/card-list.component"
           }
         },
@@ -855,667 +863,6 @@
     },
     {
       "kind": "javascript-module",
-      "path": "src/components/card-list/card-list.component.ts",
-      "declarations": [
-        {
-          "kind": "function",
-          "name": "parseFzlCardItems",
-          "return": {
-            "type": {
-              "text": "FzlCardItem[]"
-            }
-          },
-          "parameters": [
-            {
-              "name": "items",
-              "type": {
-                "text": "FzlCardItem[] | string | null | undefined"
-              }
-            }
-          ]
-        },
-        {
-          "kind": "function",
-          "name": "sortFzlCardItems",
-          "return": {
-            "type": {
-              "text": "FzlCardItem[]"
-            }
-          },
-          "parameters": [
-            {
-              "name": "items",
-              "type": {
-                "text": "FzlCardItem[]"
-              }
-            },
-            {
-              "name": "sortBy",
-              "type": {
-                "text": "string"
-              }
-            },
-            {
-              "name": "sortOrder",
-              "default": "'asc'",
-              "type": {
-                "text": "FzlSortOrder"
-              }
-            }
-          ]
-        },
-        {
-          "kind": "function",
-          "name": "filterFzlCardItems",
-          "return": {
-            "type": {
-              "text": "FzlCardItem[]"
-            }
-          },
-          "parameters": [
-            {
-              "name": "items",
-              "type": {
-                "text": "FzlCardItem[]"
-              }
-            },
-            {
-              "name": "query",
-              "type": {
-                "text": "string"
-              }
-            }
-          ]
-        },
-        {
-          "kind": "function",
-          "name": "applyPersistedCardOrder",
-          "return": {
-            "type": {
-              "text": "FzlCardItem[]"
-            }
-          },
-          "parameters": [
-            {
-              "name": "items",
-              "type": {
-                "text": "FzlCardItem[]"
-              }
-            },
-            {
-              "name": "orderIds",
-              "type": {
-                "text": "string[]"
-              }
-            }
-          ],
-          "description": "Reorders a list of cards according to a sequence of saved IDs."
-        },
-        {
-          "kind": "class",
-          "description": "Pure ES6 Custom Element (`fzl-es6-card-list`)\nDisplays structured cards with sorting, filtering, and responsive scrolling.",
-          "name": "FzlEs6CardList",
-          "cssParts": [
-            {
-              "description": "The outer root container",
-              "name": "container"
-            },
-            {
-              "description": "The top sorting and filtering toolbar",
-              "name": "toolbar"
-            },
-            {
-              "description": "The scrollable card container element",
-              "name": "list"
-            },
-            {
-              "description": "Each card element in the collection",
-              "name": "card"
-            },
-            {
-              "description": "Card header element",
-              "name": "card-header"
-            },
-            {
-              "description": "Card description/body element",
-              "name": "card-body"
-            },
-            {
-              "description": "Card footer containing tags and action",
-              "name": "card-footer"
-            },
-            {
-              "description": "Reordering buttons container on each card",
-              "name": "reorder-controls"
-            }
-          ],
-          "members": [
-            {
-              "kind": "field",
-              "name": "_items",
-              "type": {
-                "text": "FzlCardItem[]"
-              },
-              "privacy": "private",
-              "default": "[]"
-            },
-            {
-              "kind": "field",
-              "name": "_initialItems",
-              "type": {
-                "text": "FzlCardItem[] | null"
-              },
-              "privacy": "private",
-              "default": "null"
-            },
-            {
-              "kind": "field",
-              "name": "_layout",
-              "type": {
-                "text": "FzlCardLayout"
-              },
-              "privacy": "private",
-              "default": "'grid'"
-            },
-            {
-              "kind": "field",
-              "name": "_maxHeight",
-              "type": {
-                "text": "string"
-              },
-              "privacy": "private",
-              "default": "'none'"
-            },
-            {
-              "kind": "field",
-              "name": "_sortBy",
-              "type": {
-                "text": "string"
-              },
-              "privacy": "private",
-              "default": "''"
-            },
-            {
-              "kind": "field",
-              "name": "_sortOrder",
-              "type": {
-                "text": "FzlSortOrder"
-              },
-              "privacy": "private",
-              "default": "'asc'"
-            },
-            {
-              "kind": "field",
-              "name": "_allowSort",
-              "type": {
-                "text": "boolean"
-              },
-              "privacy": "private",
-              "default": "false"
-            },
-            {
-              "kind": "field",
-              "name": "_allowFilter",
-              "type": {
-                "text": "boolean"
-              },
-              "privacy": "private",
-              "default": "false"
-            },
-            {
-              "kind": "field",
-              "name": "_allowReorder",
-              "type": {
-                "text": "boolean"
-              },
-              "privacy": "private",
-              "default": "false"
-            },
-            {
-              "kind": "field",
-              "name": "_storageKey",
-              "type": {
-                "text": "string"
-              },
-              "privacy": "private",
-              "default": "''"
-            },
-            {
-              "kind": "field",
-              "name": "_storageType",
-              "type": {
-                "text": "'local' | 'session'"
-              },
-              "privacy": "private",
-              "default": "'local'"
-            },
-            {
-              "kind": "field",
-              "name": "_emptyText",
-              "type": {
-                "text": "string"
-              },
-              "privacy": "private",
-              "default": "'Nenhum item encontrado'"
-            },
-            {
-              "kind": "field",
-              "name": "_filterQuery",
-              "type": {
-                "text": "string"
-              },
-              "privacy": "private",
-              "default": "''"
-            },
-            {
-              "kind": "field",
-              "name": "_draggedIndex",
-              "type": {
-                "text": "number | null"
-              },
-              "privacy": "private",
-              "default": "null"
-            },
-            {
-              "kind": "field",
-              "name": "_dragOverIndex",
-              "type": {
-                "text": "number | null"
-              },
-              "privacy": "private",
-              "default": "null"
-            },
-            {
-              "kind": "field",
-              "name": "_root",
-              "type": {
-                "text": "ShadowRoot"
-              },
-              "privacy": "private",
-              "readonly": true
-            },
-            {
-              "kind": "field",
-              "name": "_toolbarEl",
-              "type": {
-                "text": "HTMLDivElement"
-              },
-              "privacy": "private",
-              "readonly": true,
-              "default": "this._root.querySelector('.fzl-toolbar')"
-            },
-            {
-              "kind": "field",
-              "name": "_feedEl",
-              "type": {
-                "text": "HTMLUListElement"
-              },
-              "privacy": "private",
-              "readonly": true,
-              "default": "this._root.querySelector('.fzl-card-feed')"
-            },
-            {
-              "kind": "field",
-              "name": "_keyNav",
-              "type": {
-                "text": "FzlKeyNavController"
-              },
-              "privacy": "private",
-              "readonly": true,
-              "default": "new FzlKeyNavController(this, { orientation: 'both', rovingTabIndex: true, getItems: () => Array.from(this._feedEl.querySelectorAll<HTMLElement>('.fzl-card')), })"
-            },
-            {
-              "kind": "field",
-              "name": "items",
-              "type": {
-                "text": "FzlCardItem[] | string"
-              }
-            },
-            {
-              "kind": "field",
-              "name": "layout",
-              "type": {
-                "text": "FzlCardLayout"
-              }
-            },
-            {
-              "kind": "field",
-              "name": "maxHeight",
-              "type": {
-                "text": "string"
-              }
-            },
-            {
-              "kind": "field",
-              "name": "sortBy",
-              "type": {
-                "text": "string"
-              }
-            },
-            {
-              "kind": "field",
-              "name": "sortOrder",
-              "type": {
-                "text": "FzlSortOrder"
-              }
-            },
-            {
-              "kind": "field",
-              "name": "allowSort",
-              "type": {
-                "text": "boolean"
-              }
-            },
-            {
-              "kind": "field",
-              "name": "allowFilter",
-              "type": {
-                "text": "boolean"
-              }
-            },
-            {
-              "kind": "field",
-              "name": "allowReorder",
-              "type": {
-                "text": "boolean"
-              }
-            },
-            {
-              "kind": "field",
-              "name": "storageKey",
-              "type": {
-                "text": "string"
-              }
-            },
-            {
-              "kind": "field",
-              "name": "storageType",
-              "type": {
-                "text": "'local' | 'session'"
-              }
-            },
-            {
-              "kind": "field",
-              "name": "emptyText",
-              "type": {
-                "text": "string"
-              }
-            },
-            {
-              "kind": "method",
-              "name": "_getStorage",
-              "privacy": "private",
-              "return": {
-                "type": {
-                  "text": "Storage | null"
-                }
-              }
-            },
-            {
-              "kind": "method",
-              "name": "_getPersistedOrderIds",
-              "privacy": "private",
-              "return": {
-                "type": {
-                  "text": "string[] | null"
-                }
-              }
-            },
-            {
-              "kind": "method",
-              "name": "_persistOrderIds",
-              "privacy": "private",
-              "return": {
-                "type": {
-                  "text": "void"
-                }
-              },
-              "parameters": [
-                {
-                  "name": "orderIds",
-                  "type": {
-                    "text": "string[]"
-                  }
-                }
-              ]
-            },
-            {
-              "kind": "method",
-              "name": "clearPersistedOrder",
-              "privacy": "public",
-              "return": {
-                "type": {
-                  "text": "void"
-                }
-              }
-            },
-            {
-              "kind": "method",
-              "name": "_getEffectiveItems",
-              "privacy": "private",
-              "return": {
-                "type": {
-                  "text": "FzlCardItem[]"
-                }
-              }
-            },
-            {
-              "kind": "method",
-              "name": "_reorderCards",
-              "privacy": "private",
-              "return": {
-                "type": {
-                  "text": "void"
-                }
-              },
-              "parameters": [
-                {
-                  "name": "fromIndex",
-                  "type": {
-                    "text": "number"
-                  }
-                },
-                {
-                  "name": "toIndex",
-                  "type": {
-                    "text": "number"
-                  }
-                }
-              ]
-            },
-            {
-              "kind": "method",
-              "name": "_updateLayoutClass",
-              "privacy": "private",
-              "return": {
-                "type": {
-                  "text": "void"
-                }
-              }
-            },
-            {
-              "kind": "method",
-              "name": "_updateFeedHeight",
-              "privacy": "private",
-              "return": {
-                "type": {
-                  "text": "void"
-                }
-              }
-            },
-            {
-              "kind": "method",
-              "name": "_renderToolbar",
-              "privacy": "private",
-              "return": {
-                "type": {
-                  "text": "void"
-                }
-              }
-            },
-            {
-              "kind": "method",
-              "name": "_render",
-              "privacy": "private",
-              "return": {
-                "type": {
-                  "text": "void"
-                }
-              }
-            }
-          ],
-          "events": [
-            {
-              "name": "fzl-filter-change",
-              "type": {
-                "text": "CustomEvent<{ filter: string }>"
-              },
-              "description": "Dispatched when search filter text changes"
-            },
-            {
-              "name": "fzl-sort-change",
-              "type": {
-                "text": "CustomEvent<{ sortBy: string; sortOrder: FzlSortOrder }>"
-              },
-              "description": "Dispatched when sorting criteria changes"
-            },
-            {
-              "name": "fzl-card-click",
-              "type": {
-                "text": "CustomEvent<{ item: FzlCardItem; index: number; originalEvent: MouseEvent }>"
-              },
-              "description": "Dispatched when a card is clicked"
-            },
-            {
-              "name": "fzl-card-action",
-              "type": {
-                "text": "CustomEvent<{ action: string; item: FzlCardItem; index: number; originalEvent: MouseEvent }>"
-              },
-              "description": "Dispatched when card action button is clicked"
-            },
-            {
-              "type": {
-                "text": "CustomEvent<{ items: FzlCardItem[]; orderIds: string[]; fromIndex: number; toIndex: number; item: FzlCardItem }>"
-              },
-              "description": "Dispatched when cards are reordered",
-              "name": "fzl-cards-reorder"
-            },
-            {
-              "type": {
-                "text": "CustomEvent<{ widgetId: string; originalEvent: FocusEvent }>"
-              },
-              "description": "Dispatched when the widget gains focus",
-              "name": "fzl-focus"
-            },
-            {
-              "type": {
-                "text": "CustomEvent<{ widgetId: string; originalEvent: FocusEvent }>"
-              },
-              "description": "Dispatched when the widget loses focus",
-              "name": "fzl-blur"
-            }
-          ],
-          "attributes": [
-            {
-              "name": "items"
-            },
-            {
-              "name": "layout"
-            },
-            {
-              "name": "max-height"
-            },
-            {
-              "name": "sort-by"
-            },
-            {
-              "name": "sort-order"
-            },
-            {
-              "name": "allow-sort"
-            },
-            {
-              "name": "allow-filter"
-            },
-            {
-              "name": "allow-reorder"
-            },
-            {
-              "name": "storage-key"
-            },
-            {
-              "name": "storage-type"
-            },
-            {
-              "name": "empty-text"
-            }
-          ],
-          "mixins": [
-            {
-              "name": "FzlWidgetMixin",
-              "package": "@fzl/core"
-            }
-          ],
-          "superclass": {
-            "name": "HTMLElement"
-          },
-          "tagName": "fzl-es6-card-list",
-          "customElement": true
-        }
-      ],
-      "exports": [
-        {
-          "kind": "js",
-          "name": "parseFzlCardItems",
-          "declaration": {
-            "name": "parseFzlCardItems",
-            "module": "src/components/card-list/card-list.component.ts"
-          }
-        },
-        {
-          "kind": "js",
-          "name": "sortFzlCardItems",
-          "declaration": {
-            "name": "sortFzlCardItems",
-            "module": "src/components/card-list/card-list.component.ts"
-          }
-        },
-        {
-          "kind": "js",
-          "name": "filterFzlCardItems",
-          "declaration": {
-            "name": "filterFzlCardItems",
-            "module": "src/components/card-list/card-list.component.ts"
-          }
-        },
-        {
-          "kind": "js",
-          "name": "applyPersistedCardOrder",
-          "declaration": {
-            "name": "applyPersistedCardOrder",
-            "module": "src/components/card-list/card-list.component.ts"
-          }
-        },
-        {
-          "kind": "js",
-          "name": "FzlEs6CardList",
-          "declaration": {
-            "name": "FzlEs6CardList",
-            "module": "src/components/card-list/card-list.component.ts"
-          }
-        },
-        {
-          "kind": "custom-element-definition",
-          "name": "fzl-es6-card-list",
-          "declaration": {
-            "name": "FzlEs6CardList",
-            "module": "src/components/card-list/card-list.component.ts"
-          }
-        }
-      ]
-    },
-    {
-      "kind": "javascript-module",
       "path": "src/components/crumb/crumb.component.ts",
       "declarations": [
         {
@@ -1837,6 +1184,1152 @@
           "declaration": {
             "name": "FzlEs6Crumb",
             "module": "src/components/crumb/crumb.component.ts"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/components/card-list/card-list.component.ts",
+      "declarations": [
+        {
+          "kind": "function",
+          "name": "parseFzlCardItems",
+          "return": {
+            "type": {
+              "text": "FzlCardItem[]"
+            }
+          },
+          "parameters": [
+            {
+              "name": "items",
+              "type": {
+                "text": "FzlCardItem[] | string | null | undefined"
+              }
+            }
+          ]
+        },
+        {
+          "kind": "function",
+          "name": "sortFzlCardItems",
+          "return": {
+            "type": {
+              "text": "FzlCardItem[]"
+            }
+          },
+          "parameters": [
+            {
+              "name": "items",
+              "type": {
+                "text": "FzlCardItem[]"
+              }
+            },
+            {
+              "name": "sortBy",
+              "type": {
+                "text": "string"
+              }
+            },
+            {
+              "name": "sortOrder",
+              "default": "'asc'",
+              "type": {
+                "text": "FzlSortOrder"
+              }
+            }
+          ]
+        },
+        {
+          "kind": "function",
+          "name": "filterFzlCardItems",
+          "return": {
+            "type": {
+              "text": "FzlCardItem[]"
+            }
+          },
+          "parameters": [
+            {
+              "name": "items",
+              "type": {
+                "text": "FzlCardItem[]"
+              }
+            },
+            {
+              "name": "query",
+              "type": {
+                "text": "string"
+              }
+            }
+          ]
+        },
+        {
+          "kind": "function",
+          "name": "applyPersistedCardOrder",
+          "return": {
+            "type": {
+              "text": "FzlCardItem[]"
+            }
+          },
+          "parameters": [
+            {
+              "name": "items",
+              "type": {
+                "text": "FzlCardItem[]"
+              }
+            },
+            {
+              "name": "orderIds",
+              "type": {
+                "text": "string[]"
+              }
+            }
+          ],
+          "description": "Reorders a list of cards according to a sequence of saved IDs."
+        },
+        {
+          "kind": "class",
+          "description": "Pure ES6 Custom Element (`fzl-es6-card-list`)\nDisplays structured cards with sorting, filtering, and responsive scrolling.",
+          "name": "FzlEs6CardList",
+          "cssParts": [
+            {
+              "description": "The outer root container",
+              "name": "container"
+            },
+            {
+              "description": "The top sorting and filtering toolbar",
+              "name": "toolbar"
+            },
+            {
+              "description": "The scrollable card container element",
+              "name": "list"
+            },
+            {
+              "description": "Each card element in the collection",
+              "name": "card"
+            },
+            {
+              "description": "Card header element",
+              "name": "card-header"
+            },
+            {
+              "description": "Card description/body element",
+              "name": "card-body"
+            },
+            {
+              "description": "Card footer containing tags and action",
+              "name": "card-footer"
+            },
+            {
+              "description": "Reordering buttons container on each card",
+              "name": "reorder-controls"
+            }
+          ],
+          "members": [
+            {
+              "kind": "field",
+              "name": "_items",
+              "type": {
+                "text": "FzlCardItem[]"
+              },
+              "privacy": "private",
+              "default": "[]"
+            },
+            {
+              "kind": "field",
+              "name": "_initialItems",
+              "type": {
+                "text": "FzlCardItem[] | null"
+              },
+              "privacy": "private",
+              "default": "null"
+            },
+            {
+              "kind": "field",
+              "name": "_layout",
+              "type": {
+                "text": "FzlCardLayout"
+              },
+              "privacy": "private",
+              "default": "'grid'"
+            },
+            {
+              "kind": "field",
+              "name": "_maxHeight",
+              "type": {
+                "text": "string"
+              },
+              "privacy": "private",
+              "default": "'none'"
+            },
+            {
+              "kind": "field",
+              "name": "_sortBy",
+              "type": {
+                "text": "string"
+              },
+              "privacy": "private",
+              "default": "''"
+            },
+            {
+              "kind": "field",
+              "name": "_sortOrder",
+              "type": {
+                "text": "FzlSortOrder"
+              },
+              "privacy": "private",
+              "default": "'asc'"
+            },
+            {
+              "kind": "field",
+              "name": "_allowSort",
+              "type": {
+                "text": "boolean"
+              },
+              "privacy": "private",
+              "default": "false"
+            },
+            {
+              "kind": "field",
+              "name": "_allowFilter",
+              "type": {
+                "text": "boolean"
+              },
+              "privacy": "private",
+              "default": "false"
+            },
+            {
+              "kind": "field",
+              "name": "_allowReorder",
+              "type": {
+                "text": "boolean"
+              },
+              "privacy": "private",
+              "default": "false"
+            },
+            {
+              "kind": "field",
+              "name": "_storageKey",
+              "type": {
+                "text": "string"
+              },
+              "privacy": "private",
+              "default": "''"
+            },
+            {
+              "kind": "field",
+              "name": "_storageType",
+              "type": {
+                "text": "'local' | 'session'"
+              },
+              "privacy": "private",
+              "default": "'local'"
+            },
+            {
+              "kind": "field",
+              "name": "_emptyText",
+              "type": {
+                "text": "string"
+              },
+              "privacy": "private",
+              "default": "'Nenhum item encontrado'"
+            },
+            {
+              "kind": "field",
+              "name": "_collapsibleCards",
+              "type": {
+                "text": "boolean"
+              },
+              "privacy": "private",
+              "default": "false"
+            },
+            {
+              "kind": "field",
+              "name": "_cardBodyMaxHeight",
+              "type": {
+                "text": "string"
+              },
+              "privacy": "private",
+              "default": "'180px'"
+            },
+            {
+              "kind": "field",
+              "name": "_userExpandedState",
+              "privacy": "private",
+              "default": "new Map<string, boolean>()"
+            },
+            {
+              "kind": "field",
+              "name": "_filterQuery",
+              "type": {
+                "text": "string"
+              },
+              "privacy": "private",
+              "default": "''"
+            },
+            {
+              "kind": "field",
+              "name": "_draggedIndex",
+              "type": {
+                "text": "number | null"
+              },
+              "privacy": "private",
+              "default": "null"
+            },
+            {
+              "kind": "field",
+              "name": "_dragOverIndex",
+              "type": {
+                "text": "number | null"
+              },
+              "privacy": "private",
+              "default": "null"
+            },
+            {
+              "kind": "field",
+              "name": "_root",
+              "type": {
+                "text": "ShadowRoot"
+              },
+              "privacy": "private",
+              "readonly": true
+            },
+            {
+              "kind": "field",
+              "name": "_toolbarEl",
+              "type": {
+                "text": "HTMLDivElement"
+              },
+              "privacy": "private",
+              "readonly": true,
+              "default": "this._root.querySelector('.fzl-toolbar')"
+            },
+            {
+              "kind": "field",
+              "name": "_feedEl",
+              "type": {
+                "text": "HTMLUListElement"
+              },
+              "privacy": "private",
+              "readonly": true,
+              "default": "this._root.querySelector('.fzl-card-feed')"
+            },
+            {
+              "kind": "field",
+              "name": "_keyNav",
+              "type": {
+                "text": "FzlKeyNavController"
+              },
+              "privacy": "private",
+              "readonly": true,
+              "default": "new FzlKeyNavController(this, { orientation: 'both', rovingTabIndex: true, getItems: () => Array.from(this._feedEl.querySelectorAll<HTMLElement>('.fzl-card')), })"
+            },
+            {
+              "kind": "field",
+              "name": "items",
+              "type": {
+                "text": "FzlCardItem[] | string"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "layout",
+              "type": {
+                "text": "FzlCardLayout"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "maxHeight",
+              "type": {
+                "text": "string"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "sortBy",
+              "type": {
+                "text": "string"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "sortOrder",
+              "type": {
+                "text": "FzlSortOrder"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "allowSort",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "allowFilter",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "allowReorder",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "storageKey",
+              "type": {
+                "text": "string"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "storageType",
+              "type": {
+                "text": "'local' | 'session'"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "emptyText",
+              "type": {
+                "text": "string"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "collapsibleCards",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "cardBodyMaxHeight",
+              "type": {
+                "text": "string"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "isCardExpanded",
+              "privacy": "public",
+              "return": {
+                "type": {
+                  "text": "boolean"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "item",
+                  "type": {
+                    "text": "FzlCardItem"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "toggleCardExpand",
+              "privacy": "public",
+              "return": {
+                "type": {
+                  "text": "boolean"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "item",
+                  "type": {
+                    "text": "FzlCardItem"
+                  }
+                },
+                {
+                  "name": "index",
+                  "type": {
+                    "text": "number"
+                  }
+                },
+                {
+                  "name": "event",
+                  "optional": true,
+                  "type": {
+                    "text": "Event"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "expandAllCards",
+              "privacy": "public",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              }
+            },
+            {
+              "kind": "method",
+              "name": "collapseAllCards",
+              "privacy": "public",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              }
+            },
+            {
+              "kind": "method",
+              "name": "_getStorage",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "Storage | null"
+                }
+              }
+            },
+            {
+              "kind": "method",
+              "name": "_getPersistedOrderIds",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "string[] | null"
+                }
+              }
+            },
+            {
+              "kind": "method",
+              "name": "_persistOrderIds",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "orderIds",
+                  "type": {
+                    "text": "string[]"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "clearPersistedOrder",
+              "privacy": "public",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              }
+            },
+            {
+              "kind": "method",
+              "name": "_getEffectiveItems",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "FzlCardItem[]"
+                }
+              }
+            },
+            {
+              "kind": "method",
+              "name": "_reorderCards",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "fromIndex",
+                  "type": {
+                    "text": "number"
+                  }
+                },
+                {
+                  "name": "toIndex",
+                  "type": {
+                    "text": "number"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "_updateLayoutClass",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              }
+            },
+            {
+              "kind": "method",
+              "name": "_updateFeedHeight",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              }
+            },
+            {
+              "kind": "method",
+              "name": "_renderToolbar",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              }
+            },
+            {
+              "kind": "method",
+              "name": "_render",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              }
+            }
+          ],
+          "events": [
+            {
+              "name": "fzl-card-toggle",
+              "type": {
+                "text": "CustomEvent"
+              }
+            },
+            {
+              "name": "fzl-filter-change",
+              "type": {
+                "text": "CustomEvent<{ filter: string }>"
+              },
+              "description": "Dispatched when search filter text changes"
+            },
+            {
+              "name": "fzl-sort-change",
+              "type": {
+                "text": "CustomEvent<{ sortBy: string; sortOrder: FzlSortOrder }>"
+              },
+              "description": "Dispatched when sorting criteria changes"
+            },
+            {
+              "name": "fzl-card-click",
+              "type": {
+                "text": "CustomEvent<{ item: FzlCardItem; index: number; originalEvent: MouseEvent }>"
+              },
+              "description": "Dispatched when a card is clicked"
+            },
+            {
+              "name": "fzl-card-action",
+              "type": {
+                "text": "CustomEvent<{ action: string; item: FzlCardItem; index: number; originalEvent: MouseEvent }>"
+              },
+              "description": "Dispatched when card action button is clicked"
+            },
+            {
+              "type": {
+                "text": "CustomEvent<{ items: FzlCardItem[]; orderIds: string[]; fromIndex: number; toIndex: number; item: FzlCardItem }>"
+              },
+              "description": "Dispatched when cards are reordered",
+              "name": "fzl-cards-reorder"
+            },
+            {
+              "type": {
+                "text": "CustomEvent<{ widgetId: string; originalEvent: FocusEvent }>"
+              },
+              "description": "Dispatched when the widget gains focus",
+              "name": "fzl-focus"
+            },
+            {
+              "type": {
+                "text": "CustomEvent<{ widgetId: string; originalEvent: FocusEvent }>"
+              },
+              "description": "Dispatched when the widget loses focus",
+              "name": "fzl-blur"
+            }
+          ],
+          "attributes": [
+            {
+              "name": "items"
+            },
+            {
+              "name": "layout"
+            },
+            {
+              "name": "max-height"
+            },
+            {
+              "name": "sort-by"
+            },
+            {
+              "name": "sort-order"
+            },
+            {
+              "name": "allow-sort"
+            },
+            {
+              "name": "allow-filter"
+            },
+            {
+              "name": "allow-reorder"
+            },
+            {
+              "name": "storage-key"
+            },
+            {
+              "name": "storage-type"
+            },
+            {
+              "name": "empty-text"
+            },
+            {
+              "name": "collapsible-cards"
+            },
+            {
+              "name": "card-body-max-height"
+            }
+          ],
+          "mixins": [
+            {
+              "name": "FzlWidgetMixin",
+              "package": "@fzl/core"
+            }
+          ],
+          "superclass": {
+            "name": "HTMLElement"
+          },
+          "tagName": "fzl-es6-card-list",
+          "customElement": true
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "FzlEs6Card",
+          "declaration": {
+            "name": "FzlEs6Card",
+            "module": "./card.component"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "parseFzlCardItems",
+          "declaration": {
+            "name": "parseFzlCardItems",
+            "module": "src/components/card-list/card-list.component.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "sortFzlCardItems",
+          "declaration": {
+            "name": "sortFzlCardItems",
+            "module": "src/components/card-list/card-list.component.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "filterFzlCardItems",
+          "declaration": {
+            "name": "filterFzlCardItems",
+            "module": "src/components/card-list/card-list.component.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "applyPersistedCardOrder",
+          "declaration": {
+            "name": "applyPersistedCardOrder",
+            "module": "src/components/card-list/card-list.component.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "FzlEs6CardList",
+          "declaration": {
+            "name": "FzlEs6CardList",
+            "module": "src/components/card-list/card-list.component.ts"
+          }
+        },
+        {
+          "kind": "custom-element-definition",
+          "name": "fzl-es6-card-list",
+          "declaration": {
+            "name": "FzlEs6CardList",
+            "module": "src/components/card-list/card-list.component.ts"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/components/card-list/card.component.ts",
+      "declarations": [
+        {
+          "kind": "class",
+          "description": "Pure ES6 Standalone Card Custom Element (`fzl-es6-card`)\nSupports title, subtitle, badge, action button,\ncollapsible accordion variation and scrollable body for long content.",
+          "name": "FzlEs6Card",
+          "cssParts": [
+            {
+              "description": "The card container",
+              "name": "card"
+            },
+            {
+              "description": "The card header",
+              "name": "card-header"
+            },
+            {
+              "description": "The scrollable body",
+              "name": "card-body"
+            },
+            {
+              "description": "The card footer",
+              "name": "card-footer"
+            }
+          ],
+          "members": [
+            {
+              "kind": "field",
+              "name": "_title",
+              "type": {
+                "text": "string"
+              },
+              "privacy": "private",
+              "default": "''"
+            },
+            {
+              "kind": "field",
+              "name": "_subtitle",
+              "type": {
+                "text": "string"
+              },
+              "privacy": "private",
+              "default": "''"
+            },
+            {
+              "kind": "field",
+              "name": "_badge",
+              "type": {
+                "text": "string"
+              },
+              "privacy": "private",
+              "default": "''"
+            },
+            {
+              "kind": "field",
+              "name": "_badgeVariant",
+              "type": {
+                "text": "FzlBadgeVariant"
+              },
+              "privacy": "private",
+              "default": "'default'"
+            },
+            {
+              "kind": "field",
+              "name": "_actionLabel",
+              "type": {
+                "text": "string"
+              },
+              "privacy": "private",
+              "default": "''"
+            },
+            {
+              "kind": "field",
+              "name": "_collapsible",
+              "type": {
+                "text": "boolean"
+              },
+              "privacy": "private",
+              "default": "false"
+            },
+            {
+              "kind": "field",
+              "name": "_expanded",
+              "type": {
+                "text": "boolean"
+              },
+              "privacy": "private",
+              "default": "false"
+            },
+            {
+              "kind": "field",
+              "name": "_bodyMaxHeight",
+              "type": {
+                "text": "string"
+              },
+              "privacy": "private",
+              "default": "'180px'"
+            },
+            {
+              "kind": "field",
+              "name": "_root",
+              "type": {
+                "text": "ShadowRoot"
+              },
+              "privacy": "private",
+              "readonly": true
+            },
+            {
+              "kind": "field",
+              "name": "_cardEl",
+              "type": {
+                "text": "HTMLElement"
+              },
+              "privacy": "private",
+              "readonly": true,
+              "default": "this._root.querySelector('.fzl-card')"
+            },
+            {
+              "kind": "field",
+              "name": "_titleGroupEl",
+              "type": {
+                "text": "HTMLElement"
+              },
+              "privacy": "private",
+              "readonly": true,
+              "default": "this._root.querySelector('.fzl-card-title-group')"
+            },
+            {
+              "kind": "field",
+              "name": "_chevronEl",
+              "type": {
+                "text": "HTMLElement"
+              },
+              "privacy": "private",
+              "readonly": true,
+              "default": "this._root.querySelector('.fzl-card-accordion-chevron')"
+            },
+            {
+              "kind": "field",
+              "name": "_titleEl",
+              "type": {
+                "text": "HTMLElement"
+              },
+              "privacy": "private",
+              "readonly": true,
+              "default": "this._root.querySelector('.fzl-card-title')"
+            },
+            {
+              "kind": "field",
+              "name": "_subtitleEl",
+              "type": {
+                "text": "HTMLElement"
+              },
+              "privacy": "private",
+              "readonly": true,
+              "default": "this._root.querySelector('.fzl-card-subtitle')"
+            },
+            {
+              "kind": "field",
+              "name": "_badgeEl",
+              "type": {
+                "text": "HTMLElement"
+              },
+              "privacy": "private",
+              "readonly": true,
+              "default": "this._root.querySelector('.fzl-badge')"
+            },
+            {
+              "kind": "field",
+              "name": "_bodyEl",
+              "type": {
+                "text": "HTMLElement"
+              },
+              "privacy": "private",
+              "readonly": true,
+              "default": "this._root.querySelector('.fzl-card-body')"
+            },
+            {
+              "kind": "field",
+              "name": "_actionBtnEl",
+              "type": {
+                "text": "HTMLButtonElement"
+              },
+              "privacy": "private",
+              "readonly": true,
+              "default": "this._root.querySelector('.fzl-card-action-btn')"
+            },
+            {
+              "kind": "field",
+              "name": "title",
+              "type": {
+                "text": "string"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "subtitle",
+              "type": {
+                "text": "string"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "badge",
+              "type": {
+                "text": "string"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "badgeVariant",
+              "type": {
+                "text": "FzlBadgeVariant"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "actionLabel",
+              "type": {
+                "text": "string"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "collapsible",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "expanded",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "bodyMaxHeight",
+              "type": {
+                "text": "string"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "toggle",
+              "privacy": "public",
+              "return": {
+                "type": {
+                  "text": "boolean"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "force",
+                  "optional": true,
+                  "type": {
+                    "text": "boolean"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "_updateBodyHeight",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              }
+            },
+            {
+              "kind": "method",
+              "name": "_updateCollapsibleState",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              }
+            }
+          ],
+          "events": [
+            {
+              "name": "fzl-card-toggle",
+              "type": {
+                "text": "CustomEvent<{ expanded: boolean }>"
+              },
+              "description": "Dispatched when card expansion state toggles"
+            },
+            {
+              "type": {
+                "text": "CustomEvent<{ action: string; originalEvent: MouseEvent }>"
+              },
+              "description": "Dispatched when action button is clicked",
+              "name": "fzl-card-action"
+            }
+          ],
+          "attributes": [
+            {
+              "name": "title"
+            },
+            {
+              "name": "subtitle"
+            },
+            {
+              "name": "badge"
+            },
+            {
+              "name": "badge-variant"
+            },
+            {
+              "name": "action-label"
+            },
+            {
+              "name": "collapsible"
+            },
+            {
+              "name": "expanded"
+            },
+            {
+              "name": "body-max-height"
+            }
+          ],
+          "mixins": [
+            {
+              "name": "FzlWidgetMixin",
+              "package": "@fzl/core"
+            }
+          ],
+          "superclass": {
+            "name": "HTMLElement"
+          },
+          "tagName": "fzl-es6-card",
+          "customElement": true
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "FzlEs6Card",
+          "declaration": {
+            "name": "FzlEs6Card",
+            "module": "src/components/card-list/card.component.ts"
+          }
+        },
+        {
+          "kind": "custom-element-definition",
+          "name": "fzl-es6-card",
+          "declaration": {
+            "name": "FzlEs6Card",
+            "module": "src/components/card-list/card.component.ts"
           }
         }
       ]

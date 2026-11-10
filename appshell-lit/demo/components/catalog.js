@@ -106,15 +106,17 @@ export const catalog = [
     name: 'Card List',
     icon: 'dashboard_customize',
     summary:
-      'Lista interativa de cards estruturados com suporte a modos de layout (grid, vertical, horizontal), rolagem configurável, ordenação dinâmica por múltiplos campos, reordenação manual por arrastar-e-soltar / botões acessíveis e filtragem de busca.',
+      'Lista interativa de cards estruturados com suporte a modos de layout (grid, vertical, horizontal), rolagem configurável, ordenação dinâmica, reordenação manual por arrastar-e-soltar / botões acessíveis, filtragem de busca e variação colapsável estilo acordeão com rolagem interna para textos longos.',
     doc: cardListDoc,
     slotText: '',
     initialValues: {
       layout: 'grid',
-      'max-height': '450px',
+      'max-height': '500px',
       'allow-sort': true,
       'allow-filter': true,
       'allow-reorder': true,
+      'collapsible-cards': true,
+      'card-body-max-height': '160px',
       'storage-key': 'fzl-demo-tasks-order',
       'storage-type': 'local',
       'sort-by': '',
@@ -123,6 +125,7 @@ export const catalog = [
         {
           id: 'task-1',
           title: 'Revisar módulo de Arquitetura Apache Camel',
+          subtitle: 'Integração OSGi',
           description: 'Concluir a refatoração das rotas e documentar parâmetros no Blueprint OSGi.',
           category: 'Cursos',
           priority: 'ALTA',
@@ -134,6 +137,7 @@ export const catalog = [
         {
           id: 'task-2',
           title: 'Pagamento da fatura de serviços Cloud',
+          subtitle: 'Infraestrutura AWS',
           description: 'Efetuar pagamento da mensalidade e conciliar notas fiscais no sistema.',
           category: 'Financeiro',
           priority: 'MEDIA',
@@ -145,6 +149,7 @@ export const catalog = [
         {
           id: 'task-3',
           title: 'Comprar itens de mercado para a semana',
+          subtitle: 'Despensa do escritório',
           description: 'Frutas, verduras, café em grãos e itens essenciais de reposição.',
           category: 'Pessoal',
           priority: 'BAIXA',
@@ -156,6 +161,7 @@ export const catalog = [
         {
           id: 'task-4',
           title: 'Deploy da nova versão do Appshell',
+          subtitle: 'Pipeline CI/CD',
           description: 'Publicar bundle no GitHub Pages e notificar equipe via canal de DevOps.',
           category: 'DevOps',
           priority: 'URGENTE',
@@ -163,6 +169,18 @@ export const catalog = [
           date: '2026-10-30',
           actionLabel: 'Executar',
           tags: ['deploy', 'release']
+        },
+        {
+          id: 'task-5',
+          title: 'Parecer Jurídico & Termos Regulatórios de Fundos',
+          subtitle: 'Análise de Enquadramento CVM',
+          description: '1. O presente parecer analisa a conformidade do fundo de investimento estruturado sob as resoluções da CVM.\n\n2. Da segregação patrimonial: os ativos integrantes da carteira não se comunicam com o patrimônio da administradora ou custodiante.\n\n3. Do cálculo da cota diária: os critérios de precificação a mercado (Mark-to-Market) devem ser rigorosamente observados ao término de cada dia útil bancário.\n\n4. Dos fatores de risco e disclosure: recomenda-se expressa notificação aos cotistas quanto aos prazos de cotização e liquidação financeira nos resgates extraordinários.',
+          category: 'Compliance',
+          priority: 'ALTA',
+          status: 'EM_ANDAMENTO',
+          date: '2026-11-10',
+          actionLabel: 'Homologar',
+          tags: ['cvm', 'juridico', 'compliance']
         }
       ]),
     },

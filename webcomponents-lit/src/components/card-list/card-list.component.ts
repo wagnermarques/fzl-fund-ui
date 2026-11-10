@@ -2,6 +2,7 @@ import { LitElement, html, css, unsafeCSS, type PropertyValues } from 'lit';
 import { property, state } from 'lit/decorators.js';
 import { fzlDesignTokensCss } from '@fzl/design-tokens';
 import { FzlWidgetMixin, FzlKeyNavController, fzlFocus } from '@fzl/core';
+export { FzlLitCard } from './card.component';
 
 export interface FzlCardItem {
   id: string;
@@ -15,6 +16,8 @@ export interface FzlCardItem {
   badge?: string;
   tags?: string[];
   actionLabel?: string;
+  collapsible?: boolean;
+  expanded?: boolean;
   [key: string]: unknown;
 }
 
@@ -136,6 +139,7 @@ export function applyPersistedCardOrder(items: FzlCardItem[], orderIds: string[]
  * @tag fzl-lit-card-list
  *
  * @fires {CustomEvent<{ item: FzlCardItem; index: number; originalEvent: MouseEvent }>} fzl-card-click - Dispatched when a card is clicked
+ * @fires {CustomEvent<{ item: FzlCardItem; index: number; expanded: boolean }>} fzl-card-toggle - Dispatched when a collapsible card is expanded or collapsed
  * @fires {CustomEvent<{ action: string; item: FzlCardItem; index: number; originalEvent: MouseEvent }>} fzl-card-action - Dispatched when card action button is clicked
  * @fires {CustomEvent<{ sortBy: string; sortOrder: FzlSortOrder }>} fzl-sort-change - Dispatched when sorting criteria changes
  * @fires {CustomEvent<{ filter: string }>} fzl-filter-change - Dispatched when search filter text changes
@@ -281,6 +285,62 @@ export class FzlLitCardList extends FzlWidgetMixin(LitElement) {
       .fzl-card:hover {
         border-color: var(--_fzl-color-border-hover);
         box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.08);
+      }
+
+      /* Collapsible / Accordion Card styles */
+      .fzl-card.collapsible {
+        transition: border-color var(--_fzl-transition-fast), box-shadow var(--_fzl-transition-fast);
+      }
+
+      .fzl-card.collapsible.collapsed {
+        justify-content: flex-start;
+      }
+
+      .fzl-card.collapsible.collapsed .fzl-card-header {
+        margin-bottom: 0;
+      }
+
+      .fzl-card.collapsible.collapsed .fzl-card-body,
+      .fzl-card.collapsible.collapsed .fzl-card-footer {
+        display: none;
+      }
+
+      .fzl-card-title-group.is-clickable {
+        cursor: pointer;
+        user-select: none;
+        outline: none;
+      }
+
+      .fzl-card-title-group.is-clickable:hover .fzl-card-title {
+        color: var(--_fzl-color-primary);
+      }
+
+      .fzl-card-title-group.is-clickable:focus-visible {
+        outline: 2px solid var(--_fzl-color-primary);
+        outline-offset: 2px;
+        border-radius: var(--_fzl-radius-sm);
+      }
+
+      .fzl-card-title-row {
+        display: flex;
+        align-items: center;
+        gap: var(--_fzl-space-2);
+      }
+
+      .fzl-card-accordion-chevron {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 11px;
+        color: var(--_fzl-color-text-muted);
+        transition: transform var(--_fzl-transition-fast), color var(--_fzl-transition-fast);
+        transform: rotate(-90deg);
+        user-select: none;
+      }
+
+      .fzl-card.expanded .fzl-card-accordion-chevron {
+        transform: rotate(0deg);
+        color: var(--_fzl-color-primary);
       }
 
       .fzl-card[draggable="true"] {
@@ -430,6 +490,31 @@ export class FzlLitCardList extends FzlWidgetMixin(LitElement) {
         flex-grow: 1;
       }
 
+      .fzl-card-body.scrollable {
+        overflow-y: auto;
+        overflow-x: hidden;
+        scrollbar-width: thin;
+        scrollbar-color: var(--_fzl-color-border) transparent;
+        padding-right: var(--_fzl-space-1);
+      }
+
+      .fzl-card-body.scrollable::-webkit-scrollbar {
+        width: 6px;
+      }
+
+      .fzl-card-body.scrollable::-webkit-scrollbar-track {
+        background: transparent;
+      }
+
+      .fzl-card-body.scrollable::-webkit-scrollbar-thumb {
+        background-color: var(--_fzl-color-border);
+        border-radius: var(--_fzl-radius-sm);
+      }
+
+      .fzl-card-body.scrollable::-webkit-scrollbar-thumb:hover {
+        background-color: var(--_fzl-color-border-hover);
+      }
+
       .fzl-card-footer {
         display: flex;
         align-items: center;
@@ -528,8 +613,19 @@ export class FzlLitCardList extends FzlWidgetMixin(LitElement) {
   @property({ type: String, attribute: 'empty-text' })
   emptyText: string = 'Nenhum item encontrado';
 
+  /** Whether cards behave as collapsible accordions (collapsed initially showing only title/subtitle) */
+  @property({ type: Boolean, attribute: 'collapsible-cards' })
+  collapsibleCards: boolean = false;
+
+  /** Max height of the card body when expanded (e.g. '180px', '220px', 'none'). Long text scrolls inside via overflow-y. */
+  @property({ type: String, attribute: 'card-body-max-height' })
+  cardBodyMaxHeight: string = '180px';
+
   @state()
   private _filterQuery: string = '';
+
+  @state()
+  private _userExpandedState = new Map<string, boolean>();
 
   @state()
   private _draggedIndex: number | null = null;
@@ -600,6 +696,64 @@ export class FzlLitCardList extends FzlWidgetMixin(LitElement) {
         : [...this._initialRawItems];
     }
     this.requestUpdate();
+  }
+
+  /**
+   * Returns whether a given card item is currently expanded.
+   * If the list/item is not collapsible, returns true.
+   * If collapsible, returns the user toggled state or item.expanded (defaulting to false).
+   */
+  public isCardExpanded(item: FzlCardItem): boolean {
+    const isCollapsible = this.collapsibleCards || Boolean(item.collapsible);
+    if (!isCollapsible) return true;
+    const id = String(item.id);
+    if (this._userExpandedState.has(id)) {
+      return Boolean(this._userExpandedState.get(id));
+    }
+    return Boolean(item.expanded);
+  }
+
+  /**
+   * Toggles expansion state for a collapsible card item.
+   */
+  public toggleCardExpand(item: FzlCardItem, index: number, event?: Event): boolean {
+    if (event) {
+      event.stopPropagation();
+    }
+    const current = this.isCardExpanded(item);
+    const next = !current;
+    const nextMap = new Map(this._userExpandedState);
+    nextMap.set(String(item.id), next);
+    this._userExpandedState = nextMap;
+
+    this.dispatchEvent(
+      new CustomEvent('fzl-card-toggle', {
+        detail: { item, index, expanded: next },
+        bubbles: true,
+        composed: true,
+      })
+    );
+    return next;
+  }
+
+  /**
+   * Expands all cards in the list.
+   */
+  public expandAllCards(): void {
+    const items = this._getEffectiveItems();
+    const nextMap = new Map(this._userExpandedState);
+    items.forEach((item) => nextMap.set(String(item.id), true));
+    this._userExpandedState = nextMap;
+  }
+
+  /**
+   * Collapses all cards in the list.
+   */
+  public collapseAllCards(): void {
+    const items = this._getEffectiveItems();
+    const nextMap = new Map(this._userExpandedState);
+    items.forEach((item) => nextMap.set(String(item.id), false));
+    this._userExpandedState = nextMap;
   }
 
   private _getEffectiveItems(): FzlCardItem[] {
@@ -849,9 +1003,12 @@ export class FzlLitCardList extends FzlWidgetMixin(LitElement) {
                 const priorityClass = item.priority ? `priority-${item.priority.toLowerCase()}` : '';
                 const isDragging = this._draggedIndex === index;
                 const isDragOver = this._dragOverIndex === index;
+                const isCollapsible = this.collapsibleCards || Boolean(item.collapsible);
+                const isExpanded = this.isCardExpanded(item);
+                const bodyScrollable = isCollapsible || (this.cardBodyMaxHeight && this.cardBodyMaxHeight !== 'none');
                 return html`
                   <li
-                    class="fzl-card ${isDragging ? 'dragging' : ''} ${isDragOver ? 'drag-over' : ''}"
+                    class="fzl-card ${isDragging ? 'dragging' : ''} ${isDragOver ? 'drag-over' : ''} ${isCollapsible ? 'collapsible' : ''} ${isCollapsible ? (isExpanded ? 'expanded' : 'collapsed') : ''}"
                     part="card"
                     role="listitem"
                     tabindex="0"
@@ -868,13 +1025,37 @@ export class FzlLitCardList extends FzlWidgetMixin(LitElement) {
                       }
                       if (e.key === 'Enter' || e.key === ' ') {
                         e.preventDefault();
+                        if (isCollapsible) {
+                          this.toggleCardExpand(item, index, e);
+                        }
                         this._handleCardClick(item, index, e as unknown as MouseEvent);
                       }
                     }}
                   >
                     <div class="fzl-card-header" part="card-header">
-                      <div class="fzl-card-title-group">
-                        <h3 class="fzl-card-title">${item.title}</h3>
+                      <div
+                        class="fzl-card-title-group ${isCollapsible ? 'is-clickable' : ''}"
+                        role=${isCollapsible ? 'button' : undefined}
+                        tabindex=${isCollapsible ? '0' : undefined}
+                        aria-expanded=${isCollapsible ? (isExpanded ? 'true' : 'false') : undefined}
+                        aria-controls=${isCollapsible ? `fzl-card-body-${item.id}` : undefined}
+                        @click=${isCollapsible ? (e: MouseEvent) => this.toggleCardExpand(item, index, e) : undefined}
+                        @keydown=${isCollapsible
+                          ? (e: KeyboardEvent) => {
+                              if (e.key === 'Enter' || e.key === ' ') {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                this.toggleCardExpand(item, index, e);
+                              }
+                            }
+                          : undefined}
+                      >
+                        <div class="fzl-card-title-row">
+                          ${isCollapsible
+                            ? html`<span class="fzl-card-accordion-chevron" aria-hidden="true">▾</span>`
+                            : ''}
+                          <h3 class="fzl-card-title">${item.title}</h3>
+                        </div>
                         ${item.subtitle ? html`<span class="fzl-card-subtitle">${item.subtitle}</span>` : ''}
                       </div>
                       <div class="fzl-card-header-actions">
@@ -916,7 +1097,18 @@ export class FzlLitCardList extends FzlWidgetMixin(LitElement) {
                     </div>
 
                     ${item.description
-                      ? html`<div class="fzl-card-body" part="card-body">${item.description}</div>`
+                      ? html`
+                          <div
+                            id="fzl-card-body-${item.id}"
+                            class="fzl-card-body ${bodyScrollable ? 'scrollable' : ''}"
+                            part="card-body"
+                            style=${this.cardBodyMaxHeight && this.cardBodyMaxHeight !== 'none'
+                              ? `max-height: ${this.cardBodyMaxHeight};`
+                              : ''}
+                          >
+                            ${item.description}
+                          </div>
+                        `
                       : ''}
 
                     <div class="fzl-card-footer" part="card-footer">

@@ -1,5 +1,6 @@
 import { fzlDesignTokensCss } from '@fzl/design-tokens';
 import { FzlWidgetMixin, FzlKeyNavController } from '@fzl/core';
+export { FzlEs6Card } from './card.component';
 
 export interface FzlCardItem {
   id: string;
@@ -13,6 +14,8 @@ export interface FzlCardItem {
   badge?: string;
   tags?: string[];
   actionLabel?: string;
+  collapsible?: boolean;
+  expanded?: boolean;
   [key: string]: unknown;
 }
 
@@ -253,6 +256,62 @@ template.innerHTML = `
       box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.08);
     }
 
+    /* Collapsible / Accordion Card styles */
+    .fzl-card.collapsible {
+      transition: border-color var(--_fzl-transition-fast), box-shadow var(--_fzl-transition-fast);
+    }
+
+    .fzl-card.collapsible.collapsed {
+      justify-content: flex-start;
+    }
+
+    .fzl-card.collapsible.collapsed .fzl-card-header {
+      margin-bottom: 0;
+    }
+
+    .fzl-card.collapsible.collapsed .fzl-card-body,
+    .fzl-card.collapsible.collapsed .fzl-card-footer {
+      display: none;
+    }
+
+    .fzl-card-title-group.is-clickable {
+      cursor: pointer;
+      user-select: none;
+      outline: none;
+    }
+
+    .fzl-card-title-group.is-clickable:hover .fzl-card-title {
+      color: var(--_fzl-color-primary);
+    }
+
+    .fzl-card-title-group.is-clickable:focus-visible {
+      outline: 2px solid var(--_fzl-color-primary);
+      outline-offset: 2px;
+      border-radius: var(--_fzl-radius-sm);
+    }
+
+    .fzl-card-title-row {
+      display: flex;
+      align-items: center;
+      gap: var(--_fzl-space-2);
+    }
+
+    .fzl-card-accordion-chevron {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      color: var(--_fzl-color-text-muted);
+      transition: transform var(--_fzl-transition-fast), color var(--_fzl-transition-fast);
+      transform: rotate(-90deg);
+      user-select: none;
+    }
+
+    .fzl-card.expanded .fzl-card-accordion-chevron {
+      transform: rotate(0deg);
+      color: var(--_fzl-color-primary);
+    }
+
     .fzl-card[draggable="true"] {
       cursor: grab;
     }
@@ -400,6 +459,31 @@ template.innerHTML = `
       flex-grow: 1;
     }
 
+    .fzl-card-body.scrollable {
+      overflow-y: auto;
+      overflow-x: hidden;
+      scrollbar-width: thin;
+      scrollbar-color: var(--_fzl-color-border) transparent;
+      padding-right: var(--_fzl-space-1);
+    }
+
+    .fzl-card-body.scrollable::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .fzl-card-body.scrollable::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .fzl-card-body.scrollable::-webkit-scrollbar-thumb {
+      background-color: var(--_fzl-color-border);
+      border-radius: var(--_fzl-radius-sm);
+    }
+
+    .fzl-card-body.scrollable::-webkit-scrollbar-thumb:hover {
+      background-color: var(--_fzl-color-border-hover);
+    }
+
     .fzl-card-footer {
       display: flex;
       align-items: center;
@@ -496,6 +580,8 @@ export class FzlEs6CardList extends FzlWidgetMixin(HTMLElement) {
       'storage-key',
       'storage-type',
       'empty-text',
+      'collapsible-cards',
+      'card-body-max-height',
     ];
   }
 
@@ -511,6 +597,9 @@ export class FzlEs6CardList extends FzlWidgetMixin(HTMLElement) {
   private _storageKey: string = '';
   private _storageType: 'local' | 'session' = 'local';
   private _emptyText: string = 'Nenhum item encontrado';
+  private _collapsibleCards: boolean = false;
+  private _cardBodyMaxHeight: string = '180px';
+  private _userExpandedState = new Map<string, boolean>();
   private _filterQuery: string = '';
   private _draggedIndex: number | null = null;
   private _dragOverIndex: number | null = null;
@@ -641,6 +730,65 @@ export class FzlEs6CardList extends FzlWidgetMixin(HTMLElement) {
     this._render();
   }
 
+  get collapsibleCards(): boolean {
+    return this._collapsibleCards;
+  }
+
+  set collapsibleCards(val: boolean) {
+    this._collapsibleCards = Boolean(val);
+    this._render();
+  }
+
+  get cardBodyMaxHeight(): string {
+    return this._cardBodyMaxHeight;
+  }
+
+  set cardBodyMaxHeight(val: string) {
+    this._cardBodyMaxHeight = val || '180px';
+    this._render();
+  }
+
+  public isCardExpanded(item: FzlCardItem): boolean {
+    const isCollapsible = this._collapsibleCards || Boolean(item.collapsible);
+    if (!isCollapsible) return true;
+    const id = String(item.id);
+    if (this._userExpandedState.has(id)) {
+      return Boolean(this._userExpandedState.get(id));
+    }
+    return Boolean(item.expanded);
+  }
+
+  public toggleCardExpand(item: FzlCardItem, index: number, event?: Event): boolean {
+    if (event) {
+      event.stopPropagation();
+    }
+    const current = this.isCardExpanded(item);
+    const next = !current;
+    this._userExpandedState.set(String(item.id), next);
+
+    this.dispatchEvent(
+      new CustomEvent('fzl-card-toggle', {
+        detail: { item, index, expanded: next },
+        bubbles: true,
+        composed: true,
+      })
+    );
+    this._render();
+    return next;
+  }
+
+  public expandAllCards(): void {
+    const items = this._getEffectiveItems();
+    items.forEach((item) => this._userExpandedState.set(String(item.id), true));
+    this._render();
+  }
+
+  public collapseAllCards(): void {
+    const items = this._getEffectiveItems();
+    items.forEach((item) => this._userExpandedState.set(String(item.id), false));
+    this._render();
+  }
+
   private _getStorage(): Storage | null {
     if (typeof window === 'undefined') return null;
     try {
@@ -751,6 +899,12 @@ export class FzlEs6CardList extends FzlWidgetMixin(HTMLElement) {
       case 'empty-text':
         this._emptyText = newValue || 'Nenhum item encontrado';
         break;
+      case 'collapsible-cards':
+        this.collapsibleCards = newValue !== null && newValue !== 'false';
+        return;
+      case 'card-body-max-height':
+        this.cardBodyMaxHeight = newValue || '180px';
+        return;
     }
     this._render();
   }
@@ -923,7 +1077,20 @@ export class FzlEs6CardList extends FzlWidgetMixin(HTMLElement) {
       const cardLi = document.createElement('li');
       const isDragging = this._draggedIndex === index;
       const isDragOver = this._dragOverIndex === index;
-      cardLi.className = `fzl-card ${isDragging ? 'dragging' : ''} ${isDragOver ? 'drag-over' : ''}`.trim();
+      const isCollapsible = this._collapsibleCards || Boolean(item.collapsible);
+      const isExpanded = this.isCardExpanded(item);
+      const bodyScrollable = isCollapsible || (this._cardBodyMaxHeight && this._cardBodyMaxHeight !== 'none');
+
+      cardLi.className = [
+        'fzl-card',
+        isDragging ? 'dragging' : '',
+        isDragOver ? 'drag-over' : '',
+        isCollapsible ? 'collapsible' : '',
+        isCollapsible ? (isExpanded ? 'expanded' : 'collapsed') : '',
+      ]
+        .filter(Boolean)
+        .join(' ');
+
       cardLi.setAttribute('part', 'card');
       cardLi.setAttribute('role', 'listitem');
       cardLi.tabIndex = 0;
@@ -989,7 +1156,7 @@ export class FzlEs6CardList extends FzlWidgetMixin(HTMLElement) {
       cardLi.addEventListener('click', (e) => {
         this.dispatchEvent(
           new CustomEvent('fzl-card-click', {
-            detail: { item, index, originalEvent: e },
+            detail: { item, index, expanded: this.isCardExpanded(item), originalEvent: e },
             bubbles: true,
             composed: true,
           })
@@ -999,9 +1166,12 @@ export class FzlEs6CardList extends FzlWidgetMixin(HTMLElement) {
       cardLi.addEventListener('keydown', (e) => {
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();
+          if (isCollapsible) {
+            this.toggleCardExpand(item, index, e);
+          }
           this.dispatchEvent(
             new CustomEvent('fzl-card-click', {
-              detail: { item, index, originalEvent: e },
+              detail: { item, index, expanded: this.isCardExpanded(item), originalEvent: e },
               bubbles: true,
               composed: true,
             })
@@ -1017,10 +1187,43 @@ export class FzlEs6CardList extends FzlWidgetMixin(HTMLElement) {
       const titleGroup = document.createElement('div');
       titleGroup.className = 'fzl-card-title-group';
 
+      if (isCollapsible) {
+        titleGroup.classList.add('is-clickable');
+        titleGroup.setAttribute('role', 'button');
+        titleGroup.tabIndex = 0;
+        titleGroup.setAttribute('aria-expanded', isExpanded ? 'true' : 'false');
+        titleGroup.setAttribute('aria-controls', `fzl-card-body-${item.id}`);
+
+        titleGroup.addEventListener('click', (e) => {
+          e.stopPropagation();
+          this.toggleCardExpand(item, index, e);
+        });
+
+        titleGroup.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            e.stopPropagation();
+            this.toggleCardExpand(item, index, e);
+          }
+        });
+      }
+
+      const titleRow = document.createElement('div');
+      titleRow.className = 'fzl-card-title-row';
+
+      if (isCollapsible) {
+        const chevron = document.createElement('span');
+        chevron.className = `fzl-card-accordion-chevron ${isExpanded ? 'expanded' : ''}`.trim();
+        chevron.setAttribute('aria-hidden', 'true');
+        chevron.textContent = '▾';
+        titleRow.appendChild(chevron);
+      }
+
       const h3 = document.createElement('h3');
       h3.className = 'fzl-card-title';
       h3.textContent = item.title;
-      titleGroup.appendChild(h3);
+      titleRow.appendChild(h3);
+      titleGroup.appendChild(titleRow);
 
       if (item.subtitle) {
         const sub = document.createElement('span');
@@ -1087,8 +1290,12 @@ export class FzlEs6CardList extends FzlWidgetMixin(HTMLElement) {
       // Body
       if (item.description) {
         const body = document.createElement('div');
-        body.className = 'fzl-card-body';
+        body.id = `fzl-card-body-${item.id}`;
+        body.className = `fzl-card-body ${bodyScrollable ? 'scrollable' : ''}`.trim();
         body.setAttribute('part', 'card-body');
+        if (this._cardBodyMaxHeight && this._cardBodyMaxHeight !== 'none') {
+          body.style.maxHeight = this._cardBodyMaxHeight;
+        }
         body.textContent = item.description;
         cardLi.appendChild(body);
       }

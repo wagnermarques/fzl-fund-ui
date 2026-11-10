@@ -4,10 +4,12 @@ import { createCustomElement } from '@angular/elements';
 import { FzlNgButtonComponent } from './components/button/button.component';
 import { FzlNgCrumbComponent } from './components/crumb/crumb.component';
 import { FzlNgCardListComponent } from './components/card-list/card-list.component';
+import { FzlNgCardComponent } from './components/card-list/card.component';
 
 export * from '@fzl/core';
 export * from './components/button/button.component';
 export * from './components/crumb/crumb.component';
+export * from './components/card-list/card.component';
 export * from './components/card-list/card-list.component';
 
 /**
@@ -41,6 +43,13 @@ export async function registerFzlAngularElements(): Promise<void> {
       injector: app.injector
     });
     customElements.define('fzl-ng-card-list', CardListElement);
+  }
+
+  if (!customElements.get('fzl-ng-card')) {
+    const CardElement = createCustomElement(FzlNgCardComponent, {
+      injector: app.injector
+    });
+    customElements.define('fzl-ng-card', CardElement);
   }
 }
 

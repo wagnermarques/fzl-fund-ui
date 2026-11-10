@@ -23,6 +23,10 @@
       "types": "./dist/card-list.d.ts",
       "import": "./dist/card-list.js"
     },
+    "./card": {
+      "types": "./dist/card.d.ts",
+      "import": "./dist/card.js"
+    },
     "./reader-chapterview": {
       "types": "./dist/reader-chapterview.d.ts",
       "import": "./dist/reader-chapterview.js"

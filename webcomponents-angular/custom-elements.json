@@ -27,6 +27,10 @@
         {
           "kind": "variable",
           "name": "CardListElement"
+        },
+        {
+          "kind": "variable",
+          "name": "CardElement"
         }
       ],
       "exports": [
@@ -52,6 +56,14 @@
           "declaration": {
             "name": "*",
             "module": "src/components/crumb/crumb.component"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "*",
+          "declaration": {
+            "name": "*",
+            "module": "src/components/card-list/card.component"
           }
         },
         {
@@ -91,6 +103,14 @@
           "name": "fzl-ng-card-list",
           "declaration": {
             "name": "CardListElement",
+            "module": "src/index.ts"
+          }
+        },
+        {
+          "kind": "custom-element-definition",
+          "name": "fzl-ng-card",
+          "declaration": {
+            "name": "CardElement",
             "module": "src/index.ts"
           }
         }
@@ -615,8 +635,29 @@
             },
             {
               "kind": "field",
+              "name": "collapsibleCards",
+              "type": {
+                "text": "boolean | string"
+              },
+              "default": "false"
+            },
+            {
+              "kind": "field",
+              "name": "cardBodyMaxHeight",
+              "type": {
+                "text": "string"
+              },
+              "default": "'180px'"
+            },
+            {
+              "kind": "field",
               "name": "fzlCardClick",
               "default": "new EventEmitter<{ item: FzlCardItem; index: number; originalEvent: MouseEvent; }>()"
+            },
+            {
+              "kind": "field",
+              "name": "fzlCardToggle",
+              "default": "new EventEmitter<{ item: FzlCardItem; index: number; expanded: boolean; }>()"
             },
             {
               "kind": "field",
@@ -677,6 +718,93 @@
                 "text": "number | null"
               },
               "default": "null"
+            },
+            {
+              "kind": "field",
+              "name": "userExpandedState",
+              "default": "new Map<string, boolean>()"
+            },
+            {
+              "kind": "method",
+              "name": "isItemCollapsible",
+              "return": {
+                "type": {
+                  "text": "boolean"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "item",
+                  "type": {
+                    "text": "FzlCardItem"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "isCardExpanded",
+              "return": {
+                "type": {
+                  "text": "boolean"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "item",
+                  "type": {
+                    "text": "FzlCardItem"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "toggleCardExpand",
+              "return": {
+                "type": {
+                  "text": "boolean"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "item",
+                  "type": {
+                    "text": "FzlCardItem"
+                  }
+                },
+                {
+                  "name": "index",
+                  "type": {
+                    "text": "number"
+                  }
+                },
+                {
+                  "name": "event",
+                  "optional": true,
+                  "type": {
+                    "text": "Event"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "expandAllCards",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              }
+            },
+            {
+              "kind": "method",
+              "name": "collapseAllCards",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              }
             },
             {
               "kind": "field",
@@ -1165,6 +1293,14 @@
       "exports": [
         {
           "kind": "js",
+          "name": "FzlNgCardComponent",
+          "declaration": {
+            "name": "FzlNgCardComponent",
+            "module": "./card.component"
+          }
+        },
+        {
+          "kind": "js",
           "name": "parseFzlCardItems",
           "declaration": {
             "name": "parseFzlCardItems",
@@ -1201,6 +1337,211 @@
           "declaration": {
             "name": "FzlNgCardListComponent",
             "module": "src/components/card-list/card-list.component.ts"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/components/card-list/card.component.ts",
+      "declarations": [
+        {
+          "kind": "class",
+          "description": "",
+          "name": "FzlNgCardComponent",
+          "members": [
+            {
+              "kind": "field",
+              "name": "fzlWidget",
+              "type": {
+                "text": "FzlWidgetController"
+              },
+              "readonly": true,
+              "default": "new FzlWidgetController(_host.nativeElement)"
+            },
+            {
+              "kind": "field",
+              "name": "cdr",
+              "privacy": "private",
+              "readonly": true
+            },
+            {
+              "kind": "field",
+              "name": "title",
+              "type": {
+                "text": "string"
+              },
+              "default": "''"
+            },
+            {
+              "kind": "field",
+              "name": "subtitle",
+              "type": {
+                "text": "string"
+              },
+              "default": "''"
+            },
+            {
+              "kind": "field",
+              "name": "badge",
+              "type": {
+                "text": "string"
+              },
+              "default": "''"
+            },
+            {
+              "kind": "field",
+              "name": "badgeVariant",
+              "type": {
+                "text": "FzlBadgeVariant"
+              },
+              "default": "'default'"
+            },
+            {
+              "kind": "field",
+              "name": "actionLabel",
+              "type": {
+                "text": "string"
+              },
+              "default": "''"
+            },
+            {
+              "kind": "field",
+              "name": "collapsible",
+              "type": {
+                "text": "boolean | string"
+              },
+              "default": "false"
+            },
+            {
+              "kind": "field",
+              "name": "expanded",
+              "type": {
+                "text": "boolean | string"
+              },
+              "default": "false"
+            },
+            {
+              "kind": "field",
+              "name": "bodyMaxHeight",
+              "type": {
+                "text": "string"
+              },
+              "default": "'180px'"
+            },
+            {
+              "kind": "field",
+              "name": "fzlCardToggle",
+              "default": "new EventEmitter<{ expanded: boolean }>()"
+            },
+            {
+              "kind": "field",
+              "name": "fzlCardAction",
+              "default": "new EventEmitter<{ action: string; originalEvent: MouseEvent }>()"
+            },
+            {
+              "kind": "field",
+              "name": "isCollapsible",
+              "type": {
+                "text": "boolean"
+              },
+              "readonly": true
+            },
+            {
+              "kind": "field",
+              "name": "isExpanded",
+              "type": {
+                "text": "boolean"
+              },
+              "readonly": true
+            },
+            {
+              "kind": "field",
+              "name": "isScrollable",
+              "type": {
+                "text": "boolean"
+              },
+              "readonly": true
+            },
+            {
+              "kind": "method",
+              "name": "toggle",
+              "return": {
+                "type": {
+                  "text": "boolean"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "force",
+                  "optional": true,
+                  "type": {
+                    "text": "boolean"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "onTitleClick",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "e",
+                  "type": {
+                    "text": "MouseEvent"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "onTitleKeydown",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "e",
+                  "type": {
+                    "text": "Event"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "onActionClick",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "e",
+                  "type": {
+                    "text": "MouseEvent"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "FzlNgCardComponent",
+          "declaration": {
+            "name": "FzlNgCardComponent",
+            "module": "src/components/card-list/card.component.ts"
           }
         }
       ]

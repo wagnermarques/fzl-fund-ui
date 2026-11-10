@@ -5,7 +5,9 @@ import {
   parseFzlCardItems,
   sortFzlCardItems,
   applyPersistedCardOrder,
+  FzlLitCard,
 } from '@fzl/webcomponents-lit/card-list'
+import { FzlEs6CardList, FzlEs6Card } from '@fzl/webcomponents-es6'
 
 describe('CardList Helper Functions', () => {
   const sampleItems = [
@@ -304,6 +306,221 @@ describe('CardList Helper Functions', () => {
       expect(displayedTitles[0]).toBe('Revisar módulo Camel') // task-1
 
       document.body.removeChild(el)
+    })
+  })
+
+  describe('Card Accordion / Collapsible Variation', () => {
+    it('com collapsible-cards=true, cards iniciam colapsados com chevron e título', async () => {
+      const el = document.createElement('fzl-lit-card-list')
+      el.collapsibleCards = true
+      el.cardBodyMaxHeight = '160px'
+      el.items = sampleItems
+      document.body.appendChild(el)
+      await el.updateComplete
+
+      const firstCard = el.renderRoot.querySelector('.fzl-card')
+      expect(firstCard.classList.contains('collapsible')).toBe(true)
+      expect(firstCard.classList.contains('collapsed')).toBe(true)
+
+      const chevron = firstCard.querySelector('.fzl-card-accordion-chevron')
+      expect(chevron).not.toBeNull()
+      expect(chevron.textContent).toBe('▾')
+
+      const title = firstCard.querySelector('.fzl-card-title')
+      expect(title.textContent).toBe('Revisar módulo Camel')
+
+      // Body possui scrollable e respeita max-height configurado
+      const body = firstCard.querySelector('.fzl-card-body')
+      expect(body.classList.contains('scrollable')).toBe(true)
+      expect(body.style.maxHeight).toBe('160px')
+
+      document.body.removeChild(el)
+    })
+
+    it('clicar no título expande o card colapsado e emite fzl-card-toggle', async () => {
+      const el = document.createElement('fzl-lit-card-list')
+      el.collapsibleCards = true
+      el.items = sampleItems
+      document.body.appendChild(el)
+      await el.updateComplete
+
+      let toggleDetail = null
+      el.addEventListener('fzl-card-toggle', (e) => {
+        toggleDetail = e.detail
+      })
+
+      const firstCard = el.renderRoot.querySelector('.fzl-card')
+      const titleGroup = firstCard.querySelector('.fzl-card-title-group')
+
+      // Simula clique no título
+      titleGroup.dispatchEvent(new MouseEvent('click', { bubbles: true }))
+      await el.updateComplete
+
+      expect(toggleDetail).not.toBeNull()
+      expect(toggleDetail.item.id).toBe('task-1')
+      expect(toggleDetail.expanded).toBe(true)
+      expect(firstCard.classList.contains('expanded')).toBe(true)
+      expect(firstCard.classList.contains('collapsed')).toBe(false)
+
+      // Clica novamente para fechar
+      titleGroup.dispatchEvent(new MouseEvent('click', { bubbles: true }))
+      await el.updateComplete
+
+      expect(toggleDetail.expanded).toBe(false)
+      expect(firstCard.classList.contains('collapsed')).toBe(true)
+
+      document.body.removeChild(el)
+    })
+
+    it('teclas Enter e Space no título alternam o estado expandido/colapsado (A11y)', async () => {
+      const el = document.createElement('fzl-lit-card-list')
+      el.collapsibleCards = true
+      el.items = sampleItems
+      document.body.appendChild(el)
+      await el.updateComplete
+
+      const firstCard = el.renderRoot.querySelector('.fzl-card')
+      const titleGroup = firstCard.querySelector('.fzl-card-title-group')
+
+      expect(titleGroup.getAttribute('role')).toBe('button')
+      expect(titleGroup.getAttribute('aria-expanded')).toBe('false')
+
+      // Pressiona Enter
+      titleGroup.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }))
+      await el.updateComplete
+
+      expect(titleGroup.getAttribute('aria-expanded')).toBe('true')
+      expect(firstCard.classList.contains('expanded')).toBe(true)
+
+      // Pressiona Space
+      titleGroup.dispatchEvent(new KeyboardEvent('keydown', { key: ' ', bubbles: true }))
+      await el.updateComplete
+
+      expect(titleGroup.getAttribute('aria-expanded')).toBe('false')
+      expect(firstCard.classList.contains('collapsed')).toBe(true)
+
+      document.body.removeChild(el)
+    })
+
+    it('suporta card colapsável individual via item.collapsible', async () => {
+      const mixedItems = [
+        { id: 'c-1', title: 'Card Normal', description: 'Curto' },
+        { id: 'c-2', title: 'Card Longo com Acordeão', description: 'Texto longo...', collapsible: true },
+      ]
+
+      const el = document.createElement('fzl-lit-card-list')
+      el.items = mixedItems
+      document.body.appendChild(el)
+      await el.updateComplete
+
+      const cards = el.renderRoot.querySelectorAll('.fzl-card')
+      expect(cards[0].classList.contains('collapsible')).toBe(false)
+      expect(cards[1].classList.contains('collapsible')).toBe(true)
+      expect(cards[1].classList.contains('collapsed')).toBe(true)
+
+      document.body.removeChild(el)
+    })
+
+    it('expandAllCards() e collapseAllCards() alternam todos os cards programaticamente', async () => {
+      const el = document.createElement('fzl-lit-card-list')
+      el.collapsibleCards = true
+      el.items = sampleItems
+      document.body.appendChild(el)
+      await el.updateComplete
+
+      el.expandAllCards()
+      await el.updateComplete
+
+      const cardsAfterExpand = el.renderRoot.querySelectorAll('.fzl-card')
+      cardsAfterExpand.forEach((c) => {
+        expect(c.classList.contains('expanded')).toBe(true)
+      })
+
+      el.collapseAllCards()
+      await el.updateComplete
+
+      const cardsAfterCollapse = el.renderRoot.querySelectorAll('.fzl-card')
+      cardsAfterCollapse.forEach((c) => {
+        expect(c.classList.contains('collapsed')).toBe(true)
+      })
+
+      document.body.removeChild(el)
+    })
+
+    it('componente avulso <fzl-lit-card> funciona de forma independente', async () => {
+      const card = document.createElement('fzl-lit-card')
+      card.title = 'Termo de Adesão'
+      card.subtitle = 'Regulamento do Fundo'
+      card.badge = 'Obrigatório'
+      card.badgeVariant = 'warning'
+      card.collapsible = true
+      card.bodyMaxHeight = '150px'
+      card.innerHTML = '<p>Texto extenso de termos e condições com barra de rolagem.</p>'
+      document.body.appendChild(card)
+      await card.updateComplete
+
+      const inner = card.renderRoot.querySelector('.fzl-card')
+      expect(inner.classList.contains('collapsible')).toBe(true)
+      expect(inner.classList.contains('collapsed')).toBe(true)
+
+      // Alterna via método .toggle()
+      card.toggle()
+      await card.updateComplete
+
+      expect(inner.classList.contains('expanded')).toBe(true)
+      const body = card.renderRoot.querySelector('.fzl-card-body')
+      expect(body.classList.contains('scrollable')).toBe(true)
+      expect(body.style.maxHeight).toBe('150px')
+
+      document.body.removeChild(card)
+    })
+
+    it('implementação Vanilla ES6 <fzl-es6-card-list> suporta collapsible-cards e acordeão', () => {
+      const el = document.createElement('fzl-es6-card-list')
+      el.collapsibleCards = true
+      el.cardBodyMaxHeight = '150px'
+      el.items = sampleItems
+      document.body.appendChild(el)
+
+      const firstCard = el.shadowRoot.querySelector('.fzl-card')
+      expect(firstCard.classList.contains('collapsible')).toBe(true)
+      expect(firstCard.classList.contains('collapsed')).toBe(true)
+
+      const chevron = firstCard.querySelector('.fzl-card-accordion-chevron')
+      expect(chevron).not.toBeNull()
+
+      // Título e clique
+      const titleGroup = firstCard.querySelector('.fzl-card-title-group')
+      let toggleDetail = null
+      el.addEventListener('fzl-card-toggle', (e) => {
+        toggleDetail = e.detail
+      })
+
+      titleGroup.dispatchEvent(new MouseEvent('click', { bubbles: true }))
+      expect(toggleDetail).not.toBeNull()
+      expect(toggleDetail.expanded).toBe(true)
+      expect(el.isCardExpanded(sampleItems[0])).toBe(true)
+
+      document.body.removeChild(el)
+    })
+
+    it('componente avulso Vanilla ES6 <fzl-es6-card> suporta modo colapsável e toggle', () => {
+      const card = document.createElement('fzl-es6-card')
+      card.title = 'Regras de Compliance'
+      card.subtitle = 'Normas BACEN'
+      card.collapsible = true
+      card.bodyMaxHeight = '140px'
+      card.innerHTML = '<p>Conteúdo extenso de compliance...</p>'
+      document.body.appendChild(card)
+
+      const inner = card.shadowRoot.querySelector('.fzl-card')
+      expect(inner.classList.contains('collapsible')).toBe(true)
+      expect(inner.classList.contains('collapsed')).toBe(true)
+
+      card.toggle()
+      expect(inner.classList.contains('expanded')).toBe(true)
+
+      document.body.removeChild(card)
     })
   })
 })

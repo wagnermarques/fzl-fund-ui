@@ -15,6 +15,7 @@ import {
 import { CommonModule } from '@angular/common';
 import { fzlDesignTokensCss } from '@fzl/design-tokens';
 import { FzlWidgetController, FzlKeyNavController } from '@fzl/core';
+export { FzlNgCardComponent } from './card.component';
 
 export interface FzlCardItem {
   id: string;
@@ -28,6 +29,8 @@ export interface FzlCardItem {
   badge?: string;
   tags?: string[];
   actionLabel?: string;
+  collapsible?: boolean;
+  expanded?: boolean;
   [key: string]: unknown;
 }
 
@@ -240,6 +243,9 @@ export function applyPersistedCardOrder(items: FzlCardItem[], orderIds: string[]
           *ngFor="let item of displayedItems; let idx = index"
           [class.dragging]="draggedIndex === idx"
           [class.drag-over]="dragOverIndex === idx"
+          [class.collapsible]="isItemCollapsible(item)"
+          [class.expanded]="isItemCollapsible(item) && isCardExpanded(item)"
+          [class.collapsed]="isItemCollapsible(item) && !isCardExpanded(item)"
           [attr.draggable]="isAllowReorder ? 'true' : null"
           (dragstart)="onDragStart(idx, $event)"
           (dragover)="onDragOver(idx, $event)"
@@ -254,8 +260,26 @@ export function applyPersistedCardOrder(items: FzlCardItem[], orderIds: string[]
           (keydown.space)="onCardClick($event, item, idx)"
         >
           <div class="fzl-card-header" part="card-header">
-            <div class="fzl-card-title-group">
-              <h3 class="fzl-card-title">{{ item.title }}</h3>
+            <div
+              class="fzl-card-title-group"
+              [class.is-clickable]="isItemCollapsible(item)"
+              [attr.role]="isItemCollapsible(item) ? 'button' : null"
+              [tabindex]="isItemCollapsible(item) ? 0 : -1"
+              [attr.aria-expanded]="isItemCollapsible(item) ? (isCardExpanded(item) ? 'true' : 'false') : null"
+              [attr.aria-controls]="isItemCollapsible(item) ? 'fzl-card-body-' + item.id : null"
+              (click)="isItemCollapsible(item) && toggleCardExpand(item, idx, $event)"
+              (keydown.enter)="isItemCollapsible(item) && toggleCardExpand(item, idx, $event)"
+              (keydown.space)="isItemCollapsible(item) && toggleCardExpand(item, idx, $event)"
+            >
+              <div class="fzl-card-title-row">
+                <span
+                  class="fzl-card-accordion-chevron"
+                  [class.expanded]="isCardExpanded(item)"
+                  *ngIf="isItemCollapsible(item)"
+                  aria-hidden="true"
+                >▾</span>
+                <h3 class="fzl-card-title">{{ item.title }}</h3>
+              </div>
               <span class="fzl-card-subtitle" *ngIf="item.subtitle">{{ item.subtitle }}</span>
             </div>
             <div class="fzl-card-header-actions">
@@ -292,7 +316,14 @@ export function applyPersistedCardOrder(items: FzlCardItem[], orderIds: string[]
             </div>
           </div>
 
-          <div class="fzl-card-body" part="card-body" *ngIf="item.description">
+          <div
+            class="fzl-card-body"
+            [id]="'fzl-card-body-' + item.id"
+            [class.scrollable]="isItemCollapsible(item) || (cardBodyMaxHeight && cardBodyMaxHeight !== 'none')"
+            [style.maxHeight]="cardBodyMaxHeight && cardBodyMaxHeight !== 'none' ? cardBodyMaxHeight : null"
+            part="card-body"
+            *ngIf="item.description"
+          >
             {{ item.description }}
           </div>
 
@@ -447,6 +478,62 @@ export function applyPersistedCardOrder(items: FzlCardItem[], orderIds: string[]
         box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.08);
       }
 
+      /* Collapsible / Accordion Card styles */
+      .fzl-card.collapsible {
+        transition: border-color var(--_fzl-transition-fast), box-shadow var(--_fzl-transition-fast);
+      }
+
+      .fzl-card.collapsible.collapsed {
+        justify-content: flex-start;
+      }
+
+      .fzl-card.collapsible.collapsed .fzl-card-header {
+        margin-bottom: 0;
+      }
+
+      .fzl-card.collapsible.collapsed .fzl-card-body,
+      .fzl-card.collapsible.collapsed .fzl-card-footer {
+        display: none;
+      }
+
+      .fzl-card-title-group.is-clickable {
+        cursor: pointer;
+        user-select: none;
+        outline: none;
+      }
+
+      .fzl-card-title-group.is-clickable:hover .fzl-card-title {
+        color: var(--_fzl-color-primary);
+      }
+
+      .fzl-card-title-group.is-clickable:focus-visible {
+        outline: 2px solid var(--_fzl-color-primary);
+        outline-offset: 2px;
+        border-radius: var(--_fzl-radius-sm);
+      }
+
+      .fzl-card-title-row {
+        display: flex;
+        align-items: center;
+        gap: var(--_fzl-space-2);
+      }
+
+      .fzl-card-accordion-chevron {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 11px;
+        color: var(--_fzl-color-text-muted);
+        transition: transform var(--_fzl-transition-fast), color var(--_fzl-transition-fast);
+        transform: rotate(-90deg);
+        user-select: none;
+      }
+
+      .fzl-card.expanded .fzl-card-accordion-chevron {
+        transform: rotate(0deg);
+        color: var(--_fzl-color-primary);
+      }
+
       .fzl-card[draggable="true"] {
         cursor: grab;
       }
@@ -594,6 +681,31 @@ export function applyPersistedCardOrder(items: FzlCardItem[], orderIds: string[]
         flex-grow: 1;
       }
 
+      .fzl-card-body.scrollable {
+        overflow-y: auto;
+        overflow-x: hidden;
+        scrollbar-width: thin;
+        scrollbar-color: var(--_fzl-color-border) transparent;
+        padding-right: var(--_fzl-space-1);
+      }
+
+      .fzl-card-body.scrollable::-webkit-scrollbar {
+        width: 6px;
+      }
+
+      .fzl-card-body.scrollable::-webkit-scrollbar-track {
+        background: transparent;
+      }
+
+      .fzl-card-body.scrollable::-webkit-scrollbar-thumb {
+        background-color: var(--_fzl-color-border);
+        border-radius: var(--_fzl-radius-sm);
+      }
+
+      .fzl-card-body.scrollable::-webkit-scrollbar-thumb:hover {
+        background-color: var(--_fzl-color-border-hover);
+      }
+
       .fzl-card-footer {
         display: flex;
         align-items: center;
@@ -692,11 +804,19 @@ export class FzlNgCardListComponent implements OnInit, AfterViewChecked, OnDestr
   @Input('storage-key') storageKey: string = '';
   @Input('storage-type') storageType: 'local' | 'session' = 'local';
   @Input('empty-text') emptyText: string = 'Nenhum item encontrado';
+  @Input('collapsible-cards') collapsibleCards: boolean | string = false;
+  @Input('card-body-max-height') cardBodyMaxHeight: string = '180px';
 
   @Output('fzl-card-click') fzlCardClick = new EventEmitter<{
     item: FzlCardItem;
     index: number;
     originalEvent: MouseEvent;
+  }>();
+
+  @Output('fzl-card-toggle') fzlCardToggle = new EventEmitter<{
+    item: FzlCardItem;
+    index: number;
+    expanded: boolean;
   }>();
 
   @Output('fzl-card-action') fzlCardAction = new EventEmitter<{
@@ -728,6 +848,47 @@ export class FzlNgCardListComponent implements OnInit, AfterViewChecked, OnDestr
   currentSortOrder: FzlSortOrder = 'asc';
   draggedIndex: number | null = null;
   dragOverIndex: number | null = null;
+  userExpandedState = new Map<string, boolean>();
+
+  isItemCollapsible(item: FzlCardItem): boolean {
+    return (
+      this.collapsibleCards === '' ||
+      this.collapsibleCards === true ||
+      this.collapsibleCards === 'true' ||
+      Boolean(item.collapsible)
+    );
+  }
+
+  isCardExpanded(item: FzlCardItem): boolean {
+    if (!this.isItemCollapsible(item)) return true;
+    const id = String(item.id);
+    if (this.userExpandedState.has(id)) {
+      return Boolean(this.userExpandedState.get(id));
+    }
+    return Boolean(item.expanded);
+  }
+
+  toggleCardExpand(item: FzlCardItem, index: number, event?: Event): boolean {
+    if (event) {
+      event.stopPropagation();
+    }
+    const current = this.isCardExpanded(item);
+    const next = !current;
+    this.userExpandedState.set(String(item.id), next);
+    this.fzlCardToggle.emit({ item, index, expanded: next });
+    this.cdr?.detectChanges();
+    return next;
+  }
+
+  expandAllCards(): void {
+    this.displayedItems.forEach((item) => this.userExpandedState.set(String(item.id), true));
+    this.cdr?.detectChanges();
+  }
+
+  collapseAllCards(): void {
+    this.displayedItems.forEach((item) => this.userExpandedState.set(String(item.id), false));
+    this.cdr?.detectChanges();
+  }
 
   private cdr = inject(ChangeDetectorRef);
 
@@ -864,6 +1025,9 @@ export class FzlNgCardListComponent implements OnInit, AfterViewChecked, OnDestr
   }
 
   onCardClick(event: MouseEvent, item: FzlCardItem, index: number) {
+    if (this.isItemCollapsible(item)) {
+      this.toggleCardExpand(item, index, event);
+    }
     this.fzlCardClick.emit({ item, index, originalEvent: event });
   }
 

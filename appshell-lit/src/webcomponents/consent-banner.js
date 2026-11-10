@@ -1,11 +1,28 @@
 import { LitElement, html, css } from 'lit'
 import { consentService } from '../services/consent-service.js'
 
-/** Pede o consentimento para o analytics na primeira visita. Fica no fluxo
- *  da página, acima do rodapé (não flutua por cima do conteúdo), e
- *  "Recusar" tem o mesmo peso visual de "Aceitar": sob a LGPD, o
- *  consentimento só vale se recusar for tão fácil quanto aceitar. A escolha
- *  pode ser trocada depois em Config > Privacidade. */
+/**
+ * Componente: Consent Banner (`<consent-banner>`).
+ *
+ * Pede o consentimento para telemetria/analytics na primeira visita.
+ * Conformidade com a LGPD (Lei 13.709/2018 Art. 8º §5º) e GDPR:
+ *
+ * - Posicionado "in-flow" imediatamente acima do rodapé (<app-footer>), sem
+ *   backdrop intrusivo e sem criar armadilhas de teclado (WCAG 2.1/2.2 AAA).
+ * - "Recusar" tem o mesmo peso visual de "Aceitar" (md-outlined-button),
+ *   evitando dark patterns (padrões obscuros que forçam a aceitação).
+ * - Opera no modo "Básico" do Google Consent Mode v2: enquanto o consentimento
+ *   não for concedido, o script do Google Analytics (gtag.js) NUNCA é baixado.
+ * - Integra com a plataforma de consentimento do App Shell (consentService)
+ *   e pode ser substituído por CMPs de mercado como Cookiebot configurando
+ *   `analytics.cmp: 'cookiebot'` no appshell.config.js.
+ *
+ * @element consent-banner
+ * @property {string} privacyUrl - Link opcional para a política de privacidade.
+ * @fires consent:change - Disparado via shellEvents quando a escolha é registrada.
+ * @see docs/components/consent-banner.md
+ * @see docs/architecture/007-consent-management-platforms-and-cookiebot.md
+ */
 export class ConsentBanner extends LitElement {
   static properties = {
     privacyUrl: {},

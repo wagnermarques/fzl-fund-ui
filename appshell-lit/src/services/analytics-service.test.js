@@ -1,5 +1,14 @@
 import { beforeEach, describe, expect, it } from 'vitest'
-import { analyticsService, gtagSrc, isGaCookie, pageViewParams, safePageLocation } from './analytics-service.js'
+import {
+  analyticsService,
+  consentSignals,
+  cookiebotSrc,
+  gtagSrc,
+  installCookiebot,
+  isGaCookie,
+  pageViewParams,
+  safePageLocation,
+} from './analytics-service.js'
 
 const BASE = 'https://exemplo.com/app/'
 
@@ -10,12 +19,38 @@ const BASE = 'https://exemplo.com/app/'
  *  window.gtag, que o próprio serviço substitui ao instalar a tag. */
 function fakeEnv() {
   const scripts = []
-  const win = { location: { origin: 'https://exemplo.com', pathname: '/app/', hostname: 'app.exemplo.com' } }
+  const win = {
+    location: { origin: 'https://exemplo.com', pathname: '/app/', hostname: 'app.exemplo.com' },
+    listeners: {},
+    addEventListener(evt, fn) {
+      this.listeners[evt] = this.listeners[evt] || []
+      this.listeners[evt].push(fn)
+    },
+    trigger(evt) {
+      ;(this.listeners[evt] || []).forEach((fn) => fn())
+    },
+  }
   // document.cookie de mentira: cada atribuição fica registrada em `writes`.
   const writes = []
+  const elements = {}
   const doc = {
-    createElement: () => ({}),
-    head: { appendChild: (el) => scripts.push(el) },
+    createElement: () => {
+      const el = {
+        setAttribute(k, v) {
+          this[k] = v
+        },
+      }
+      return el
+    },
+    getElementById(id) {
+      return elements[id] || null
+    },
+    head: {
+      appendChild: (el) => {
+        scripts.push(el)
+        if (el.id) elements[el.id] = el
+      },
+    },
     get cookie() {
       return 'legisreader_ga=GA1.1; legisreader_ga_ABC123=GS1.1; outro=1'
     },
@@ -168,7 +203,7 @@ describe('analyticsService — consentimento', () => {
     expect(calls(win)[0]).toEqual([
       'consent',
       'default',
-      { analytics_storage: 'granted', ad_storage: 'denied', ad_user_data: 'denied', ad_personalization: 'denied' },
+      consentSignals(true),
     ])
   })
 
@@ -190,7 +225,7 @@ describe('analyticsService — consentimento', () => {
     expect(calls(win).at(-1)).toEqual([
       'consent',
       'update',
-      { analytics_storage: 'denied', ad_storage: 'denied', ad_user_data: 'denied', ad_personalization: 'denied' },
+      consentSignals(false),
     ])
     expect(analyticsService.track('x', {}, { win })).toBe(false)
 
@@ -225,5 +260,76 @@ describe('isGaCookie', () => {
     expect(isGaCookie('_ga', 'legisreader')).toBe(false)
     expect(isGaCookie('outroapp_ga', 'legisreader')).toBe(false)
     expect(isGaCookie('_gat')).toBe(false)
+  })
+})
+
+describe('Cookiebot e Google Consent Mode v2', () => {
+  it('cookiebotSrc gera a URL correta com cbid', () => {
+    expect(cookiebotSrc('00000000-0000-0000-0000-000000000000')).toBe(
+      'https://consent.cookiebot.com/uc.js?cbid=00000000-0000-0000-0000-000000000000',
+    )
+  })
+
+  it('installCookiebot injeta a tag e registra callbacks de consentimento', () => {
+    const { win, doc, scripts } = fakeEnv()
+    let consentState = null
+    const script = installCookiebot({
+      doc,
+      win,
+      cookiebotId: 'cb-123',
+      onConsent: (val) => {
+        consentState = val
+      },
+    })
+
+    expect(script).not.toBeNull()
+    expect(script.id).toBe('Cookiebot')
+    expect(script.src).toContain('cbid=cb-123')
+    expect(scripts).toContain(script)
+
+    // Não duplica se chamado novamente
+    expect(installCookiebot({ doc, win, cookiebotId: 'cb-123' })).toBeNull()
+
+    // Simula evento CookiebotOnConsentReady com estatísticas aceitas
+    win.Cookiebot = { consent: { statistics: true } }
+    win.trigger('CookiebotOnConsentReady')
+    expect(consentState).toBe('granted')
+
+    // Simula evento CookiebotOnDecline
+    win.trigger('CookiebotOnDecline')
+    expect(consentState).toBe('denied')
+  })
+
+  it('init com cmp cookiebot inicializa o Cookiebot e reage aos eventos', () => {
+    const { win, doc, scripts } = fakeEnv()
+    const cbConfig = {
+      ...ga4WithConsent,
+      cmp: 'cookiebot',
+      cookiebotId: 'cb-test-id',
+    }
+    analyticsService.init(cbConfig, { win, doc })
+    expect(scripts.some((s) => s.id === 'Cookiebot')).toBe(true)
+    expect(analyticsService.track('x', {}, { win })).toBe(false)
+
+    // Usuário aceita cookies no Cookiebot
+    win.Cookiebot = { consent: { statistics: true } }
+    win.trigger('CookiebotOnConsentReady')
+    expect(analyticsService.track('x', {}, { win })).toBe(true)
+  })
+
+  it('consentMode: advanced instala gtag na carga com default negado mesmo sem consentimento', () => {
+    const { win, doc, scripts } = fakeEnv()
+    const advConfig = {
+      ...ga4WithConsent,
+      consentMode: 'advanced',
+    }
+    const enabled = analyticsService.init(advConfig, { win, doc })
+    expect(enabled).toBe(false)
+    expect(scripts).toHaveLength(1) // gtag.js instalado para pings sem cookie
+    expect(calls(win)[0]).toEqual([
+      'consent',
+      'default',
+      consentSignals(false),
+    ])
   })
 })

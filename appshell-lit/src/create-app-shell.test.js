@@ -181,6 +181,9 @@ describe('validateConfig — analytics', () => {
       params: {},
       requireConsent: true,
       privacyUrl: undefined,
+      cmp: 'internal',
+      cookiebotId: undefined,
+      consentMode: 'basic',
     })
   })
 
@@ -192,7 +195,13 @@ describe('validateConfig — analytics', () => {
       requireConsent: false,
       privacyUrl: 'https://exemplo.com/privacidade',
     }
-    expect(validateConfig({ ...base, analytics }).analytics).toEqual({ provider: 'ga4', ...analytics })
+    expect(validateConfig({ ...base, analytics }).analytics).toEqual({
+      provider: 'ga4',
+      cmp: 'internal',
+      consentMode: 'basic',
+      cookiebotId: undefined,
+      ...analytics,
+    })
   })
 
   it('desliga quando não há id — o caso de VITE_GA4_MEASUREMENT_ID indefinida em dev', () => {

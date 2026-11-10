@@ -54,7 +54,19 @@ const KNOWN_KEYS = [
   'workbox',
 ]
 const BUILD_ONLY_KEYS = ['base', 'manifest', 'includeAssets', 'workbox', 'accessibility']
-const ANALYTICS_KEYS = ['provider', 'id', 'cookiePrefix', 'params', 'requireConsent', 'privacyUrl']
+const ANALYTICS_KEYS = [
+  'provider',
+  'id',
+  'cookiePrefix',
+  'params',
+  'requireConsent',
+  'privacyUrl',
+  'cmp',
+  'cookiebotId',
+  'consentMode',
+]
+export const CMP_PROVIDERS = ['internal', 'cookiebot', 'custom', 'none']
+export const CONSENT_MODES = ['basic', 'advanced']
 const PUSH_KEYS = ['vapidPublicKey', 'backend', 'path']
 const BACKEND_KEYS = ['url', 'auth', 'health', 'timeoutMs']
 const SHARE_KEYS = ['enabled', 'title', 'networks', 'text', 'url']
@@ -112,6 +124,9 @@ export const OVERRIDABLE_PATHS = [
   'title',
   'analytics.id',
   'analytics.privacyUrl',
+  'analytics.cmp',
+  'analytics.cookiebotId',
+  'analytics.consentMode',
   'push.vapidPublicKey',
   'share.text',
   'share.url',
@@ -193,7 +208,17 @@ export function validateAnalytics(analytics, where = 'createAppShell') {
   if (analytics === null || analytics === undefined) return { provider: 'none' }
   if (!isPlainObject(analytics)) err('"analytics" deve ser um objeto')
 
-  const { provider = 'ga4', id = '', cookiePrefix, params = {}, requireConsent = true, privacyUrl } = analytics
+  const {
+    provider = 'ga4',
+    id = '',
+    cookiePrefix,
+    params = {},
+    requireConsent = true,
+    privacyUrl,
+    cmp = 'internal',
+    cookiebotId,
+    consentMode = 'basic',
+  } = analytics
 
   if (!ANALYTICS_PROVIDERS.includes(provider)) {
     err(`analytics.provider não reconhece "${provider}" (use "ga4" ou "none")`)
@@ -201,6 +226,15 @@ export function validateAnalytics(analytics, where = 'createAppShell') {
   if (provider === 'none' || !id) return { provider: 'none' }
   if (!GA4_ID_PATTERN.test(id)) {
     err(`analytics.id "${id}" não é um Measurement ID do GA4 (G-XXXXXXXXXX)`)
+  }
+  if (!CMP_PROVIDERS.includes(cmp)) {
+    err(`analytics.cmp não reconhece "${cmp}" (use ${CMP_PROVIDERS.map((c) => `"${c}"`).join(', ')})`)
+  }
+  if (!CONSENT_MODES.includes(consentMode)) {
+    err(`analytics.consentMode não reconhece "${consentMode}" (use ${CONSENT_MODES.map((m) => `"${m}"`).join(', ')})`)
+  }
+  if (cookiebotId !== undefined && typeof cookiebotId !== 'string') {
+    err('analytics.cookiebotId deve ser uma string')
   }
   if (cookiePrefix !== undefined && typeof cookiePrefix !== 'string') {
     err('analytics.cookiePrefix deve ser uma string')
@@ -215,7 +249,7 @@ export function validateAnalytics(analytics, where = 'createAppShell') {
     err('analytics.privacyUrl deve ser uma string')
   }
 
-  return { provider: 'ga4', id, cookiePrefix, params, requireConsent, privacyUrl }
+  return { provider: 'ga4', id, cookiePrefix, params, requireConsent, privacyUrl, cmp, cookiebotId, consentMode }
 }
 
 /** URL de backend: vazia (não configurado), absoluta http(s) ou caminho

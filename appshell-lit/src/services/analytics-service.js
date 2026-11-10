@@ -72,19 +72,50 @@ export function gtagSrc(id) {
   return `https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(id)}`
 }
 
-/** Os sinais do Consent Mode v2. O appshell não usa anúncios, então os
- *  três ad_* ficam sempre negados; só analytics_storage acompanha a
- *  escolha do usuário. */
-function consentSignals(granted) {
+export function cookiebotSrc(id) {
+  return `https://consent.cookiebot.com/uc.js?cbid=${encodeURIComponent(id)}`
+}
+
+/** Os sinais do Google Consent Mode v2 (Suporte Google Artigo 14546767).
+ *  O appshell não veicula anúncios comerciais, então os sinais ad_*
+ *  ficam negados; analytics_storage acompanha a escolha do usuário.
+ *  functionality_storage e security_storage ficam concedidos para sessão e PWA. */
+export function consentSignals(granted) {
   return {
     analytics_storage: granted ? 'granted' : 'denied',
     ad_storage: 'denied',
     ad_user_data: 'denied',
     ad_personalization: 'denied',
+    functionality_storage: 'granted',
+    personalization_storage: 'denied',
+    security_storage: 'granted',
   }
 }
 
-function installGtag(id, { doc, win, cookiePrefix, params }) {
+/** Instala a CMP externa Cookiebot caso configurada em analytics.cmp: 'cookiebot'. */
+export function installCookiebot({ doc, win, cookiebotId, onConsent }) {
+  if (!doc || !cookiebotId || doc.getElementById('Cookiebot')) return null
+  const script = doc.createElement('script')
+  script.id = 'Cookiebot'
+  script.src = cookiebotSrc(cookiebotId)
+  script.type = 'text/javascript'
+  script.async = true
+  script.setAttribute('data-cbid', cookiebotId)
+  doc.head?.appendChild(script)
+
+  if (win?.addEventListener && typeof onConsent === 'function') {
+    win.addEventListener('CookiebotOnConsentReady', () => {
+      const granted = Boolean(win.Cookiebot?.consent?.statistics)
+      onConsent(granted ? 'granted' : 'denied')
+    })
+    win.addEventListener('CookiebotOnDecline', () => {
+      onConsent('denied')
+    })
+  }
+  return script
+}
+
+function installGtag(id, { doc, win, cookiePrefix, params, initialConsent = true }) {
   win.dataLayer = win.dataLayer || []
   // Precisa ser uma function de verdade, não uma arrow com ...args: o
   // gtag empurra o próprio objeto `arguments` no dataLayer, e a tag do
@@ -94,10 +125,8 @@ function installGtag(id, { doc, win, cookiePrefix, params }) {
   }
   win.gtag = gtag
 
-  // O default do Consent Mode precisa vir antes do config. Só chegamos
-  // aqui com o consentimento dado (ou dispensado pelo app), daí o
-  // analytics_storage já 'granted'.
-  gtag('consent', 'default', consentSignals(true))
+  // O default do Consent Mode precisa vir antes do config.
+  gtag('consent', 'default', consentSignals(initialConsent))
   gtag('js', new Date())
   gtag('config', id, {
     send_page_view: false,
@@ -182,7 +211,23 @@ export const analyticsService = {
     if (state.config?.id === analytics.id) return state.enabled
 
     state = { config: analytics, installed: false, enabled: false, lastView: null, env: { doc, win } }
-    if (analytics.requireConsent === false || consent === 'granted') enable(env)
+
+    if (analytics.cmp === 'cookiebot' && analytics.cookiebotId) {
+      installCookiebot({
+        doc: env.doc,
+        win: env.win,
+        cookiebotId: analytics.cookiebotId,
+        onConsent: (val) => this.setConsent(val, env),
+      })
+    }
+
+    if (analytics.requireConsent === false || consent === 'granted') {
+      enable(env)
+    } else if (analytics.consentMode === 'advanced' && !state.installed) {
+      installGtag(analytics.id, { ...env, cookiePrefix: analytics.cookiePrefix, params: analytics.params, initialConsent: false })
+      state.installed = true
+    }
+
     return state.enabled
   },
 

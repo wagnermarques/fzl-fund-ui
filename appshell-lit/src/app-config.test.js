@@ -277,3 +277,49 @@ describe('validateAppConfig — organization', () => {
   })
 })
 
+describe('validateAppConfig — analytics CMP & Consent Mode', () => {
+  it('aceita cmp "internal", "cookiebot", "custom", "none" e consentMode "basic" ou "advanced"', () => {
+    const config = {
+      analytics: {
+        id: 'G-ABC123',
+        cmp: 'cookiebot',
+        cookiebotId: 'cbid-12345',
+        consentMode: 'advanced',
+      },
+    }
+    expect(validateAppConfig(config)).toBe(config)
+  })
+
+  it('recusa cmp ou consentMode inválidos', () => {
+    expect(() =>
+      validateAppConfig({
+        analytics: {
+          id: 'G-ABC123',
+          cmp: 'invalido',
+        },
+      }),
+    ).toThrow(/analytics.cmp não reconhece "invalido"/)
+
+    expect(() =>
+      validateAppConfig({
+        analytics: {
+          id: 'G-ABC123',
+          consentMode: 'invalido',
+        },
+      }),
+    ).toThrow(/analytics.consentMode não reconhece "invalido"/)
+  })
+
+  it('sobrescreve analytics.cmp e consentMode por variável de ambiente', () => {
+    const file = { analytics: { id: 'G-ABC123', cmp: 'internal', consentMode: 'basic' } }
+    const { config, sources } = applyEnvOverrides(file, {
+      VITE_APPSHELL_ANALYTICS_CMP: 'cookiebot',
+      VITE_APPSHELL_ANALYTICS_CONSENT_MODE: 'advanced',
+    })
+    expect(config.analytics.cmp).toBe('cookiebot')
+    expect(config.analytics.consentMode).toBe('advanced')
+    expect(sources['analytics.cmp']).toBe('VITE_APPSHELL_ANALYTICS_CMP')
+    expect(sources['analytics.consentMode']).toBe('VITE_APPSHELL_ANALYTICS_CONSENT_MODE')
+  })
+})
+

@@ -524,9 +524,11 @@ export class AppShell extends LitElement {
     `
   }
 
-  /** O app tem GA4 ligado e quer pedir consentimento (o padrão). */
+  /** O app tem GA4 ligado e quer pedir consentimento via banner nativo Lit (o padrão).
+   *  Caso a aplicação use Cookiebot (cmp: 'cookiebot'), custom ou none, o banner interno é suprimido. */
   _asksConsent() {
-    return this.analytics.provider === 'ga4' && this.analytics.requireConsent !== false
+    const cmp = this.analytics?.cmp ?? 'internal'
+    return this.analytics?.provider === 'ga4' && this.analytics?.requireConsent !== false && cmp === 'internal'
   }
 
   _renderAccountItems() {

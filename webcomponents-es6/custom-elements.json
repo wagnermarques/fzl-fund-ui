@@ -54,138 +54,196 @@
             "name": "*",
             "module": "src/components/availability-grid/availability-grid.component"
           }
+        },
+        {
+          "kind": "js",
+          "name": "*",
+          "declaration": {
+            "name": "*",
+            "module": "src/components/grid/data-grid.component"
+          }
         }
       ]
     },
     {
       "kind": "javascript-module",
-      "path": "src/components/button/button.component.ts",
+      "path": "src/components/crumb/crumb.component.ts",
       "declarations": [
         {
+          "kind": "function",
+          "name": "parseFzlCrumbItems",
+          "return": {
+            "type": {
+              "text": "FzlCrumbItem[]"
+            }
+          },
+          "parameters": [
+            {
+              "name": "items",
+              "type": {
+                "text": "FzlCrumbItem[] | string | null | undefined"
+              }
+            },
+            {
+              "name": "pathStr",
+              "optional": true,
+              "type": {
+                "text": "string"
+              }
+            }
+          ]
+        },
+        {
           "kind": "class",
-          "description": "Pure Vanilla ES6 Custom Element button with Shadow DOM encapsulation.",
-          "name": "FzlEs6Button",
+          "description": "Pure Vanilla ES6 Breadcrumb (\"Crumb\") Custom Element showing current navigation path\nand providing back navigation to the previous view.",
+          "name": "FzlEs6Crumb",
           "cssParts": [
             {
-              "description": "The internal native `<button>` element",
-              "name": "button"
-            }
-          ],
-          "slots": [
+              "description": "The outer `<nav>` landmark element",
+              "name": "nav"
+            },
             {
-              "description": "Content to be displayed inside the button",
-              "name": ""
+              "description": "The back navigation `<button>` element",
+              "name": "back-button"
+            },
+            {
+              "description": "The `<ol>` breadcrumb trail list",
+              "name": "list"
+            },
+            {
+              "description": "Each `<li>` breadcrumb item",
+              "name": "item"
+            },
+            {
+              "description": "Interactive `<a>` link for ancestor items",
+              "name": "link"
+            },
+            {
+              "description": "Visual separator `<span>` between items",
+              "name": "separator"
+            },
+            {
+              "description": "The `<span aria-current=\"page\">` active view label",
+              "name": "current"
             }
           ],
           "members": [
             {
               "kind": "field",
-              "name": "_internals",
+              "name": "_navEl",
               "type": {
-                "text": "ElementInternals | undefined"
+                "text": "HTMLElement"
               },
-              "privacy": "private"
+              "privacy": "private",
+              "default": "shadow.querySelector('nav')!"
             },
             {
               "kind": "field",
-              "name": "_buttonEl",
+              "name": "_backBtnEl",
               "type": {
                 "text": "HTMLButtonElement"
               },
               "privacy": "private",
-              "default": "shadow.querySelector('button')!"
+              "default": "shadow.querySelector('.back-btn')!"
             },
             {
               "kind": "field",
-              "name": "_typematicCleanup",
+              "name": "_backLabelEl",
               "type": {
-                "text": "(() => void) | null"
+                "text": "HTMLElement"
+              },
+              "privacy": "private",
+              "default": "shadow.querySelector('.back-label')!"
+            },
+            {
+              "kind": "field",
+              "name": "_listEl",
+              "type": {
+                "text": "HTMLOListElement"
+              },
+              "privacy": "private",
+              "default": "shadow.querySelector('ol')!"
+            },
+            {
+              "kind": "field",
+              "name": "_itemsProp",
+              "type": {
+                "text": "FzlCrumbItem[] | null"
               },
               "privacy": "private",
               "default": "null"
             },
             {
               "kind": "field",
-              "name": "_lastTypematicTick",
+              "name": "_keyNav",
               "type": {
-                "text": "boolean"
+                "text": "FzlKeyNavController"
               },
               "privacy": "private",
-              "default": "false"
+              "default": "new FzlKeyNavController(this, { orientation: 'horizontal', rovingTabIndex: true, getItems: () => Array.from( shadow.querySelectorAll<HTMLElement>( '.back-btn:not([disabled]):not([hidden]), a.crumb-link' ) ), })"
             },
             {
               "kind": "field",
-              "name": "formAssociated",
+              "name": "items",
+              "type": {
+                "text": "FzlCrumbItem[]"
+              },
+              "description": "Breadcrumb items array",
+              "default": "[]"
+            },
+            {
+              "kind": "field",
+              "name": "path",
+              "type": {
+                "text": "string"
+              },
+              "description": "Path string shorthand",
+              "default": "''"
+            },
+            {
+              "kind": "field",
+              "name": "separator",
+              "type": {
+                "text": "string"
+              },
+              "description": "Visual separator between breadcrumb items",
+              "default": "'›'"
+            },
+            {
+              "kind": "field",
+              "name": "showBack",
               "type": {
                 "text": "boolean"
               },
-              "static": true,
+              "description": "Whether to display the back button",
               "default": "true"
             },
             {
               "kind": "field",
-              "name": "variant",
-              "type": {
-                "text": "'primary' | 'secondary' | 'danger'"
-              },
-              "description": "Visual appearance variant",
-              "default": "'primary'"
-            },
-            {
-              "kind": "field",
-              "name": "size",
-              "type": {
-                "text": "'sm' | 'md' | 'lg'"
-              },
-              "description": "Size scale of the button",
-              "default": "'md'"
-            },
-            {
-              "kind": "field",
-              "name": "disabled",
+              "name": "backDisabled",
               "type": {
                 "text": "boolean"
               },
-              "description": "Whether the button is disabled",
+              "description": "Whether the back button is disabled",
               "default": "false"
             },
             {
               "kind": "field",
-              "name": "type",
+              "name": "backLabel",
               "type": {
-                "text": "'button' | 'submit' | 'reset'"
+                "text": "string"
               },
-              "description": "Form button behavior",
-              "default": "'button'"
+              "description": "Label for the back navigation button",
+              "default": "'Voltar'"
             },
             {
               "kind": "field",
-              "name": "typematic",
+              "name": "backHref",
               "type": {
-                "text": "boolean"
+                "text": "string"
               },
-              "description": "Enables typematic repeat firing of `fzl-click` while held down",
-              "default": "false"
-            },
-            {
-              "kind": "method",
-              "name": "_clearTypematic",
-              "privacy": "private",
-              "return": {
-                "type": {
-                  "text": "void"
-                }
-              }
-            },
-            {
-              "kind": "method",
-              "name": "_syncTypematic",
-              "privacy": "private",
-              "return": {
-                "type": {
-                  "text": "void"
-                }
-              }
+              "description": "Optional explicit target URL/hash for the back button",
+              "default": "''"
             },
             {
               "kind": "method",
@@ -201,10 +259,17 @@
           "events": [
             {
               "type": {
-                "text": "CustomEvent<{ originalEvent: MouseEvent | KeyboardEvent; repeatCount?: number }>"
+                "text": "CustomEvent<{ backHref: string; originalEvent: MouseEvent }>"
               },
-              "description": "Dispatched when the button is activated",
-              "name": "fzl-click"
+              "description": "Dispatched when the back button is activated",
+              "name": "fzl-back"
+            },
+            {
+              "type": {
+                "text": "CustomEvent<{ item: FzlCrumbItem; index: number; href?: string; originalEvent: MouseEvent }>"
+              },
+              "description": "Dispatched when a breadcrumb link item is clicked",
+              "name": "fzl-navigate"
             },
             {
               "type": {
@@ -223,44 +288,68 @@
           ],
           "attributes": [
             {
-              "name": "variant",
+              "name": "items",
               "type": {
-                "text": "'primary' | 'secondary' | 'danger'"
+                "text": "string"
               },
-              "description": "Visual appearance variant",
-              "default": "'primary'"
+              "description": "Breadcrumb items JSON string or delimited string",
+              "default": "'[]'"
             },
             {
-              "name": "size",
+              "name": "path",
               "type": {
-                "text": "'sm' | 'md' | 'lg'"
+                "text": "string"
               },
-              "description": "Size scale of the button",
-              "default": "'md'"
+              "description": "Path string shorthand (e.g. \"Início / Config / Backend\")",
+              "default": "''"
             },
             {
-              "name": "disabled",
+              "name": "separator",
+              "type": {
+                "text": "string"
+              },
+              "description": "Visual separator between breadcrumb items",
+              "default": "'›'"
+            },
+            {
+              "name": "show-back",
               "type": {
                 "text": "boolean"
               },
-              "description": "Whether the button is disabled",
-              "default": "false"
+              "description": "Whether to display the back button",
+              "default": "true"
             },
             {
-              "name": "type",
-              "type": {
-                "text": "'button' | 'submit' | 'reset'"
-              },
-              "description": "Form button behavior",
-              "default": "'button'"
-            },
-            {
-              "name": "typematic",
+              "name": "back-disabled",
               "type": {
                 "text": "boolean"
               },
-              "description": "Enables typematic repeat firing of `fzl-click` while held down",
+              "description": "Whether the back button is disabled",
               "default": "false"
+            },
+            {
+              "name": "back-label",
+              "type": {
+                "text": "string"
+              },
+              "description": "Label for the back navigation button",
+              "default": "'Voltar'"
+            },
+            {
+              "name": "back-href",
+              "type": {
+                "text": "string"
+              },
+              "description": "Optional explicit target URL/hash for the back button",
+              "default": "''"
+            },
+            {
+              "name": "aria-label",
+              "type": {
+                "text": "string"
+              },
+              "description": "Accessible label for the `<nav>` landmark",
+              "default": "'Navegação estrutural'"
             }
           ],
           "mixins": [
@@ -272,591 +361,33 @@
           "superclass": {
             "name": "HTMLElement"
           },
-          "tagName": "fzl-es6-button",
+          "tagName": "fzl-es6-crumb",
           "customElement": true
         }
       ],
       "exports": [
         {
           "kind": "js",
-          "name": "FzlEs6Button",
+          "name": "parseFzlCrumbItems",
           "declaration": {
-            "name": "FzlEs6Button",
-            "module": "src/components/button/button.component.ts"
+            "name": "parseFzlCrumbItems",
+            "module": "src/components/crumb/crumb.component.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "FzlEs6Crumb",
+          "declaration": {
+            "name": "FzlEs6Crumb",
+            "module": "src/components/crumb/crumb.component.ts"
           }
         },
         {
           "kind": "custom-element-definition",
-          "name": "fzl-es6-button",
+          "name": "fzl-es6-crumb",
           "declaration": {
-            "name": "FzlEs6Button",
-            "module": "src/components/button/button.component.ts"
-          }
-        }
-      ]
-    },
-    {
-      "kind": "javascript-module",
-      "path": "src/components/availability-grid/availability-grid.component.ts",
-      "declarations": [
-        {
-          "kind": "variable",
-          "name": "DEFAULT_AVAILABILITY_DAYS",
-          "type": {
-            "text": "FzlAvailabilityDay[]"
-          },
-          "default": "[ { id: 'mon', label: 'Segunda-feira', shortLabel: 'Seg' }, { id: 'tue', label: 'Terça-feira', shortLabel: 'Ter' }, { id: 'wed', label: 'Quarta-feira', shortLabel: 'Qua' }, { id: 'thu', label: 'Quinta-feira', shortLabel: 'Qui' }, { id: 'fri', label: 'Sexta-feira', shortLabel: 'Sex' }, { id: 'sat', label: 'Sábado', shortLabel: 'Sáb', weekend: true }, { id: 'sun', label: 'Domingo', shortLabel: 'Dom', weekend: true }, ]"
-        },
-        {
-          "kind": "variable",
-          "name": "DEFAULT_AVAILABILITY_SLOTS",
-          "type": {
-            "text": "FzlAvailabilitySlot[]"
-          },
-          "default": "[ { id: '07:00', label: '07:00 – 08:00', period: 'morning' }, { id: '08:00', label: '08:00 – 09:00', period: 'morning' }, { id: '09:00', label: '09:00 – 10:00', period: 'morning' }, { id: '10:00', label: '10:00 – 11:00', period: 'morning' }, { id: '11:00', label: '11:00 – 12:00', period: 'morning' }, { id: '12:00', label: '12:00 – 13:00', period: 'afternoon' }, { id: '13:00', label: '13:00 – 14:00', period: 'afternoon' }, { id: '14:00', label: '14:00 – 15:00', period: 'afternoon' }, { id: '15:00', label: '15:00 – 16:00', period: 'afternoon' }, { id: '16:00', label: '16:00 – 17:00', period: 'afternoon' }, { id: '17:00', label: '17:00 – 18:00', period: 'afternoon' }, { id: '18:00', label: '18:00 – 19:00', period: 'evening' }, { id: '19:00', label: '19:00 – 20:00', period: 'evening' }, { id: '20:00', label: '20:00 – 21:00', period: 'evening' }, { id: '21:00', label: '21:00 – 22:00', period: 'evening' }, ]"
-        },
-        {
-          "kind": "function",
-          "name": "parseFzlAvailabilityDays",
-          "return": {
-            "type": {
-              "text": "FzlAvailabilityDay[]"
-            }
-          },
-          "parameters": [
-            {
-              "name": "days",
-              "type": {
-                "text": "FzlAvailabilityDay[] | string | null | undefined"
-              }
-            }
-          ]
-        },
-        {
-          "kind": "function",
-          "name": "parseFzlAvailabilitySlots",
-          "return": {
-            "type": {
-              "text": "FzlAvailabilitySlot[]"
-            }
-          },
-          "parameters": [
-            {
-              "name": "slots",
-              "type": {
-                "text": "FzlAvailabilitySlot[] | string | null | undefined"
-              }
-            }
-          ]
-        },
-        {
-          "kind": "function",
-          "name": "parseFzlAvailabilityMap",
-          "return": {
-            "type": {
-              "text": "FzlAvailabilityMap"
-            }
-          },
-          "parameters": [
-            {
-              "name": "value",
-              "type": {
-                "text": "FzlAvailabilityMap | string | null | undefined"
-              }
-            }
-          ]
-        },
-        {
-          "kind": "function",
-          "name": "parseFzlHeatmapData",
-          "return": {
-            "type": {
-              "text": "FzlHeatmapData"
-            }
-          },
-          "parameters": [
-            {
-              "name": "data",
-              "type": {
-                "text": "FzlHeatmapData | string | null | undefined"
-              }
-            }
-          ]
-        },
-        {
-          "kind": "class",
-          "description": "Pure ES6 Custom Element (`fzl-es6-availability-grid`)\nWeekly availability grid supporting edit, readonly, and heatmap modes.",
-          "name": "FzlEs6AvailabilityGrid",
-          "cssParts": [
-            {
-              "description": "Outer wrapper container",
-              "name": "container"
-            },
-            {
-              "description": "Top brush & quick actions toolbar",
-              "name": "toolbar"
-            },
-            {
-              "description": "Heatmap legend bar",
-              "name": "legend"
-            },
-            {
-              "description": "Horizontal scroll container for the grid",
-              "name": "grid-wrapper"
-            },
-            {
-              "description": "The availability grid table element",
-              "name": "grid"
-            },
-            {
-              "description": "Day column header cell",
-              "name": "header-cell"
-            },
-            {
-              "description": "Sticky time slot row header cell",
-              "name": "slot-cell"
-            },
-            {
-              "description": "Individual availability slot cell",
-              "name": "cell"
-            },
-            {
-              "description": "Footer summary bar",
-              "name": "summary"
-            }
-          ],
-          "members": [
-            {
-              "kind": "field",
-              "name": "_mode",
-              "type": {
-                "text": "FzlAvailabilityMode"
-              },
-              "privacy": "private",
-              "default": "'edit'"
-            },
-            {
-              "kind": "field",
-              "name": "_days",
-              "type": {
-                "text": "FzlAvailabilityDay[]"
-              },
-              "privacy": "private",
-              "default": "[ { id: 'mon', label: 'Segunda-feira', shortLabel: 'Seg' }, { id: 'tue', label: 'Terça-feira', shortLabel: 'Ter' }, { id: 'wed', label: 'Quarta-feira', shortLabel: 'Qua' }, { id: 'thu', label: 'Quinta-feira', shortLabel: 'Qui' }, { id: 'fri', label: 'Sexta-feira', shortLabel: 'Sex' }, { id: 'sat', label: 'Sábado', shortLabel: 'Sáb', weekend: true }, { id: 'sun', label: 'Domingo', shortLabel: 'Dom', weekend: true }, ]"
-            },
-            {
-              "kind": "field",
-              "name": "_slots",
-              "type": {
-                "text": "FzlAvailabilitySlot[]"
-              },
-              "privacy": "private",
-              "default": "[ { id: '07:00', label: '07:00 – 08:00', period: 'morning' }, { id: '08:00', label: '08:00 – 09:00', period: 'morning' }, { id: '09:00', label: '09:00 – 10:00', period: 'morning' }, { id: '10:00', label: '10:00 – 11:00', period: 'morning' }, { id: '11:00', label: '11:00 – 12:00', period: 'morning' }, { id: '12:00', label: '12:00 – 13:00', period: 'afternoon' }, { id: '13:00', label: '13:00 – 14:00', period: 'afternoon' }, { id: '14:00', label: '14:00 – 15:00', period: 'afternoon' }, { id: '15:00', label: '15:00 – 16:00', period: 'afternoon' }, { id: '16:00', label: '16:00 – 17:00', period: 'afternoon' }, { id: '17:00', label: '17:00 – 18:00', period: 'afternoon' }, { id: '18:00', label: '18:00 – 19:00', period: 'evening' }, { id: '19:00', label: '19:00 – 20:00', period: 'evening' }, { id: '20:00', label: '20:00 – 21:00', period: 'evening' }, { id: '21:00', label: '21:00 – 22:00', period: 'evening' }, ]"
-            },
-            {
-              "kind": "field",
-              "name": "_value",
-              "type": {
-                "text": "FzlAvailabilityMap"
-              },
-              "privacy": "private",
-              "default": "{}"
-            },
-            {
-              "kind": "field",
-              "name": "_heatmapData",
-              "type": {
-                "text": "FzlHeatmapData"
-              },
-              "privacy": "private",
-              "default": "{}"
-            },
-            {
-              "kind": "field",
-              "name": "_activeState",
-              "type": {
-                "text": "FzlAvailabilityState"
-              },
-              "privacy": "private",
-              "default": "'available'"
-            },
-            {
-              "kind": "field",
-              "name": "_showQuickActions",
-              "type": {
-                "text": "boolean"
-              },
-              "privacy": "private",
-              "default": "true"
-            },
-            {
-              "kind": "field",
-              "name": "_includeWeekend",
-              "type": {
-                "text": "boolean"
-              },
-              "privacy": "private",
-              "default": "true"
-            },
-            {
-              "kind": "field",
-              "name": "_selectedKey",
-              "type": {
-                "text": "string"
-              },
-              "privacy": "private",
-              "default": "''"
-            },
-            {
-              "kind": "field",
-              "name": "_isPainting",
-              "type": {
-                "text": "boolean"
-              },
-              "privacy": "private",
-              "default": "false"
-            },
-            {
-              "kind": "field",
-              "name": "_paintTargetState",
-              "type": {
-                "text": "FzlAvailabilityState"
-              },
-              "privacy": "private",
-              "default": "'available'"
-            },
-            {
-              "kind": "field",
-              "name": "_root",
-              "type": {
-                "text": "ShadowRoot"
-              },
-              "privacy": "private",
-              "readonly": true
-            },
-            {
-              "kind": "field",
-              "name": "_containerEl",
-              "type": {
-                "text": "HTMLDivElement"
-              },
-              "privacy": "private",
-              "readonly": true,
-              "default": "this._root.querySelector('.fzl-avail-container')"
-            },
-            {
-              "kind": "field",
-              "name": "_boundPointerUp",
-              "privacy": "private"
-            },
-            {
-              "kind": "field",
-              "name": "mode",
-              "type": {
-                "text": "FzlAvailabilityMode"
-              }
-            },
-            {
-              "kind": "field",
-              "name": "days",
-              "type": {
-                "text": "FzlAvailabilityDay[] | string"
-              }
-            },
-            {
-              "kind": "field",
-              "name": "slots",
-              "type": {
-                "text": "FzlAvailabilitySlot[] | string"
-              }
-            },
-            {
-              "kind": "field",
-              "name": "value",
-              "type": {
-                "text": "FzlAvailabilityMap | string"
-              }
-            },
-            {
-              "kind": "field",
-              "name": "heatmapData",
-              "type": {
-                "text": "FzlHeatmapData | string"
-              }
-            },
-            {
-              "kind": "field",
-              "name": "activeState",
-              "type": {
-                "text": "FzlAvailabilityState"
-              }
-            },
-            {
-              "kind": "field",
-              "name": "showQuickActions",
-              "type": {
-                "text": "boolean"
-              }
-            },
-            {
-              "kind": "field",
-              "name": "includeWeekend",
-              "type": {
-                "text": "boolean"
-              }
-            },
-            {
-              "kind": "field",
-              "name": "selectedKey",
-              "type": {
-                "text": "string"
-              }
-            },
-            {
-              "kind": "method",
-              "name": "_getVisibleDays",
-              "privacy": "private",
-              "return": {
-                "type": {
-                  "text": "FzlAvailabilityDay[]"
-                }
-              }
-            },
-            {
-              "kind": "method",
-              "name": "_commitValue",
-              "privacy": "private",
-              "return": {
-                "type": {
-                  "text": "void"
-                }
-              },
-              "parameters": [
-                {
-                  "name": "nextMap",
-                  "type": {
-                    "text": "FzlAvailabilityMap"
-                  }
-                },
-                {
-                  "name": "changedKeys",
-                  "type": {
-                    "text": "string[]"
-                  }
-                }
-              ]
-            },
-            {
-              "kind": "method",
-              "name": "_applyKeysState",
-              "privacy": "private",
-              "return": {
-                "type": {
-                  "text": "void"
-                }
-              },
-              "parameters": [
-                {
-                  "name": "keys",
-                  "type": {
-                    "text": "string[]"
-                  }
-                },
-                {
-                  "name": "targetState",
-                  "type": {
-                    "text": "FzlAvailabilityState"
-                  }
-                }
-              ]
-            },
-            {
-              "kind": "method",
-              "name": "_toggleGroupKeys",
-              "privacy": "private",
-              "return": {
-                "type": {
-                  "text": "void"
-                }
-              },
-              "parameters": [
-                {
-                  "name": "keys",
-                  "type": {
-                    "text": "string[]"
-                  }
-                }
-              ]
-            },
-            {
-              "kind": "method",
-              "name": "_getHeatmapLevel",
-              "privacy": "private",
-              "return": {
-                "type": {
-                  "text": "number"
-                }
-              },
-              "parameters": [
-                {
-                  "name": "count",
-                  "type": {
-                    "text": "number"
-                  }
-                },
-                {
-                  "name": "maxTotal",
-                  "type": {
-                    "text": "number"
-                  }
-                }
-              ]
-            },
-            {
-              "kind": "method",
-              "name": "_getPeriodIcon",
-              "privacy": "private",
-              "return": {
-                "type": {
-                  "text": "string"
-                }
-              },
-              "parameters": [
-                {
-                  "name": "period",
-                  "optional": true,
-                  "type": {
-                    "text": "FzlAvailabilityPeriod"
-                  }
-                }
-              ]
-            },
-            {
-              "kind": "method",
-              "name": "_render",
-              "privacy": "private",
-              "return": {
-                "type": {
-                  "text": "void"
-                }
-              }
-            }
-          ],
-          "events": [
-            {
-              "name": "fzl-availability-change",
-              "type": {
-                "text": "CustomEvent<{ value: FzlAvailabilityMap; changedKeys: string[]; activeState: FzlAvailabilityState }>"
-              },
-              "description": "Dispatched when availability map changes in edit mode"
-            },
-            {
-              "name": "fzl-cell-select",
-              "type": {
-                "text": "CustomEvent<{ key: string; dayId: string; slotId: string; day: FzlAvailabilityDay; slot: FzlAvailabilitySlot; state: FzlAvailabilityState; heatmap?: FzlHeatmapCell; originalEvent: Event }>"
-              },
-              "description": "Dispatched when a grid cell is clicked/selected"
-            }
-          ],
-          "attributes": [
-            {
-              "name": "mode"
-            },
-            {
-              "name": "days"
-            },
-            {
-              "name": "slots"
-            },
-            {
-              "name": "value"
-            },
-            {
-              "name": "heatmap-data"
-            },
-            {
-              "name": "active-state"
-            },
-            {
-              "name": "show-quick-actions"
-            },
-            {
-              "name": "include-weekend"
-            },
-            {
-              "name": "selected-key"
-            }
-          ],
-          "superclass": {
-            "name": "HTMLElement"
-          },
-          "tagName": "fzl-es6-availability-grid",
-          "customElement": true
-        }
-      ],
-      "exports": [
-        {
-          "kind": "js",
-          "name": "DEFAULT_AVAILABILITY_DAYS",
-          "declaration": {
-            "name": "DEFAULT_AVAILABILITY_DAYS",
-            "module": "src/components/availability-grid/availability-grid.component.ts"
-          }
-        },
-        {
-          "kind": "js",
-          "name": "DEFAULT_AVAILABILITY_SLOTS",
-          "declaration": {
-            "name": "DEFAULT_AVAILABILITY_SLOTS",
-            "module": "src/components/availability-grid/availability-grid.component.ts"
-          }
-        },
-        {
-          "kind": "js",
-          "name": "parseFzlAvailabilityDays",
-          "declaration": {
-            "name": "parseFzlAvailabilityDays",
-            "module": "src/components/availability-grid/availability-grid.component.ts"
-          }
-        },
-        {
-          "kind": "js",
-          "name": "parseFzlAvailabilitySlots",
-          "declaration": {
-            "name": "parseFzlAvailabilitySlots",
-            "module": "src/components/availability-grid/availability-grid.component.ts"
-          }
-        },
-        {
-          "kind": "js",
-          "name": "parseFzlAvailabilityMap",
-          "declaration": {
-            "name": "parseFzlAvailabilityMap",
-            "module": "src/components/availability-grid/availability-grid.component.ts"
-          }
-        },
-        {
-          "kind": "js",
-          "name": "parseFzlHeatmapData",
-          "declaration": {
-            "name": "parseFzlHeatmapData",
-            "module": "src/components/availability-grid/availability-grid.component.ts"
-          }
-        },
-        {
-          "kind": "js",
-          "name": "FzlEs6AvailabilityGrid",
-          "declaration": {
-            "name": "FzlEs6AvailabilityGrid",
-            "module": "src/components/availability-grid/availability-grid.component.ts"
-          }
-        },
-        {
-          "kind": "custom-element-definition",
-          "name": "fzl-es6-availability-grid",
-          "declaration": {
-            "name": "FzlEs6AvailabilityGrid",
-            "module": "src/components/availability-grid/availability-grid.component.ts"
+            "name": "FzlEs6Crumb",
+            "module": "src/components/crumb/crumb.component.ts"
           }
         }
       ]
@@ -2009,183 +1540,639 @@
     },
     {
       "kind": "javascript-module",
-      "path": "src/components/crumb/crumb.component.ts",
+      "path": "src/components/grid/data-grid.component.ts",
       "declarations": [
         {
-          "kind": "function",
-          "name": "parseFzlCrumbItems",
-          "return": {
-            "type": {
-              "text": "FzlCrumbItem[]"
-            }
-          },
-          "parameters": [
-            {
-              "name": "items",
-              "type": {
-                "text": "FzlCrumbItem[] | string | null | undefined"
-              }
-            },
-            {
-              "name": "pathStr",
-              "optional": true,
-              "type": {
-                "text": "string"
-              }
-            }
-          ]
-        },
-        {
           "kind": "class",
-          "description": "Pure Vanilla ES6 Breadcrumb (\"Crumb\") Custom Element showing current navigation path\nand providing back navigation to the previous view.",
-          "name": "FzlEs6Crumb",
-          "cssParts": [
-            {
-              "description": "The outer `<nav>` landmark element",
-              "name": "nav"
-            },
-            {
-              "description": "The back navigation `<button>` element",
-              "name": "back-button"
-            },
-            {
-              "description": "The `<ol>` breadcrumb trail list",
-              "name": "list"
-            },
-            {
-              "description": "Each `<li>` breadcrumb item",
-              "name": "item"
-            },
-            {
-              "description": "Interactive `<a>` link for ancestor items",
-              "name": "link"
-            },
-            {
-              "description": "Visual separator `<span>` between items",
-              "name": "separator"
-            },
-            {
-              "description": "The `<span aria-current=\"page\">` active view label",
-              "name": "current"
-            }
-          ],
+          "description": "Vanilla ES6 Data Grid Web Component (`fzl-es6-data-grid`)\nInspired by Dojo `dojox/grid/DataGrid` and `dgrid`.",
+          "name": "FzlEs6DataGrid",
           "members": [
             {
               "kind": "field",
-              "name": "_navEl",
+              "name": "_store",
               "type": {
-                "text": "HTMLElement"
+                "text": "FzlStore<any> | undefined"
               },
-              "privacy": "private",
-              "default": "shadow.querySelector('nav')!"
+              "privacy": "private"
             },
             {
               "kind": "field",
-              "name": "_backBtnEl",
+              "name": "_columns",
               "type": {
-                "text": "HTMLButtonElement"
+                "text": "FzlEs6GridColumn[]"
               },
               "privacy": "private",
-              "default": "shadow.querySelector('.back-btn')!"
+              "default": "[]"
             },
             {
               "kind": "field",
-              "name": "_backLabelEl",
+              "name": "_items",
               "type": {
-                "text": "HTMLElement"
+                "text": "any[]"
               },
               "privacy": "private",
-              "default": "shadow.querySelector('.back-label')!"
+              "default": "[]"
             },
             {
               "kind": "field",
-              "name": "_listEl",
+              "name": "_selectionMode",
               "type": {
-                "text": "HTMLOListElement"
+                "text": "FzlEs6GridSelectionMode"
               },
               "privacy": "private",
-              "default": "shadow.querySelector('ol')!"
+              "default": "'single'"
             },
             {
               "kind": "field",
-              "name": "_itemsProp",
+              "name": "_selectedId",
               "type": {
-                "text": "FzlCrumbItem[] | null"
+                "text": "string | number | null"
               },
               "privacy": "private",
               "default": "null"
             },
             {
               "kind": "field",
-              "name": "_keyNav",
+              "name": "_selectedIds",
               "type": {
-                "text": "FzlKeyNavController"
+                "text": "(string | number)[]"
               },
               "privacy": "private",
-              "default": "new FzlKeyNavController(this, { orientation: 'horizontal', rovingTabIndex: true, getItems: () => Array.from( shadow.querySelectorAll<HTMLElement>( '.back-btn:not([disabled]):not([hidden]), a.crumb-link' ) ), })"
+              "default": "[]"
+            },
+            {
+              "kind": "field",
+              "name": "_searchable",
+              "type": {
+                "text": "boolean"
+              },
+              "privacy": "private",
+              "default": "true"
+            },
+            {
+              "kind": "field",
+              "name": "_pagination",
+              "type": {
+                "text": "boolean"
+              },
+              "privacy": "private",
+              "default": "true"
+            },
+            {
+              "kind": "field",
+              "name": "_pageSize",
+              "type": {
+                "text": "number"
+              },
+              "privacy": "private",
+              "default": "10"
+            },
+            {
+              "kind": "field",
+              "name": "_page",
+              "type": {
+                "text": "number"
+              },
+              "privacy": "private",
+              "default": "1"
+            },
+            {
+              "kind": "field",
+              "name": "_pageSizes",
+              "type": {
+                "text": "number[]"
+              },
+              "privacy": "private",
+              "default": "[5, 10, 25, 50, 100]"
+            },
+            {
+              "kind": "field",
+              "name": "_exportable",
+              "type": {
+                "text": "boolean"
+              },
+              "privacy": "private",
+              "default": "true"
+            },
+            {
+              "kind": "field",
+              "name": "_emptyText",
+              "type": {
+                "text": "string"
+              },
+              "privacy": "private",
+              "default": "'Nenhum registro encontrado.'"
+            },
+            {
+              "kind": "field",
+              "name": "_searchQuery",
+              "type": {
+                "text": "string"
+              },
+              "privacy": "private",
+              "default": "''"
+            },
+            {
+              "kind": "field",
+              "name": "_sortField",
+              "type": {
+                "text": "string | null"
+              },
+              "privacy": "private",
+              "default": "null"
+            },
+            {
+              "kind": "field",
+              "name": "_sortDesc",
+              "type": {
+                "text": "boolean"
+              },
+              "privacy": "private",
+              "default": "false"
+            },
+            {
+              "kind": "field",
+              "name": "_unsubStore",
+              "type": {
+                "text": "() => void | undefined"
+              },
+              "privacy": "private"
+            },
+            {
+              "kind": "field",
+              "name": "_root",
+              "type": {
+                "text": "ShadowRoot"
+              },
+              "privacy": "private"
+            },
+            {
+              "kind": "field",
+              "name": "store",
+              "type": {
+                "text": "FzlStore<any> | undefined"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "columns",
+              "type": {
+                "text": "FzlEs6GridColumn[]"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "structure",
+              "type": {
+                "text": "FzlEs6GridColumn[]"
+              }
             },
             {
               "kind": "field",
               "name": "items",
               "type": {
-                "text": "FzlCrumbItem[]"
-              },
-              "description": "Breadcrumb items array",
-              "default": "[]"
+                "text": "any[]"
+              }
             },
             {
               "kind": "field",
-              "name": "path",
+              "name": "selectionMode",
               "type": {
-                "text": "string"
-              },
-              "description": "Path string shorthand",
-              "default": "''"
+                "text": "FzlEs6GridSelectionMode"
+              }
             },
             {
               "kind": "field",
-              "name": "separator",
+              "name": "selectedId",
               "type": {
-                "text": "string"
-              },
-              "description": "Visual separator between breadcrumb items",
-              "default": "'›'"
+                "text": "string | number | null"
+              }
             },
             {
               "kind": "field",
-              "name": "showBack",
+              "name": "selectedIds",
+              "type": {
+                "text": "(string | number)[]"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "searchable",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "pagination",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "pageSize",
+              "type": {
+                "text": "number"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "page",
+              "type": {
+                "text": "number"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "_bindStore",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              }
+            },
+            {
+              "kind": "method",
+              "name": "_unbindStore",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              }
+            },
+            {
+              "kind": "method",
+              "name": "_getItemId",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "string | number"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "item",
+                  "type": {
+                    "text": "any"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "_getAllFilteredItems",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "any[]"
+                }
+              }
+            },
+            {
+              "kind": "method",
+              "name": "exportCsv",
+              "return": {
+                "type": {
+                  "text": "string"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "filename",
+                  "default": "'grid-export.csv'",
+                  "type": {
+                    "text": "string"
+                  }
+                }
+              ],
+              "description": "Exports data to CSV and triggers download."
+            },
+            {
+              "kind": "method",
+              "name": "_render",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              }
+            },
+            {
+              "kind": "method",
+              "name": "_attachEventListeners",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "allFiltered",
+                  "type": {
+                    "text": "any[]"
+                  }
+                },
+                {
+                  "name": "pagedItems",
+                  "type": {
+                    "text": "any[]"
+                  }
+                },
+                {
+                  "name": "totalPages",
+                  "type": {
+                    "text": "number"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "_toggleMulti",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "id",
+                  "type": {
+                    "text": "string | number"
+                  }
+                },
+                {
+                  "name": "allFiltered",
+                  "type": {
+                    "text": "any[]"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "_dispatchSelectionChange",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "allFiltered",
+                  "type": {
+                    "text": "any[]"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "_setPage",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "p",
+                  "type": {
+                    "text": "number"
+                  }
+                }
+              ]
+            }
+          ],
+          "events": [
+            {
+              "name": "fzl-grid-select",
+              "type": {
+                "text": "CustomEvent"
+              }
+            },
+            {
+              "name": "fzl-grid-delete",
+              "type": {
+                "text": "CustomEvent"
+              }
+            },
+            {
+              "name": "fzl-grid-selection-change",
+              "type": {
+                "text": "CustomEvent"
+              }
+            },
+            {
+              "name": "fzl-grid-page-change",
+              "type": {
+                "text": "CustomEvent"
+              }
+            }
+          ],
+          "attributes": [
+            {
+              "name": "items"
+            },
+            {
+              "name": "columns"
+            },
+            {
+              "name": "structure"
+            },
+            {
+              "name": "selection-mode"
+            },
+            {
+              "name": "selected-id"
+            },
+            {
+              "name": "searchable"
+            },
+            {
+              "name": "pagination"
+            },
+            {
+              "name": "page-size"
+            },
+            {
+              "name": "page"
+            },
+            {
+              "name": "exportable"
+            },
+            {
+              "name": "empty-text"
+            }
+          ],
+          "mixins": [
+            {
+              "name": "FzlWidgetMixin",
+              "package": "@fzl/core"
+            }
+          ],
+          "superclass": {
+            "name": "HTMLElement"
+          },
+          "tagName": "fzl-es6-data-grid",
+          "customElement": true
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "FzlEs6DataGrid",
+          "declaration": {
+            "name": "FzlEs6DataGrid",
+            "module": "src/components/grid/data-grid.component.ts"
+          }
+        },
+        {
+          "kind": "custom-element-definition",
+          "name": "fzl-es6-data-grid",
+          "declaration": {
+            "name": "FzlEs6DataGrid",
+            "module": "src/components/grid/data-grid.component.ts"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/components/button/button.component.ts",
+      "declarations": [
+        {
+          "kind": "class",
+          "description": "Pure Vanilla ES6 Custom Element button with Shadow DOM encapsulation.",
+          "name": "FzlEs6Button",
+          "cssParts": [
+            {
+              "description": "The internal native `<button>` element",
+              "name": "button"
+            }
+          ],
+          "slots": [
+            {
+              "description": "Content to be displayed inside the button",
+              "name": ""
+            }
+          ],
+          "members": [
+            {
+              "kind": "field",
+              "name": "_internals",
+              "type": {
+                "text": "ElementInternals | undefined"
+              },
+              "privacy": "private"
+            },
+            {
+              "kind": "field",
+              "name": "_buttonEl",
+              "type": {
+                "text": "HTMLButtonElement"
+              },
+              "privacy": "private",
+              "default": "shadow.querySelector('button')!"
+            },
+            {
+              "kind": "field",
+              "name": "_typematicCleanup",
+              "type": {
+                "text": "(() => void) | null"
+              },
+              "privacy": "private",
+              "default": "null"
+            },
+            {
+              "kind": "field",
+              "name": "_lastTypematicTick",
               "type": {
                 "text": "boolean"
               },
-              "description": "Whether to display the back button",
-              "default": "true"
-            },
-            {
-              "kind": "field",
-              "name": "backDisabled",
-              "type": {
-                "text": "boolean"
-              },
-              "description": "Whether the back button is disabled",
+              "privacy": "private",
               "default": "false"
             },
             {
               "kind": "field",
-              "name": "backLabel",
+              "name": "formAssociated",
               "type": {
-                "text": "string"
+                "text": "boolean"
               },
-              "description": "Label for the back navigation button",
-              "default": "'Voltar'"
+              "static": true,
+              "default": "true"
             },
             {
               "kind": "field",
-              "name": "backHref",
+              "name": "variant",
               "type": {
-                "text": "string"
+                "text": "'primary' | 'secondary' | 'danger'"
               },
-              "description": "Optional explicit target URL/hash for the back button",
-              "default": "''"
+              "description": "Visual appearance variant",
+              "default": "'primary'"
+            },
+            {
+              "kind": "field",
+              "name": "size",
+              "type": {
+                "text": "'sm' | 'md' | 'lg'"
+              },
+              "description": "Size scale of the button",
+              "default": "'md'"
+            },
+            {
+              "kind": "field",
+              "name": "disabled",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "Whether the button is disabled",
+              "default": "false"
+            },
+            {
+              "kind": "field",
+              "name": "type",
+              "type": {
+                "text": "'button' | 'submit' | 'reset'"
+              },
+              "description": "Form button behavior",
+              "default": "'button'"
+            },
+            {
+              "kind": "field",
+              "name": "typematic",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "Enables typematic repeat firing of `fzl-click` while held down",
+              "default": "false"
+            },
+            {
+              "kind": "method",
+              "name": "_clearTypematic",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              }
+            },
+            {
+              "kind": "method",
+              "name": "_syncTypematic",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              }
             },
             {
               "kind": "method",
@@ -2201,17 +2188,10 @@
           "events": [
             {
               "type": {
-                "text": "CustomEvent<{ backHref: string; originalEvent: MouseEvent }>"
+                "text": "CustomEvent<{ originalEvent: MouseEvent | KeyboardEvent; repeatCount?: number }>"
               },
-              "description": "Dispatched when the back button is activated",
-              "name": "fzl-back"
-            },
-            {
-              "type": {
-                "text": "CustomEvent<{ item: FzlCrumbItem; index: number; href?: string; originalEvent: MouseEvent }>"
-              },
-              "description": "Dispatched when a breadcrumb link item is clicked",
-              "name": "fzl-navigate"
+              "description": "Dispatched when the button is activated",
+              "name": "fzl-click"
             },
             {
               "type": {
@@ -2230,68 +2210,44 @@
           ],
           "attributes": [
             {
-              "name": "items",
+              "name": "variant",
               "type": {
-                "text": "string"
+                "text": "'primary' | 'secondary' | 'danger'"
               },
-              "description": "Breadcrumb items JSON string or delimited string",
-              "default": "'[]'"
+              "description": "Visual appearance variant",
+              "default": "'primary'"
             },
             {
-              "name": "path",
+              "name": "size",
               "type": {
-                "text": "string"
+                "text": "'sm' | 'md' | 'lg'"
               },
-              "description": "Path string shorthand (e.g. \"Início / Config / Backend\")",
-              "default": "''"
+              "description": "Size scale of the button",
+              "default": "'md'"
             },
             {
-              "name": "separator",
-              "type": {
-                "text": "string"
-              },
-              "description": "Visual separator between breadcrumb items",
-              "default": "'›'"
-            },
-            {
-              "name": "show-back",
+              "name": "disabled",
               "type": {
                 "text": "boolean"
               },
-              "description": "Whether to display the back button",
-              "default": "true"
-            },
-            {
-              "name": "back-disabled",
-              "type": {
-                "text": "boolean"
-              },
-              "description": "Whether the back button is disabled",
+              "description": "Whether the button is disabled",
               "default": "false"
             },
             {
-              "name": "back-label",
+              "name": "type",
               "type": {
-                "text": "string"
+                "text": "'button' | 'submit' | 'reset'"
               },
-              "description": "Label for the back navigation button",
-              "default": "'Voltar'"
+              "description": "Form button behavior",
+              "default": "'button'"
             },
             {
-              "name": "back-href",
+              "name": "typematic",
               "type": {
-                "text": "string"
+                "text": "boolean"
               },
-              "description": "Optional explicit target URL/hash for the back button",
-              "default": "''"
-            },
-            {
-              "name": "aria-label",
-              "type": {
-                "text": "string"
-              },
-              "description": "Accessible label for the `<nav>` landmark",
-              "default": "'Navegação estrutural'"
+              "description": "Enables typematic repeat firing of `fzl-click` while held down",
+              "default": "false"
             }
           ],
           "mixins": [
@@ -2303,33 +2259,591 @@
           "superclass": {
             "name": "HTMLElement"
           },
-          "tagName": "fzl-es6-crumb",
+          "tagName": "fzl-es6-button",
           "customElement": true
         }
       ],
       "exports": [
         {
           "kind": "js",
-          "name": "parseFzlCrumbItems",
+          "name": "FzlEs6Button",
           "declaration": {
-            "name": "parseFzlCrumbItems",
-            "module": "src/components/crumb/crumb.component.ts"
-          }
-        },
-        {
-          "kind": "js",
-          "name": "FzlEs6Crumb",
-          "declaration": {
-            "name": "FzlEs6Crumb",
-            "module": "src/components/crumb/crumb.component.ts"
+            "name": "FzlEs6Button",
+            "module": "src/components/button/button.component.ts"
           }
         },
         {
           "kind": "custom-element-definition",
-          "name": "fzl-es6-crumb",
+          "name": "fzl-es6-button",
           "declaration": {
-            "name": "FzlEs6Crumb",
-            "module": "src/components/crumb/crumb.component.ts"
+            "name": "FzlEs6Button",
+            "module": "src/components/button/button.component.ts"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/components/availability-grid/availability-grid.component.ts",
+      "declarations": [
+        {
+          "kind": "variable",
+          "name": "DEFAULT_AVAILABILITY_DAYS",
+          "type": {
+            "text": "FzlAvailabilityDay[]"
+          },
+          "default": "[ { id: 'mon', label: 'Segunda-feira', shortLabel: 'Seg' }, { id: 'tue', label: 'Terça-feira', shortLabel: 'Ter' }, { id: 'wed', label: 'Quarta-feira', shortLabel: 'Qua' }, { id: 'thu', label: 'Quinta-feira', shortLabel: 'Qui' }, { id: 'fri', label: 'Sexta-feira', shortLabel: 'Sex' }, { id: 'sat', label: 'Sábado', shortLabel: 'Sáb', weekend: true }, { id: 'sun', label: 'Domingo', shortLabel: 'Dom', weekend: true }, ]"
+        },
+        {
+          "kind": "variable",
+          "name": "DEFAULT_AVAILABILITY_SLOTS",
+          "type": {
+            "text": "FzlAvailabilitySlot[]"
+          },
+          "default": "[ { id: '07:00', label: '07:00 – 08:00', period: 'morning' }, { id: '08:00', label: '08:00 – 09:00', period: 'morning' }, { id: '09:00', label: '09:00 – 10:00', period: 'morning' }, { id: '10:00', label: '10:00 – 11:00', period: 'morning' }, { id: '11:00', label: '11:00 – 12:00', period: 'morning' }, { id: '12:00', label: '12:00 – 13:00', period: 'afternoon' }, { id: '13:00', label: '13:00 – 14:00', period: 'afternoon' }, { id: '14:00', label: '14:00 – 15:00', period: 'afternoon' }, { id: '15:00', label: '15:00 – 16:00', period: 'afternoon' }, { id: '16:00', label: '16:00 – 17:00', period: 'afternoon' }, { id: '17:00', label: '17:00 – 18:00', period: 'afternoon' }, { id: '18:00', label: '18:00 – 19:00', period: 'evening' }, { id: '19:00', label: '19:00 – 20:00', period: 'evening' }, { id: '20:00', label: '20:00 – 21:00', period: 'evening' }, { id: '21:00', label: '21:00 – 22:00', period: 'evening' }, ]"
+        },
+        {
+          "kind": "function",
+          "name": "parseFzlAvailabilityDays",
+          "return": {
+            "type": {
+              "text": "FzlAvailabilityDay[]"
+            }
+          },
+          "parameters": [
+            {
+              "name": "days",
+              "type": {
+                "text": "FzlAvailabilityDay[] | string | null | undefined"
+              }
+            }
+          ]
+        },
+        {
+          "kind": "function",
+          "name": "parseFzlAvailabilitySlots",
+          "return": {
+            "type": {
+              "text": "FzlAvailabilitySlot[]"
+            }
+          },
+          "parameters": [
+            {
+              "name": "slots",
+              "type": {
+                "text": "FzlAvailabilitySlot[] | string | null | undefined"
+              }
+            }
+          ]
+        },
+        {
+          "kind": "function",
+          "name": "parseFzlAvailabilityMap",
+          "return": {
+            "type": {
+              "text": "FzlAvailabilityMap"
+            }
+          },
+          "parameters": [
+            {
+              "name": "value",
+              "type": {
+                "text": "FzlAvailabilityMap | string | null | undefined"
+              }
+            }
+          ]
+        },
+        {
+          "kind": "function",
+          "name": "parseFzlHeatmapData",
+          "return": {
+            "type": {
+              "text": "FzlHeatmapData"
+            }
+          },
+          "parameters": [
+            {
+              "name": "data",
+              "type": {
+                "text": "FzlHeatmapData | string | null | undefined"
+              }
+            }
+          ]
+        },
+        {
+          "kind": "class",
+          "description": "Pure ES6 Custom Element (`fzl-es6-availability-grid`)\nWeekly availability grid supporting edit, readonly, and heatmap modes.",
+          "name": "FzlEs6AvailabilityGrid",
+          "cssParts": [
+            {
+              "description": "Outer wrapper container",
+              "name": "container"
+            },
+            {
+              "description": "Top brush & quick actions toolbar",
+              "name": "toolbar"
+            },
+            {
+              "description": "Heatmap legend bar",
+              "name": "legend"
+            },
+            {
+              "description": "Horizontal scroll container for the grid",
+              "name": "grid-wrapper"
+            },
+            {
+              "description": "The availability grid table element",
+              "name": "grid"
+            },
+            {
+              "description": "Day column header cell",
+              "name": "header-cell"
+            },
+            {
+              "description": "Sticky time slot row header cell",
+              "name": "slot-cell"
+            },
+            {
+              "description": "Individual availability slot cell",
+              "name": "cell"
+            },
+            {
+              "description": "Footer summary bar",
+              "name": "summary"
+            }
+          ],
+          "members": [
+            {
+              "kind": "field",
+              "name": "_mode",
+              "type": {
+                "text": "FzlAvailabilityMode"
+              },
+              "privacy": "private",
+              "default": "'edit'"
+            },
+            {
+              "kind": "field",
+              "name": "_days",
+              "type": {
+                "text": "FzlAvailabilityDay[]"
+              },
+              "privacy": "private",
+              "default": "[ { id: 'mon', label: 'Segunda-feira', shortLabel: 'Seg' }, { id: 'tue', label: 'Terça-feira', shortLabel: 'Ter' }, { id: 'wed', label: 'Quarta-feira', shortLabel: 'Qua' }, { id: 'thu', label: 'Quinta-feira', shortLabel: 'Qui' }, { id: 'fri', label: 'Sexta-feira', shortLabel: 'Sex' }, { id: 'sat', label: 'Sábado', shortLabel: 'Sáb', weekend: true }, { id: 'sun', label: 'Domingo', shortLabel: 'Dom', weekend: true }, ]"
+            },
+            {
+              "kind": "field",
+              "name": "_slots",
+              "type": {
+                "text": "FzlAvailabilitySlot[]"
+              },
+              "privacy": "private",
+              "default": "[ { id: '07:00', label: '07:00 – 08:00', period: 'morning' }, { id: '08:00', label: '08:00 – 09:00', period: 'morning' }, { id: '09:00', label: '09:00 – 10:00', period: 'morning' }, { id: '10:00', label: '10:00 – 11:00', period: 'morning' }, { id: '11:00', label: '11:00 – 12:00', period: 'morning' }, { id: '12:00', label: '12:00 – 13:00', period: 'afternoon' }, { id: '13:00', label: '13:00 – 14:00', period: 'afternoon' }, { id: '14:00', label: '14:00 – 15:00', period: 'afternoon' }, { id: '15:00', label: '15:00 – 16:00', period: 'afternoon' }, { id: '16:00', label: '16:00 – 17:00', period: 'afternoon' }, { id: '17:00', label: '17:00 – 18:00', period: 'afternoon' }, { id: '18:00', label: '18:00 – 19:00', period: 'evening' }, { id: '19:00', label: '19:00 – 20:00', period: 'evening' }, { id: '20:00', label: '20:00 – 21:00', period: 'evening' }, { id: '21:00', label: '21:00 – 22:00', period: 'evening' }, ]"
+            },
+            {
+              "kind": "field",
+              "name": "_value",
+              "type": {
+                "text": "FzlAvailabilityMap"
+              },
+              "privacy": "private",
+              "default": "{}"
+            },
+            {
+              "kind": "field",
+              "name": "_heatmapData",
+              "type": {
+                "text": "FzlHeatmapData"
+              },
+              "privacy": "private",
+              "default": "{}"
+            },
+            {
+              "kind": "field",
+              "name": "_activeState",
+              "type": {
+                "text": "FzlAvailabilityState"
+              },
+              "privacy": "private",
+              "default": "'available'"
+            },
+            {
+              "kind": "field",
+              "name": "_showQuickActions",
+              "type": {
+                "text": "boolean"
+              },
+              "privacy": "private",
+              "default": "true"
+            },
+            {
+              "kind": "field",
+              "name": "_includeWeekend",
+              "type": {
+                "text": "boolean"
+              },
+              "privacy": "private",
+              "default": "true"
+            },
+            {
+              "kind": "field",
+              "name": "_selectedKey",
+              "type": {
+                "text": "string"
+              },
+              "privacy": "private",
+              "default": "''"
+            },
+            {
+              "kind": "field",
+              "name": "_isPainting",
+              "type": {
+                "text": "boolean"
+              },
+              "privacy": "private",
+              "default": "false"
+            },
+            {
+              "kind": "field",
+              "name": "_paintTargetState",
+              "type": {
+                "text": "FzlAvailabilityState"
+              },
+              "privacy": "private",
+              "default": "'available'"
+            },
+            {
+              "kind": "field",
+              "name": "_root",
+              "type": {
+                "text": "ShadowRoot"
+              },
+              "privacy": "private",
+              "readonly": true
+            },
+            {
+              "kind": "field",
+              "name": "_containerEl",
+              "type": {
+                "text": "HTMLDivElement"
+              },
+              "privacy": "private",
+              "readonly": true,
+              "default": "this._root.querySelector('.fzl-avail-container')"
+            },
+            {
+              "kind": "field",
+              "name": "_boundPointerUp",
+              "privacy": "private"
+            },
+            {
+              "kind": "field",
+              "name": "mode",
+              "type": {
+                "text": "FzlAvailabilityMode"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "days",
+              "type": {
+                "text": "FzlAvailabilityDay[] | string"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "slots",
+              "type": {
+                "text": "FzlAvailabilitySlot[] | string"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "value",
+              "type": {
+                "text": "FzlAvailabilityMap | string"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "heatmapData",
+              "type": {
+                "text": "FzlHeatmapData | string"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "activeState",
+              "type": {
+                "text": "FzlAvailabilityState"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "showQuickActions",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "includeWeekend",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "selectedKey",
+              "type": {
+                "text": "string"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "_getVisibleDays",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "FzlAvailabilityDay[]"
+                }
+              }
+            },
+            {
+              "kind": "method",
+              "name": "_commitValue",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "nextMap",
+                  "type": {
+                    "text": "FzlAvailabilityMap"
+                  }
+                },
+                {
+                  "name": "changedKeys",
+                  "type": {
+                    "text": "string[]"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "_applyKeysState",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "keys",
+                  "type": {
+                    "text": "string[]"
+                  }
+                },
+                {
+                  "name": "targetState",
+                  "type": {
+                    "text": "FzlAvailabilityState"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "_toggleGroupKeys",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "keys",
+                  "type": {
+                    "text": "string[]"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "_getHeatmapLevel",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "number"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "count",
+                  "type": {
+                    "text": "number"
+                  }
+                },
+                {
+                  "name": "maxTotal",
+                  "type": {
+                    "text": "number"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "_getPeriodIcon",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "string"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "period",
+                  "optional": true,
+                  "type": {
+                    "text": "FzlAvailabilityPeriod"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "_render",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              }
+            }
+          ],
+          "events": [
+            {
+              "name": "fzl-availability-change",
+              "type": {
+                "text": "CustomEvent<{ value: FzlAvailabilityMap; changedKeys: string[]; activeState: FzlAvailabilityState }>"
+              },
+              "description": "Dispatched when availability map changes in edit mode"
+            },
+            {
+              "name": "fzl-cell-select",
+              "type": {
+                "text": "CustomEvent<{ key: string; dayId: string; slotId: string; day: FzlAvailabilityDay; slot: FzlAvailabilitySlot; state: FzlAvailabilityState; heatmap?: FzlHeatmapCell; originalEvent: Event }>"
+              },
+              "description": "Dispatched when a grid cell is clicked/selected"
+            }
+          ],
+          "attributes": [
+            {
+              "name": "mode"
+            },
+            {
+              "name": "days"
+            },
+            {
+              "name": "slots"
+            },
+            {
+              "name": "value"
+            },
+            {
+              "name": "heatmap-data"
+            },
+            {
+              "name": "active-state"
+            },
+            {
+              "name": "show-quick-actions"
+            },
+            {
+              "name": "include-weekend"
+            },
+            {
+              "name": "selected-key"
+            }
+          ],
+          "superclass": {
+            "name": "HTMLElement"
+          },
+          "tagName": "fzl-es6-availability-grid",
+          "customElement": true
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "DEFAULT_AVAILABILITY_DAYS",
+          "declaration": {
+            "name": "DEFAULT_AVAILABILITY_DAYS",
+            "module": "src/components/availability-grid/availability-grid.component.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "DEFAULT_AVAILABILITY_SLOTS",
+          "declaration": {
+            "name": "DEFAULT_AVAILABILITY_SLOTS",
+            "module": "src/components/availability-grid/availability-grid.component.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "parseFzlAvailabilityDays",
+          "declaration": {
+            "name": "parseFzlAvailabilityDays",
+            "module": "src/components/availability-grid/availability-grid.component.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "parseFzlAvailabilitySlots",
+          "declaration": {
+            "name": "parseFzlAvailabilitySlots",
+            "module": "src/components/availability-grid/availability-grid.component.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "parseFzlAvailabilityMap",
+          "declaration": {
+            "name": "parseFzlAvailabilityMap",
+            "module": "src/components/availability-grid/availability-grid.component.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "parseFzlHeatmapData",
+          "declaration": {
+            "name": "parseFzlHeatmapData",
+            "module": "src/components/availability-grid/availability-grid.component.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "FzlEs6AvailabilityGrid",
+          "declaration": {
+            "name": "FzlEs6AvailabilityGrid",
+            "module": "src/components/availability-grid/availability-grid.component.ts"
+          }
+        },
+        {
+          "kind": "custom-element-definition",
+          "name": "fzl-es6-availability-grid",
+          "declaration": {
+            "name": "FzlEs6AvailabilityGrid",
+            "module": "src/components/availability-grid/availability-grid.component.ts"
           }
         }
       ]

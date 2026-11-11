@@ -582,6 +582,14 @@ export const catalog = [
         manifest: litManifest,
         load: () => import('@fzl/webcomponents-lit/data-grid'),
       },
+      {
+        id: 'es6',
+        label: 'Vanilla ES6',
+        tag: 'fzl-es6-data-grid',
+        packageName: '@fzl/webcomponents-es6',
+        manifest: es6Manifest,
+        load: () => import('@fzl/webcomponents-es6'),
+      },
     ],
   },
   {

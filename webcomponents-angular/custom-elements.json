@@ -31,6 +31,10 @@
         {
           "kind": "variable",
           "name": "CardElement"
+        },
+        {
+          "kind": "variable",
+          "name": "DataGridElement"
         }
       ],
       "exports": [
@@ -76,6 +80,14 @@
         },
         {
           "kind": "js",
+          "name": "*",
+          "declaration": {
+            "name": "*",
+            "module": "src/components/grid/data-grid.component"
+          }
+        },
+        {
+          "kind": "js",
           "name": "registerFzlAngularElements",
           "declaration": {
             "name": "registerFzlAngularElements",
@@ -111,6 +123,14 @@
           "name": "fzl-ng-card",
           "declaration": {
             "name": "CardElement",
+            "module": "src/index.ts"
+          }
+        },
+        {
+          "kind": "custom-element-definition",
+          "name": "fzl-ng-data-grid",
+          "declaration": {
+            "name": "DataGridElement",
             "module": "src/index.ts"
           }
         }
@@ -1301,253 +1321,6 @@
     },
     {
       "kind": "javascript-module",
-      "path": "src/components/button/button.component.ts",
-      "declarations": [
-        {
-          "kind": "class",
-          "description": "Angular Elements Custom Element button with Shadow DOM encapsulation.",
-          "name": "FzlNgButtonComponent",
-          "cssParts": [
-            {
-              "description": "The internal native `<button>` element",
-              "name": "button"
-            }
-          ],
-          "slots": [
-            {
-              "description": "Content to be displayed inside the button",
-              "name": ""
-            }
-          ],
-          "members": [
-            {
-              "kind": "field",
-              "name": "fzlWidget",
-              "type": {
-                "text": "FzlWidgetController"
-              },
-              "readonly": true,
-              "default": "new FzlWidgetController(_host.nativeElement)"
-            },
-            {
-              "kind": "field",
-              "name": "_typematicCleanup",
-              "type": {
-                "text": "(() => void) | null"
-              },
-              "privacy": "private",
-              "default": "null"
-            },
-            {
-              "kind": "field",
-              "name": "_lastTypematicTick",
-              "type": {
-                "text": "boolean"
-              },
-              "privacy": "private",
-              "default": "false"
-            },
-            {
-              "kind": "field",
-              "name": "variant",
-              "type": {
-                "text": "FzlButtonVariant"
-              },
-              "default": "'primary'"
-            },
-            {
-              "kind": "field",
-              "name": "size",
-              "type": {
-                "text": "FzlButtonSize"
-              },
-              "default": "'md'"
-            },
-            {
-              "kind": "field",
-              "name": "disabled",
-              "type": {
-                "text": "boolean"
-              },
-              "default": "false"
-            },
-            {
-              "kind": "field",
-              "name": "type",
-              "type": {
-                "text": "'button' | 'submit' | 'reset'"
-              },
-              "default": "'button'"
-            },
-            {
-              "kind": "field",
-              "name": "typematic",
-              "type": {
-                "text": "boolean | string"
-              },
-              "default": "false"
-            },
-            {
-              "kind": "field",
-              "name": "fzlClick",
-              "default": "new EventEmitter<{ originalEvent: MouseEvent | KeyboardEvent; repeatCount?: number }>()"
-            },
-            {
-              "kind": "field",
-              "name": "isTypematic",
-              "type": {
-                "text": "boolean"
-              },
-              "readonly": true
-            },
-            {
-              "kind": "method",
-              "name": "ngOnInit",
-              "return": {
-                "type": {
-                  "text": "void"
-                }
-              }
-            },
-            {
-              "kind": "method",
-              "name": "ngOnChanges",
-              "return": {
-                "type": {
-                  "text": "void"
-                }
-              },
-              "parameters": [
-                {
-                  "name": "changes",
-                  "type": {
-                    "text": "SimpleChanges"
-                  }
-                }
-              ]
-            },
-            {
-              "kind": "method",
-              "name": "ngOnDestroy",
-              "return": {
-                "type": {
-                  "text": "void"
-                }
-              }
-            },
-            {
-              "kind": "method",
-              "name": "_syncTypematic",
-              "privacy": "private",
-              "return": {
-                "type": {
-                  "text": "void"
-                }
-              }
-            },
-            {
-              "kind": "method",
-              "name": "onClick",
-              "parameters": [
-                {
-                  "name": "event",
-                  "type": {
-                    "text": "MouseEvent"
-                  }
-                }
-              ]
-            },
-            {
-              "kind": "field",
-              "name": "adoptedStyleSheets",
-              "type": {
-                "text": "array"
-              },
-              "default": "[tokensSheet, ...root.adoptedStyleSheets]"
-            }
-          ],
-          "events": [
-            {
-              "type": {
-                "text": "CustomEvent<{ originalEvent: MouseEvent | KeyboardEvent; repeatCount?: number }>"
-              },
-              "description": "Dispatched when the button is activated",
-              "name": "fzl-click"
-            },
-            {
-              "type": {
-                "text": "CustomEvent<{ widgetId: string; originalEvent: FocusEvent }>"
-              },
-              "description": "Dispatched when the widget gains focus",
-              "name": "fzl-focus"
-            },
-            {
-              "type": {
-                "text": "CustomEvent<{ widgetId: string; originalEvent: FocusEvent }>"
-              },
-              "description": "Dispatched when the widget loses focus",
-              "name": "fzl-blur"
-            }
-          ],
-          "attributes": [
-            {
-              "type": {
-                "text": "'primary' | 'secondary' | 'danger'"
-              },
-              "description": "Visual appearance variant",
-              "name": "variant",
-              "default": "'primary'"
-            },
-            {
-              "type": {
-                "text": "'sm' | 'md' | 'lg'"
-              },
-              "description": "Size scale of the button",
-              "name": "size",
-              "default": "'md'"
-            },
-            {
-              "type": {
-                "text": "boolean"
-              },
-              "description": "Whether the button is disabled",
-              "name": "disabled",
-              "default": "false"
-            },
-            {
-              "type": {
-                "text": "'button' | 'submit' | 'reset'"
-              },
-              "description": "Form button behavior",
-              "name": "type",
-              "default": "'button'"
-            },
-            {
-              "type": {
-                "text": "boolean"
-              },
-              "description": "Enables typematic repeat firing of `fzl-click` while held down",
-              "name": "typematic",
-              "default": "false"
-            }
-          ],
-          "tagName": "fzl-ng-button",
-          "customElement": true
-        }
-      ],
-      "exports": [
-        {
-          "kind": "js",
-          "name": "FzlNgButtonComponent",
-          "declaration": {
-            "name": "FzlNgButtonComponent",
-            "module": "src/components/button/button.component.ts"
-          }
-        }
-      ]
-    },
-    {
-      "kind": "javascript-module",
       "path": "src/components/crumb/crumb.component.ts",
       "declarations": [
         {
@@ -1922,6 +1695,995 @@
           "declaration": {
             "name": "FzlNgCrumbComponent",
             "module": "src/components/crumb/crumb.component.ts"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/components/grid/data-grid.component.ts",
+      "declarations": [
+        {
+          "kind": "class",
+          "description": "Angular Elements Data Grid Web Component (`fzl-ng-data-grid`)\nInspired by Dojo `dojox/grid/DataGrid` and `dgrid`.",
+          "name": "FzlNgDataGridComponent",
+          "members": [
+            {
+              "kind": "field",
+              "name": "_cdr",
+              "type": {
+                "text": "ChangeDetectorRef | undefined"
+              },
+              "privacy": "private",
+              "readonly": true
+            },
+            {
+              "kind": "field",
+              "name": "fzlWidget",
+              "type": {
+                "text": "FzlWidgetController"
+              },
+              "readonly": true,
+              "default": "new FzlWidgetController(_host.nativeElement)"
+            },
+            {
+              "kind": "field",
+              "name": "store",
+              "type": {
+                "text": "FzlStore<any> | undefined"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "columns",
+              "type": {
+                "text": "FzlNgGridColumn[] | string"
+              },
+              "default": "[]"
+            },
+            {
+              "kind": "field",
+              "name": "structure",
+              "type": {
+                "text": "FzlNgGridColumn[] | string"
+              },
+              "default": "[]"
+            },
+            {
+              "kind": "field",
+              "name": "items",
+              "type": {
+                "text": "any[] | string"
+              },
+              "default": "[]"
+            },
+            {
+              "kind": "field",
+              "name": "selectionMode",
+              "type": {
+                "text": "FzlNgGridSelectionMode"
+              },
+              "default": "'single'"
+            },
+            {
+              "kind": "field",
+              "name": "selectedId",
+              "type": {
+                "text": "string | number | null"
+              },
+              "default": "null"
+            },
+            {
+              "kind": "field",
+              "name": "selectedIds",
+              "type": {
+                "text": "(string | number)[]"
+              },
+              "default": "[]"
+            },
+            {
+              "kind": "field",
+              "name": "searchable",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "true"
+            },
+            {
+              "kind": "field",
+              "name": "pagination",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "true"
+            },
+            {
+              "kind": "field",
+              "name": "pageSize",
+              "type": {
+                "text": "number"
+              },
+              "default": "10"
+            },
+            {
+              "kind": "field",
+              "name": "page",
+              "type": {
+                "text": "number"
+              },
+              "default": "1"
+            },
+            {
+              "kind": "field",
+              "name": "pageSizes",
+              "type": {
+                "text": "number[]"
+              },
+              "default": "[5, 10, 25, 50, 100]"
+            },
+            {
+              "kind": "field",
+              "name": "exportable",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "true"
+            },
+            {
+              "kind": "field",
+              "name": "emptyText",
+              "type": {
+                "text": "string"
+              },
+              "default": "'Nenhum registro encontrado.'"
+            },
+            {
+              "kind": "field",
+              "name": "select",
+              "default": "new EventEmitter<{ item: any; id: any }>()"
+            },
+            {
+              "kind": "field",
+              "name": "selectionChange",
+              "default": "new EventEmitter<{ selectedIds: any[]; selectedItems: any[] }>()"
+            },
+            {
+              "kind": "field",
+              "name": "delete",
+              "default": "new EventEmitter<{ item: any; id: any }>()"
+            },
+            {
+              "kind": "field",
+              "name": "pageChange",
+              "default": "new EventEmitter<{ page: number; pageSize: number }>()"
+            },
+            {
+              "kind": "field",
+              "name": "searchQuery",
+              "type": {
+                "text": "string"
+              },
+              "default": "''"
+            },
+            {
+              "kind": "field",
+              "name": "sortField",
+              "type": {
+                "text": "string | null"
+              },
+              "default": "null"
+            },
+            {
+              "kind": "field",
+              "name": "sortDesc",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false"
+            },
+            {
+              "kind": "field",
+              "name": "_unsubStore",
+              "type": {
+                "text": "() => void | undefined"
+              },
+              "privacy": "private"
+            },
+            {
+              "kind": "field",
+              "name": "parsedColumns",
+              "type": {
+                "text": "FzlNgGridColumn[]"
+              },
+              "readonly": true
+            },
+            {
+              "kind": "field",
+              "name": "activeColumns",
+              "type": {
+                "text": "FzlNgGridColumn[]"
+              },
+              "readonly": true
+            },
+            {
+              "kind": "field",
+              "name": "parsedItems",
+              "type": {
+                "text": "any[]"
+              },
+              "readonly": true
+            },
+            {
+              "kind": "field",
+              "name": "allFilteredItems",
+              "type": {
+                "text": "any[]"
+              },
+              "readonly": true
+            },
+            {
+              "kind": "field",
+              "name": "totalCount",
+              "type": {
+                "text": "number"
+              },
+              "readonly": true
+            },
+            {
+              "kind": "field",
+              "name": "effectivePageSize",
+              "type": {
+                "text": "number"
+              },
+              "readonly": true
+            },
+            {
+              "kind": "field",
+              "name": "totalPages",
+              "type": {
+                "text": "number"
+              },
+              "readonly": true
+            },
+            {
+              "kind": "field",
+              "name": "pagedItems",
+              "type": {
+                "text": "any[]"
+              },
+              "readonly": true
+            },
+            {
+              "kind": "field",
+              "name": "startRange",
+              "type": {
+                "text": "number"
+              },
+              "readonly": true
+            },
+            {
+              "kind": "field",
+              "name": "endRange",
+              "type": {
+                "text": "number"
+              },
+              "readonly": true
+            },
+            {
+              "kind": "field",
+              "name": "isAllSelected",
+              "type": {
+                "text": "boolean"
+              },
+              "readonly": true
+            },
+            {
+              "kind": "method",
+              "name": "ngOnInit",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              }
+            },
+            {
+              "kind": "method",
+              "name": "ngOnChanges",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "changes",
+                  "type": {
+                    "text": "SimpleChanges"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "ngOnDestroy",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              }
+            },
+            {
+              "kind": "method",
+              "name": "bindStore",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              }
+            },
+            {
+              "kind": "method",
+              "name": "unbindStore",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              }
+            },
+            {
+              "kind": "method",
+              "name": "getItemId",
+              "return": {
+                "type": {
+                  "text": "string | number"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "item",
+                  "type": {
+                    "text": "any"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "isRowSelected",
+              "return": {
+                "type": {
+                  "text": "boolean"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "item",
+                  "type": {
+                    "text": "any"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "formatCellValue",
+              "return": {
+                "type": {
+                  "text": "any"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "col",
+                  "type": {
+                    "text": "FzlNgGridColumn"
+                  }
+                },
+                {
+                  "name": "item",
+                  "type": {
+                    "text": "any"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "onSortClick",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "col",
+                  "type": {
+                    "text": "FzlNgGridColumn"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "onRowClick",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "item",
+                  "type": {
+                    "text": "any"
+                  }
+                },
+                {
+                  "name": "_event",
+                  "type": {
+                    "text": "Event"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "onRowCheckboxChange",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "item",
+                  "type": {
+                    "text": "any"
+                  }
+                },
+                {
+                  "name": "event",
+                  "type": {
+                    "text": "Event"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "toggleSelectMulti",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "id",
+                  "type": {
+                    "text": "string | number"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "onSelectAllToggle",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "event",
+                  "type": {
+                    "text": "Event"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "dispatchSelectionChange",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              }
+            },
+            {
+              "kind": "method",
+              "name": "onDeleteClick",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "event",
+                  "type": {
+                    "text": "Event"
+                  }
+                },
+                {
+                  "name": "item",
+                  "type": {
+                    "text": "any"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "onSearchInput",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "event",
+                  "type": {
+                    "text": "Event"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "setPage",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "p",
+                  "type": {
+                    "text": "number"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "onPageSizeChange",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "event",
+                  "type": {
+                    "text": "Event"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "exportCsv",
+              "return": {
+                "type": {
+                  "text": "string"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "filename",
+                  "default": "'grid-export.csv'",
+                  "type": {
+                    "text": "string"
+                  }
+                }
+              ]
+            }
+          ],
+          "events": [
+            {
+              "type": {
+                "text": "CustomEvent<{ item: any; id: any }>"
+              },
+              "description": "Dispatched when a row is selected in single mode",
+              "name": "fzl-grid-select"
+            },
+            {
+              "type": {
+                "text": "CustomEvent<{ selectedIds: any[]; selectedItems: any[] }>"
+              },
+              "description": "Dispatched when multiple selection changes",
+              "name": "fzl-grid-selection-change"
+            },
+            {
+              "type": {
+                "text": "CustomEvent<{ item: any; id: any }>"
+              },
+              "description": "Dispatched when delete button on a row is clicked",
+              "name": "fzl-grid-delete"
+            },
+            {
+              "type": {
+                "text": "CustomEvent<{ page: number; pageSize: number }>"
+              },
+              "description": "Dispatched when page or page size changes",
+              "name": "fzl-grid-page-change"
+            }
+          ],
+          "attributes": [
+            {
+              "type": {
+                "text": "string"
+              },
+              "description": "Column definitions array or JSON string",
+              "name": "columns",
+              "default": "'[]'"
+            },
+            {
+              "type": {
+                "text": "string"
+              },
+              "description": "Dojo alias for columns definition",
+              "name": "structure",
+              "default": "'[]'"
+            },
+            {
+              "type": {
+                "text": "string"
+              },
+              "description": "Row items array or JSON string",
+              "name": "items",
+              "default": "'[]'"
+            },
+            {
+              "type": {
+                "text": "'none' | 'single' | 'multiple'"
+              },
+              "description": "Selection mode",
+              "name": "selection-mode",
+              "default": "'single'"
+            },
+            {
+              "type": {
+                "text": "string | number | null"
+              },
+              "description": "Selected row identity for single selection",
+              "name": "selected-id",
+              "default": "null"
+            },
+            {
+              "type": {
+                "text": "string"
+              },
+              "description": "Selected row identities for multiple selection",
+              "name": "selected-ids",
+              "default": "'[]'"
+            },
+            {
+              "type": {
+                "text": "boolean"
+              },
+              "description": "Whether to show the search toolbar",
+              "name": "searchable",
+              "default": "true"
+            },
+            {
+              "type": {
+                "text": "boolean"
+              },
+              "description": "Whether to enable pagination",
+              "name": "pagination",
+              "default": "true"
+            },
+            {
+              "type": {
+                "text": "number"
+              },
+              "description": "Number of items per page",
+              "name": "page-size",
+              "default": "10"
+            },
+            {
+              "type": {
+                "text": "number"
+              },
+              "description": "Current active page (1-based)",
+              "name": "page",
+              "default": "1"
+            },
+            {
+              "type": {
+                "text": "string"
+              },
+              "description": "Available page sizes",
+              "name": "page-sizes",
+              "default": "'[5, 10, 25, 50, 100]'"
+            },
+            {
+              "type": {
+                "text": "boolean"
+              },
+              "description": "Whether to show CSV export button",
+              "name": "exportable",
+              "default": "true"
+            },
+            {
+              "type": {
+                "text": "string"
+              },
+              "description": "Text when grid is empty",
+              "name": "empty-text",
+              "default": "'Nenhum registro encontrado.'"
+            }
+          ],
+          "tagName": "fzl-ng-data-grid",
+          "customElement": true
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "FzlNgDataGridComponent",
+          "declaration": {
+            "name": "FzlNgDataGridComponent",
+            "module": "src/components/grid/data-grid.component.ts"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/components/button/button.component.ts",
+      "declarations": [
+        {
+          "kind": "class",
+          "description": "Angular Elements Custom Element button with Shadow DOM encapsulation.",
+          "name": "FzlNgButtonComponent",
+          "cssParts": [
+            {
+              "description": "The internal native `<button>` element",
+              "name": "button"
+            }
+          ],
+          "slots": [
+            {
+              "description": "Content to be displayed inside the button",
+              "name": ""
+            }
+          ],
+          "members": [
+            {
+              "kind": "field",
+              "name": "fzlWidget",
+              "type": {
+                "text": "FzlWidgetController"
+              },
+              "readonly": true,
+              "default": "new FzlWidgetController(_host.nativeElement)"
+            },
+            {
+              "kind": "field",
+              "name": "_typematicCleanup",
+              "type": {
+                "text": "(() => void) | null"
+              },
+              "privacy": "private",
+              "default": "null"
+            },
+            {
+              "kind": "field",
+              "name": "_lastTypematicTick",
+              "type": {
+                "text": "boolean"
+              },
+              "privacy": "private",
+              "default": "false"
+            },
+            {
+              "kind": "field",
+              "name": "variant",
+              "type": {
+                "text": "FzlButtonVariant"
+              },
+              "default": "'primary'"
+            },
+            {
+              "kind": "field",
+              "name": "size",
+              "type": {
+                "text": "FzlButtonSize"
+              },
+              "default": "'md'"
+            },
+            {
+              "kind": "field",
+              "name": "disabled",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false"
+            },
+            {
+              "kind": "field",
+              "name": "type",
+              "type": {
+                "text": "'button' | 'submit' | 'reset'"
+              },
+              "default": "'button'"
+            },
+            {
+              "kind": "field",
+              "name": "typematic",
+              "type": {
+                "text": "boolean | string"
+              },
+              "default": "false"
+            },
+            {
+              "kind": "field",
+              "name": "fzlClick",
+              "default": "new EventEmitter<{ originalEvent: MouseEvent | KeyboardEvent; repeatCount?: number }>()"
+            },
+            {
+              "kind": "field",
+              "name": "isTypematic",
+              "type": {
+                "text": "boolean"
+              },
+              "readonly": true
+            },
+            {
+              "kind": "method",
+              "name": "ngOnInit",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              }
+            },
+            {
+              "kind": "method",
+              "name": "ngOnChanges",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "changes",
+                  "type": {
+                    "text": "SimpleChanges"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "ngOnDestroy",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              }
+            },
+            {
+              "kind": "method",
+              "name": "_syncTypematic",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              }
+            },
+            {
+              "kind": "method",
+              "name": "onClick",
+              "parameters": [
+                {
+                  "name": "event",
+                  "type": {
+                    "text": "MouseEvent"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "field",
+              "name": "adoptedStyleSheets",
+              "type": {
+                "text": "array"
+              },
+              "default": "[tokensSheet, ...root.adoptedStyleSheets]"
+            }
+          ],
+          "events": [
+            {
+              "type": {
+                "text": "CustomEvent<{ originalEvent: MouseEvent | KeyboardEvent; repeatCount?: number }>"
+              },
+              "description": "Dispatched when the button is activated",
+              "name": "fzl-click"
+            },
+            {
+              "type": {
+                "text": "CustomEvent<{ widgetId: string; originalEvent: FocusEvent }>"
+              },
+              "description": "Dispatched when the widget gains focus",
+              "name": "fzl-focus"
+            },
+            {
+              "type": {
+                "text": "CustomEvent<{ widgetId: string; originalEvent: FocusEvent }>"
+              },
+              "description": "Dispatched when the widget loses focus",
+              "name": "fzl-blur"
+            }
+          ],
+          "attributes": [
+            {
+              "type": {
+                "text": "'primary' | 'secondary' | 'danger'"
+              },
+              "description": "Visual appearance variant",
+              "name": "variant",
+              "default": "'primary'"
+            },
+            {
+              "type": {
+                "text": "'sm' | 'md' | 'lg'"
+              },
+              "description": "Size scale of the button",
+              "name": "size",
+              "default": "'md'"
+            },
+            {
+              "type": {
+                "text": "boolean"
+              },
+              "description": "Whether the button is disabled",
+              "name": "disabled",
+              "default": "false"
+            },
+            {
+              "type": {
+                "text": "'button' | 'submit' | 'reset'"
+              },
+              "description": "Form button behavior",
+              "name": "type",
+              "default": "'button'"
+            },
+            {
+              "type": {
+                "text": "boolean"
+              },
+              "description": "Enables typematic repeat firing of `fzl-click` while held down",
+              "name": "typematic",
+              "default": "false"
+            }
+          ],
+          "tagName": "fzl-ng-button",
+          "customElement": true
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "FzlNgButtonComponent",
+          "declaration": {
+            "name": "FzlNgButtonComponent",
+            "module": "src/components/button/button.component.ts"
           }
         }
       ]

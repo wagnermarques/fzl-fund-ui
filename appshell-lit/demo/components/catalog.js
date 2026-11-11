@@ -590,6 +590,14 @@ export const catalog = [
         manifest: es6Manifest,
         load: () => import('@fzl/webcomponents-es6'),
       },
+      {
+        id: 'angular',
+        label: 'Angular',
+        tag: 'fzl-ng-data-grid',
+        packageName: '@fzl/webcomponents-angular',
+        manifest: angularManifest,
+        load: () => import('@fzl/webcomponents-angular'),
+      },
     ],
   },
   {

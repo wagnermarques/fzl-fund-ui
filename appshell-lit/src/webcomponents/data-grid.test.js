@@ -8,6 +8,7 @@ import {
   exportToCsv,
 } from '@fzl/webcomponents-lit/data-grid';
 import { FzlEs6DataGrid } from '@fzl/webcomponents-es6';
+import { FzlNgDataGridComponent } from '@fzl/webcomponents-angular';
 
 describe('DataGrid Helper Functions', () => {
   const sampleColumns = [
@@ -244,5 +245,60 @@ describe('FzlEs6DataGrid (Vanilla ES6 Implementation)', () => {
     expect(grid.page).toBe(2);
     rows = grid.shadowRoot.querySelectorAll('tbody tr[data-index]');
     expect(rows.length).toBe(1);
+  });
+});
+
+describe('FzlNgDataGridComponent (Angular Elements)', () => {
+  it('instancia a classe do componente Angular e valida lógica de colunas e itens', () => {
+    const hostEl = document.createElement('div');
+    const comp = new FzlNgDataGridComponent({ nativeElement: hostEl });
+
+    comp.columns = [
+      { field: 'ticker', label: 'Ticker' },
+      { field: 'price', label: 'Preço' }
+    ];
+    comp.items = [
+      { id: '1', ticker: 'FZL11', price: 100 },
+      { id: '2', ticker: 'ALZR11', price: 110 }
+    ];
+
+    expect(comp.parsedColumns).toHaveLength(2);
+    expect(comp.allFilteredItems).toHaveLength(2);
+    expect(comp.totalCount).toBe(2);
+    expect(comp.isRowSelected({ id: '1' })).toBe(false);
+
+    comp.selectedId = '1';
+    expect(comp.isRowSelected({ id: '1' })).toBe(true);
+
+    // Teste de exportação CSV
+    const csv = comp.exportCsv('test-ng.csv');
+    expect(csv).toContain('"Ticker";"Preço"');
+    expect(csv).toContain('"FZL11";"100"');
+  });
+
+  it('integra com FzlStore e suporta filtragem e paginação no Angular', () => {
+    const hostEl = document.createElement('div');
+    const comp = new FzlNgDataGridComponent({ nativeElement: hostEl });
+
+    const store = new FzlMemoryStore({
+      data: [
+        { id: '1', ticker: 'FZL11', name: 'FZL Fund' },
+        { id: '2', ticker: 'XPML11', name: 'XP Malls' },
+        { id: '3', ticker: 'KNRI11', name: 'Kinea Renda' }
+      ],
+      idProperty: 'id'
+    });
+
+    comp.store = store;
+    comp.pageSize = 2;
+    comp.page = 1;
+
+    expect(comp.totalCount).toBe(3);
+    expect(comp.totalPages).toBe(2);
+    expect(comp.pagedItems).toHaveLength(2);
+
+    comp.setPage(2);
+    expect(comp.page).toBe(2);
+    expect(comp.pagedItems).toHaveLength(1);
   });
 });

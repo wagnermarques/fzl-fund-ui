@@ -5,12 +5,14 @@ import { FzlNgButtonComponent } from './components/button/button.component';
 import { FzlNgCrumbComponent } from './components/crumb/crumb.component';
 import { FzlNgCardListComponent } from './components/card-list/card-list.component';
 import { FzlNgCardComponent } from './components/card-list/card.component';
+import { FzlNgDataGridComponent } from './components/grid/data-grid.component';
 
 export * from '@fzl/core';
 export * from './components/button/button.component';
 export * from './components/crumb/crumb.component';
 export * from './components/card-list/card.component';
 export * from './components/card-list/card-list.component';
+export * from './components/grid/data-grid.component';
 
 /**
  * Registers all Angular Elements Web Components into customElements registry
@@ -50,6 +52,13 @@ export async function registerFzlAngularElements(): Promise<void> {
       injector: app.injector
     });
     customElements.define('fzl-ng-card', CardElement);
+  }
+
+  if (!customElements.get('fzl-ng-data-grid')) {
+    const DataGridElement = createCustomElement(FzlNgDataGridComponent, {
+      injector: app.injector
+    });
+    customElements.define('fzl-ng-data-grid', DataGridElement);
   }
 }
 

@@ -1,6 +1,6 @@
-# Grade de Dados Reativa (`fzl-data-grid` / `fzl-es6-data-grid`)
+# Grade de Dados Reativa (`fzl-data-grid` / `fzl-es6-data-grid` / `fzl-ng-data-grid`)
 
-> Componente de tabela/grade de dados tabular para Web Components, inspirado em `dojox/grid/DataGrid`, `dojox/grid/EnhancedGrid` e `dgrid`, com integração reativa ao `FzlStore` (`dojo/store`), paginação, ordenação dinâmica, busca rápida, seleção simples ou múltipla com checkboxes e exportação para CSV.
+> Componente de tabela/grade de dados tabular para Web Components, inspirado em `dojox/grid/DataGrid`, `dojox/grid/EnhancedGrid` e `dgrid`, com integração reativa ao `FzlStore` (`dojo/store`), paginação, ordenação dinâmica, busca rápida, seleção simples ou múltipla com checkboxes e exportação para CSV. Disponível em 3 engines nativas: **Lit**, **Vanilla ES6** e **Angular Elements**.
 
 ---
 
@@ -8,7 +8,7 @@
 
 No Dojo Toolkit, as grades de dados do namespace `dijit` e `dojox` (`dojox/grid/DataGrid` e `dojox/grid/EnhancedGrid`) representavam os componentes mais poderosos e complexos da plataforma, combinando estruturas de células flexíveis, adaptadores de stores de dados, modelos de paginação e seleção múltipla.
 
-O `<fzl-data-grid>` (versão **Lit** `<fzl-lit-data-grid>`) e o `<fzl-es6-data-grid>` (versão **Vanilla ES6**) modernizam esse legado para **W3C Web Components nativos**:
+O `<fzl-data-grid>` (versão **Lit** `<fzl-lit-data-grid>`), o `<fzl-es6-data-grid>` (versão **Vanilla ES6**) e o `<fzl-ng-data-grid>` (versão **Angular Elements**) modernizam esse legado para **W3C Web Components nativos**:
 
 1. **Reatividade via Store (`dojo/store`)**:
    - Assina automaticamente as notificações de `store.observe()`. Mutações no store (`add`, `put`, `remove`) refletem instantaneamente no DOM da tabela sem recarregar a tela.
@@ -91,6 +91,39 @@ O `<fzl-data-grid>` (versão **Lit** `<fzl-lit-data-grid>`) e o `<fzl-es6-data-g
 
 <script type="module">
   import '@fzl/webcomponents-es6';
+</script>
+```
+
+### C. Em Angular Elements (`<fzl-ng-data-grid>`)
+
+Como Custom Element W3C registrado via Angular Elements (`@fzl/webcomponents-angular`):
+
+```html
+<fzl-ng-data-grid
+  id="grade-ng"
+  selection-mode="multiple"
+  page-size="10"
+  exportable>
+</fzl-ng-data-grid>
+
+<script type="module">
+  import '@fzl/webcomponents-angular';
+  import { FzlMemoryStore } from '@fzl/core';
+
+  const grid = document.getElementById('grade-ng');
+  grid.columns = [
+    { field: 'ticker', label: 'Ticker' },
+    { field: 'nome', label: 'Nome' },
+    { field: 'preco', label: 'Preço', align: 'right' }
+  ];
+  grid.items = [
+    { id: '1', ticker: 'FZL11', nome: 'FZL Real Estate', preco: 'R$ 104,50' },
+    { id: '2', ticker: 'ALZR11', nome: 'Alianza Trust', preco: 'R$ 112,20' }
+  ];
+
+  grid.addEventListener('fzl-grid-selection-change', (e) => {
+    console.log('Angular Grid seleção alterada:', e.detail);
+  });
 </script>
 ```
 

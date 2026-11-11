@@ -805,6 +805,92 @@ store.observe((event) => {
 // 4. Inserir ou atualizar dados
 store.put({ id: '1', ticker: 'FZL11', name: 'FZL Fund', price: 108.0 });
 </code></pre>
+
+      <!-- Sessão Programadores: Acessibilidade & Novos Widgets A11y -->
+      <h2 class="section-title">
+        <span>♿</span> Sessão Programadores: Acessibilidade & Novos Widgets A11y (Roadmap WCAG 2.2 / LBI)
+      </h2>
+      <p style="font-size: 0.95rem; line-height: 1.6; color: var(--md-sys-color-on-surface-variant, #475569); max-width: 950px;">
+        Diretrizes técnicas para desenvolvedores do monorepo e equipes de produtos que integram o AppShell.
+        O sistema adota o padrão <strong>Docs-as-Code</strong> com especificação completa documentada no
+        <strong><a href="#/docs" style="color: var(--_fzl-color-primary, #0284c7); text-decoration: underline;">ADR-008 (docs/architecture/008-accessibility-architecture-and-widgets.md)</a></strong>.
+      </p>
+
+      <div class="cards-grid" style="margin-top: 16px;">
+        <div class="card">
+          <div class="card-header">
+            <span>🔊</span> &lt;fzl-lit-speech-reader&gt; (Text-to-Speech)
+          </div>
+          <p>
+            Vocalização nativa de conteúdo textual através da <code>Web Speech API</code> (<code>window.speechSynthesis</code>).
+            Permite aos cartões, artigos e modais serem ouvidos por pessoas com baixa visão, dislexia ou em multitarefa,
+            com destaque visual sincronizado (<em>sentence highlighting</em> via <code>onboundary</code>).
+          </p>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <span>⏭️</span> &lt;fzl-lit-skip-link&gt; (Pular Navegação)
+          </div>
+          <p>
+            Em conformidade com o <strong>WCAG 2.4.1 (Bypass Blocks - Nível A)</strong>. Link invisível no topo da página
+            que salta para <code>#main-content</code> ao receber foco por teclado (<code>Tab</code>), poupando usuários de
+            navegar repetidamente pelos menus.
+          </p>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <span>📏</span> &lt;fzl-lit-reading-guide&gt; (Régua de Foco)
+          </div>
+          <p>
+            Suporte cognitivo para <strong>TDAH, dislexia e rastreamento visual (WCAG 1.4.8 AAA)</strong>. Régua semitransparente
+            que isola a linha de leitura atual e reduz a distração visual do restante da tela.
+          </p>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <span>🛡️</span> &lt;fzl-lit-focus-trap&gt; (Guardião de Foco)
+          </div>
+          <p>
+            Em conformidade com o <strong>WCAG 2.1.2</strong>. Garante que o ciclo de navegação por <code>Tab</code> permaneça
+            estritamente confinado dentro de modais, gavetas e menus laterais abertos, sem vazar para elementos inativos de fundo.
+          </p>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <span>⌨️</span> &lt;fzl-lit-keyboard-shortcuts&gt;
+          </div>
+          <p>
+            Central de ajuda acessível acionada por tecla única (<code>?</code> ou <code>Alt + /</code>), exibindo a lista
+            de atalhos rápidos do sistema para navegação sem mouse (<strong>WCAG 2.1.4</strong>).
+          </p>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <span>🤟</span> &lt;fzl-lit-vlibras-widget&gt; (LIBRAS)
+          </div>
+          <p>
+            Conformidade com a <strong>Lei Brasileira de Inclusão (LBI nº 13.146/2015)</strong> e e-MAG. Integração padronizada
+            com o avatar 3D do VLibras para tradução de interface e relatórios para a Língua Brasileira de Sinais.
+          </p>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top: 16px; background: var(--md-sys-color-surface-container-lowest, #f8fafc);">
+        <h4 style="margin: 0 0 8px; font-size: 0.95rem; font-weight: 600;">
+          💡 Regras Essenciais para o Desenvolvedor:
+        </h4>
+        <ul style="font-size: 0.88rem; line-height: 1.6; margin: 0; padding-left: 20px; color: var(--md-sys-color-on-surface-variant, #475569);">
+          <li><strong>Ativação por Gesto do Usuário:</strong> O <code>speechSynthesis.speak()</code> só pode ser acionado por clique ou teclado explícito do usuário.</li>
+          <li><strong>Mitigação do Bug dos 15 Segundos no Chromium:</strong> Para textos longos, segmente o conteúdo em frases antes de vocalizar.</li>
+          <li><strong>Descarte Limpo (own / disconnectedCallback):</strong> Sempre invoque <code>speechSynthesis.cancel()</code> ao desmontar o componente ou trocar de rota.</li>
+          <li><strong>Isolamento Multi-Tenant:</strong> As preferências de acessibilidade e voz devem usar chaves de <code>localStorage</code> com prefixo da aplicação (<code>&lt;app&gt;:a11y:preferences</code>).</li>
+        </ul>
+      </div>
     `;
   }
 }

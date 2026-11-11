@@ -32,6 +32,7 @@ flowchart LR
 - [ADR-005: Shared Widget Core, Utilities, and Mixins (`@fzl/core`)](./architecture/005-widget-core-and-mixins.md)
 - [ADR-006: Reactive Store & State Management Architecture](./architecture/006-reactive-store-and-data-model.md)
 - [ADR-007: Plataformas de Gestão de Consentimento (CMPs), Cookiebot e Alternativas Livres](./architecture/007-consent-management-platforms-and-cookiebot.md)
+- [ADR-008: Arquitetura de Acessibilidade (WCAG 2.2 / LBI), Leitor de Texto em Voz Alta (TTS) e Catálogo de Widgets](./architecture/008-accessibility-architecture-and-widgets.md)
 
 ### Feature Roadmaps & Planning (`docs/roadmap/`)
 - [Internationalization (i18n) & Localization (l10n) Roadmap](./roadmap/i18n-roadmap.md)

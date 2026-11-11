@@ -214,6 +214,22 @@
             "name": "*",
             "module": "src/components/reader/reader-content.component"
           }
+        },
+        {
+          "kind": "js",
+          "name": "*",
+          "declaration": {
+            "name": "*",
+            "module": "src/components/interview-transcriber/interview-transcriber.types"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "*",
+          "declaration": {
+            "name": "*",
+            "module": "src/components/interview-transcriber/interview-transcriber.component"
+          }
         }
       ]
     },
@@ -2340,6 +2356,746 @@
           "declaration": {
             "name": "FzlLitCard",
             "module": "src/components/card-list/card.component.ts"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/components/avatar-upload/avatar-upload.component.ts",
+      "declarations": [
+        {
+          "kind": "class",
+          "description": "Reactive Lit-based Avatar Upload & Circular Crop Web Component.\n\nProvides a round avatar preview with drag-and-drop, file picker,\nand an interactive circular crop modal (pan, zoom, rotation) that\ngenerates both Data URL and Blob outputs for backend integration.",
+          "name": "FzlLitAvatarUpload",
+          "cssParts": [
+            {
+              "description": "The root container",
+              "name": "container"
+            },
+            {
+              "description": "The circular avatar trigger element",
+              "name": "avatar"
+            },
+            {
+              "description": "The cropped avatar image element",
+              "name": "image"
+            },
+            {
+              "description": "The camera badge icon overlay",
+              "name": "badge"
+            },
+            {
+              "description": "The crop modal overlay",
+              "name": "modal"
+            },
+            {
+              "description": "The modal dialog box",
+              "name": "dialog"
+            },
+            {
+              "description": "The action buttons below the avatar",
+              "name": "actions"
+            }
+          ],
+          "members": [
+            {
+              "kind": "field",
+              "name": "src",
+              "type": {
+                "text": "string"
+              },
+              "default": "''",
+              "description": "Current avatar image source (URL or Data URL)",
+              "attribute": "src",
+              "reflects": true
+            },
+            {
+              "kind": "field",
+              "name": "name",
+              "type": {
+                "text": "string"
+              },
+              "default": "''",
+              "description": "User name (used for alt text and fallback initials)",
+              "attribute": "name"
+            },
+            {
+              "kind": "field",
+              "name": "size",
+              "type": {
+                "text": "number"
+              },
+              "default": "120",
+              "description": "Diameter of the avatar in pixels",
+              "attribute": "size"
+            },
+            {
+              "kind": "field",
+              "name": "outputSize",
+              "type": {
+                "text": "number"
+              },
+              "default": "360",
+              "description": "Width and height of the exported square image in pixels",
+              "attribute": "outputSize"
+            },
+            {
+              "kind": "field",
+              "name": "outputFormat",
+              "type": {
+                "text": "'image/png' | 'image/jpeg' | 'image/webp'"
+              },
+              "default": "'image/png'",
+              "description": "Format of the exported image",
+              "attribute": "outputFormat"
+            },
+            {
+              "kind": "field",
+              "name": "outputQuality",
+              "type": {
+                "text": "number"
+              },
+              "default": "0.92",
+              "description": "Compression quality (0 to 1) for JPEG/WebP",
+              "attribute": "outputQuality"
+            },
+            {
+              "kind": "field",
+              "name": "accept",
+              "type": {
+                "text": "string"
+              },
+              "default": "'image/png, image/jpeg, image/webp, image/gif'",
+              "description": "Accepted MIME types for the file picker",
+              "attribute": "accept"
+            },
+            {
+              "kind": "field",
+              "name": "maxFileSize",
+              "description": "Maximum allowed file size in bytes (default: 5MB)",
+              "attribute": "maxFileSize"
+            },
+            {
+              "kind": "field",
+              "name": "disabled",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false",
+              "description": "Whether the component is disabled",
+              "attribute": "disabled",
+              "reflects": true
+            },
+            {
+              "kind": "field",
+              "name": "readonly",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false",
+              "description": "Whether the avatar is read-only (displays avatar without edit actions)",
+              "attribute": "readonly",
+              "reflects": true
+            },
+            {
+              "kind": "field",
+              "name": "buttonLabel",
+              "type": {
+                "text": "string"
+              },
+              "default": "'Alterar foto'",
+              "description": "Label for the edit button",
+              "attribute": "buttonLabel"
+            },
+            {
+              "kind": "field",
+              "name": "cropTitle",
+              "type": {
+                "text": "string"
+              },
+              "default": "'Recortar foto de perfil'",
+              "description": "Modal title",
+              "attribute": "cropTitle"
+            },
+            {
+              "kind": "field",
+              "name": "_isDragOver",
+              "type": {
+                "text": "boolean"
+              },
+              "privacy": "private",
+              "default": "false"
+            },
+            {
+              "kind": "field",
+              "name": "_isCropModalOpen",
+              "type": {
+                "text": "boolean"
+              },
+              "privacy": "private",
+              "default": "false"
+            },
+            {
+              "kind": "field",
+              "name": "_zoom",
+              "type": {
+                "text": "number"
+              },
+              "privacy": "private",
+              "default": "1"
+            },
+            {
+              "kind": "field",
+              "name": "_minZoom",
+              "type": {
+                "text": "number"
+              },
+              "privacy": "private",
+              "default": "1"
+            },
+            {
+              "kind": "field",
+              "name": "_maxZoom",
+              "type": {
+                "text": "number"
+              },
+              "privacy": "private",
+              "default": "4"
+            },
+            {
+              "kind": "field",
+              "name": "_panX",
+              "type": {
+                "text": "number"
+              },
+              "privacy": "private",
+              "default": "0"
+            },
+            {
+              "kind": "field",
+              "name": "_panY",
+              "type": {
+                "text": "number"
+              },
+              "privacy": "private",
+              "default": "0"
+            },
+            {
+              "kind": "field",
+              "name": "_rotation",
+              "type": {
+                "text": "number"
+              },
+              "privacy": "private",
+              "default": "0"
+            },
+            {
+              "kind": "field",
+              "name": "_isPanning",
+              "type": {
+                "text": "boolean"
+              },
+              "privacy": "private",
+              "default": "false"
+            },
+            {
+              "kind": "field",
+              "name": "_rawLoadedImage",
+              "type": {
+                "text": "HTMLImageElement | null"
+              },
+              "privacy": "private",
+              "default": "null"
+            },
+            {
+              "kind": "field",
+              "name": "_selectedFile",
+              "type": {
+                "text": "File | null"
+              },
+              "privacy": "private",
+              "default": "null"
+            },
+            {
+              "kind": "field",
+              "name": "_pointerStartX",
+              "type": {
+                "text": "number"
+              },
+              "privacy": "private",
+              "default": "0"
+            },
+            {
+              "kind": "field",
+              "name": "_pointerStartY",
+              "type": {
+                "text": "number"
+              },
+              "privacy": "private",
+              "default": "0"
+            },
+            {
+              "kind": "field",
+              "name": "_panStartX",
+              "type": {
+                "text": "number"
+              },
+              "privacy": "private",
+              "default": "0"
+            },
+            {
+              "kind": "field",
+              "name": "_panStartY",
+              "type": {
+                "text": "number"
+              },
+              "privacy": "private",
+              "default": "0"
+            },
+            {
+              "kind": "method",
+              "name": "_cleanupCropState",
+              "privacy": "private"
+            },
+            {
+              "kind": "method",
+              "name": "_computeInitials",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "string"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "name",
+                  "type": {
+                    "text": "string"
+                  }
+                }
+              ],
+              "description": "Compute initials from the user name"
+            },
+            {
+              "kind": "method",
+              "name": "_triggerFileInput",
+              "privacy": "private",
+              "description": "Open file picker"
+            },
+            {
+              "kind": "method",
+              "name": "_handleFileSelected",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "e",
+                  "type": {
+                    "text": "Event"
+                  }
+                }
+              ],
+              "description": "Handle file input selection"
+            },
+            {
+              "kind": "method",
+              "name": "_processSelectedFile",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "file",
+                  "type": {
+                    "text": "File"
+                  }
+                }
+              ],
+              "description": "Validate and prepare the selected image file"
+            },
+            {
+              "kind": "method",
+              "name": "_emitError",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "error",
+                  "type": {
+                    "text": "FzlAvatarErrorEventDetail['error']"
+                  }
+                },
+                {
+                  "name": "message",
+                  "type": {
+                    "text": "string"
+                  }
+                },
+                {
+                  "name": "file",
+                  "optional": true,
+                  "type": {
+                    "text": "File"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "_initCropState",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "img",
+                  "type": {
+                    "text": "HTMLImageElement"
+                  }
+                }
+              ],
+              "description": "Calculate initial zoom and bounds"
+            },
+            {
+              "kind": "method",
+              "name": "_drawCropCanvas",
+              "privacy": "private",
+              "description": "Draw image and circular crop guide on the modal canvas"
+            },
+            {
+              "kind": "method",
+              "name": "_handlePointerDown",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "e",
+                  "type": {
+                    "text": "PointerEvent"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "_handlePointerMove",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "e",
+                  "type": {
+                    "text": "PointerEvent"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "_handlePointerUp",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "e",
+                  "type": {
+                    "text": "PointerEvent"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "_handleWheel",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "e",
+                  "type": {
+                    "text": "WheelEvent"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "_handleZoomSliderChange",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "e",
+                  "type": {
+                    "text": "Event"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "_rotateClockwise",
+              "privacy": "private"
+            },
+            {
+              "kind": "method",
+              "name": "_zoomIn",
+              "privacy": "private"
+            },
+            {
+              "kind": "method",
+              "name": "_zoomOut",
+              "privacy": "private"
+            },
+            {
+              "kind": "method",
+              "name": "_closeCropModal",
+              "privacy": "private"
+            },
+            {
+              "kind": "method",
+              "name": "_applyCrop",
+              "privacy": "private",
+              "description": "Apply crop, export Data URL and Blob, and dispatch change event"
+            },
+            {
+              "kind": "method",
+              "name": "_handleRemoveAvatar",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "e",
+                  "type": {
+                    "text": "Event"
+                  }
+                }
+              ],
+              "description": "Remove avatar"
+            },
+            {
+              "kind": "method",
+              "name": "_handleDragOver",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "e",
+                  "type": {
+                    "text": "DragEvent"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "_handleDragLeave",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "e",
+                  "type": {
+                    "text": "DragEvent"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "_handleDrop",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "e",
+                  "type": {
+                    "text": "DragEvent"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "_handleKeyDown",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "e",
+                  "type": {
+                    "text": "KeyboardEvent"
+                  }
+                }
+              ]
+            }
+          ],
+          "events": [
+            {
+              "name": "fzl-avatar-error",
+              "type": {
+                "text": "CustomEvent<FzlAvatarErrorEventDetail>"
+              },
+              "description": "Dispatched when validation fails (size, type)"
+            },
+            {
+              "name": "fzl-avatar-change",
+              "type": {
+                "text": "CustomEvent<FzlAvatarChangeEventDetail>"
+              },
+              "description": "Dispatched when the user crops and applies a new avatar"
+            },
+            {
+              "name": "fzl-avatar-remove",
+              "type": {
+                "text": "CustomEvent<void>"
+              },
+              "description": "Dispatched when the user removes their avatar"
+            },
+            {
+              "type": {
+                "text": "CustomEvent<{ widgetId: string; originalEvent: FocusEvent }>"
+              },
+              "description": "Dispatched when the widget gains focus",
+              "name": "fzl-focus"
+            },
+            {
+              "type": {
+                "text": "CustomEvent<{ widgetId: string; originalEvent: FocusEvent }>"
+              },
+              "description": "Dispatched when the widget loses focus",
+              "name": "fzl-blur"
+            }
+          ],
+          "attributes": [
+            {
+              "name": "src",
+              "type": {
+                "text": "string"
+              },
+              "default": "''",
+              "description": "Current avatar image source (URL or Data URL)",
+              "fieldName": "src"
+            },
+            {
+              "name": "name",
+              "type": {
+                "text": "string"
+              },
+              "default": "''",
+              "description": "User name (used for alt text and fallback initials)",
+              "fieldName": "name"
+            },
+            {
+              "name": "size",
+              "type": {
+                "text": "number"
+              },
+              "default": "120",
+              "description": "Diameter of the avatar in pixels",
+              "fieldName": "size"
+            },
+            {
+              "name": "outputSize",
+              "type": {
+                "text": "number"
+              },
+              "default": "360",
+              "description": "Width and height of the exported square image in pixels",
+              "fieldName": "outputSize"
+            },
+            {
+              "name": "outputFormat",
+              "type": {
+                "text": "'image/png' | 'image/jpeg' | 'image/webp'"
+              },
+              "default": "'image/png'",
+              "description": "Format of the exported image",
+              "fieldName": "outputFormat"
+            },
+            {
+              "name": "outputQuality",
+              "type": {
+                "text": "number"
+              },
+              "default": "0.92",
+              "description": "Compression quality (0 to 1) for JPEG/WebP",
+              "fieldName": "outputQuality"
+            },
+            {
+              "name": "accept",
+              "type": {
+                "text": "string"
+              },
+              "default": "'image/png, image/jpeg, image/webp, image/gif'",
+              "description": "Accepted MIME types for the file picker",
+              "fieldName": "accept"
+            },
+            {
+              "name": "maxFileSize",
+              "description": "Maximum allowed file size in bytes (default: 5MB)",
+              "fieldName": "maxFileSize"
+            },
+            {
+              "name": "disabled",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false",
+              "description": "Whether the component is disabled",
+              "fieldName": "disabled"
+            },
+            {
+              "name": "readonly",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false",
+              "description": "Whether the avatar is read-only (displays avatar without edit actions)",
+              "fieldName": "readonly"
+            },
+            {
+              "name": "buttonLabel",
+              "type": {
+                "text": "string"
+              },
+              "default": "'Alterar foto'",
+              "description": "Label for the edit button",
+              "fieldName": "buttonLabel"
+            },
+            {
+              "name": "cropTitle",
+              "type": {
+                "text": "string"
+              },
+              "default": "'Recortar foto de perfil'",
+              "description": "Modal title",
+              "fieldName": "cropTitle"
+            }
+          ],
+          "mixins": [
+            {
+              "name": "FzlWidgetMixin",
+              "package": "@fzl/core"
+            }
+          ],
+          "superclass": {
+            "name": "LitElement",
+            "package": "lit"
+          },
+          "tagName": "fzl-lit-avatar-upload",
+          "customElement": true
+        },
+        {
+          "kind": "variable",
+          "name": "dataUrl"
+        },
+        {
+          "kind": "variable",
+          "name": "blob",
+          "default": "await new Promise<Blob | null>((resolve) => { exportCanvas.toBlob(resolve, this.outputFormat, this.outputQuality); })"
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "FzlLitAvatarUpload",
+          "declaration": {
+            "name": "FzlLitAvatarUpload",
+            "module": "src/components/avatar-upload/avatar-upload.component.ts"
+          }
+        },
+        {
+          "kind": "custom-element-definition",
+          "name": "fzl-lit-avatar-upload",
+          "declaration": {
+            "name": "FzlLitAvatarUpload",
+            "module": "src/components/avatar-upload/avatar-upload.component.ts"
           }
         }
       ]
@@ -5980,700 +6736,231 @@
     },
     {
       "kind": "javascript-module",
-      "path": "src/components/avatar-upload/avatar-upload.component.ts",
+      "path": "src/components/grid/data-grid.component.ts",
       "declarations": [
         {
           "kind": "class",
-          "description": "Reactive Lit-based Avatar Upload & Circular Crop Web Component.\n\nProvides a round avatar preview with drag-and-drop, file picker,\nand an interactive circular crop modal (pan, zoom, rotation) that\ngenerates both Data URL and Blob outputs for backend integration.",
-          "name": "FzlLitAvatarUpload",
-          "cssParts": [
-            {
-              "description": "The root container",
-              "name": "container"
-            },
-            {
-              "description": "The circular avatar trigger element",
-              "name": "avatar"
-            },
-            {
-              "description": "The cropped avatar image element",
-              "name": "image"
-            },
-            {
-              "description": "The camera badge icon overlay",
-              "name": "badge"
-            },
-            {
-              "description": "The crop modal overlay",
-              "name": "modal"
-            },
-            {
-              "description": "The modal dialog box",
-              "name": "dialog"
-            },
-            {
-              "description": "The action buttons below the avatar",
-              "name": "actions"
-            }
-          ],
+          "description": "Data Grid Component inspired by Dojo / Dijit `dojox/grid/DataGrid` and `dgrid`.\n\nDriven by `FzlStore` (`dojo/store`), offering reactive live updates via\n`store.observe()`, interactive column sorting, real-time client-side search filtering,\naccessible row selection, and keyboard navigation.",
+          "name": "FzlDataGrid",
           "members": [
             {
               "kind": "field",
-              "name": "src",
+              "name": "store",
               "type": {
-                "text": "string"
-              },
-              "default": "''",
-              "description": "Current avatar image source (URL or Data URL)",
-              "attribute": "src",
-              "reflects": true
+                "text": "FzlStore<T> | undefined"
+              }
             },
             {
               "kind": "field",
-              "name": "name",
+              "name": "columns",
               "type": {
-                "text": "string"
+                "text": "FzlGridColumn<T>[]"
               },
-              "default": "''",
-              "description": "User name (used for alt text and fallback initials)",
-              "attribute": "name"
+              "default": "[]",
+              "attribute": "columns"
             },
             {
               "kind": "field",
-              "name": "size",
+              "name": "items",
               "type": {
-                "text": "number"
+                "text": "T[]"
               },
-              "default": "120",
-              "description": "Diameter of the avatar in pixels",
-              "attribute": "size"
+              "default": "[]",
+              "attribute": "items"
             },
             {
               "kind": "field",
-              "name": "outputSize",
+              "name": "selectedId",
               "type": {
-                "text": "number"
+                "text": "string | number | null"
               },
-              "default": "360",
-              "description": "Width and height of the exported square image in pixels",
-              "attribute": "outputSize"
+              "default": "null",
+              "attribute": "selected-id"
             },
             {
               "kind": "field",
-              "name": "outputFormat",
-              "type": {
-                "text": "'image/png' | 'image/jpeg' | 'image/webp'"
-              },
-              "default": "'image/png'",
-              "description": "Format of the exported image",
-              "attribute": "outputFormat"
-            },
-            {
-              "kind": "field",
-              "name": "outputQuality",
-              "type": {
-                "text": "number"
-              },
-              "default": "0.92",
-              "description": "Compression quality (0 to 1) for JPEG/WebP",
-              "attribute": "outputQuality"
-            },
-            {
-              "kind": "field",
-              "name": "accept",
-              "type": {
-                "text": "string"
-              },
-              "default": "'image/png, image/jpeg, image/webp, image/gif'",
-              "description": "Accepted MIME types for the file picker",
-              "attribute": "accept"
-            },
-            {
-              "kind": "field",
-              "name": "maxFileSize",
-              "description": "Maximum allowed file size in bytes (default: 5MB)",
-              "attribute": "maxFileSize"
-            },
-            {
-              "kind": "field",
-              "name": "disabled",
+              "name": "searchable",
               "type": {
                 "text": "boolean"
               },
-              "default": "false",
-              "description": "Whether the component is disabled",
-              "attribute": "disabled",
-              "reflects": true
+              "default": "true",
+              "attribute": "searchable"
             },
             {
               "kind": "field",
-              "name": "readonly",
-              "type": {
-                "text": "boolean"
-              },
-              "default": "false",
-              "description": "Whether the avatar is read-only (displays avatar without edit actions)",
-              "attribute": "readonly",
-              "reflects": true
-            },
-            {
-              "kind": "field",
-              "name": "buttonLabel",
+              "name": "emptyText",
               "type": {
                 "text": "string"
               },
-              "default": "'Alterar foto'",
-              "description": "Label for the edit button",
-              "attribute": "buttonLabel"
+              "default": "'Nenhum registro encontrado.'",
+              "attribute": "empty-text"
             },
             {
               "kind": "field",
-              "name": "cropTitle",
+              "name": "_searchQuery",
               "type": {
                 "text": "string"
               },
-              "default": "'Recortar foto de perfil'",
-              "description": "Modal title",
-              "attribute": "cropTitle"
-            },
-            {
-              "kind": "field",
-              "name": "_isDragOver",
-              "type": {
-                "text": "boolean"
-              },
               "privacy": "private",
-              "default": "false"
+              "default": "''"
             },
             {
               "kind": "field",
-              "name": "_isCropModalOpen",
+              "name": "_sortField",
               "type": {
-                "text": "boolean"
-              },
-              "privacy": "private",
-              "default": "false"
-            },
-            {
-              "kind": "field",
-              "name": "_zoom",
-              "type": {
-                "text": "number"
-              },
-              "privacy": "private",
-              "default": "1"
-            },
-            {
-              "kind": "field",
-              "name": "_minZoom",
-              "type": {
-                "text": "number"
-              },
-              "privacy": "private",
-              "default": "1"
-            },
-            {
-              "kind": "field",
-              "name": "_maxZoom",
-              "type": {
-                "text": "number"
-              },
-              "privacy": "private",
-              "default": "4"
-            },
-            {
-              "kind": "field",
-              "name": "_panX",
-              "type": {
-                "text": "number"
-              },
-              "privacy": "private",
-              "default": "0"
-            },
-            {
-              "kind": "field",
-              "name": "_panY",
-              "type": {
-                "text": "number"
-              },
-              "privacy": "private",
-              "default": "0"
-            },
-            {
-              "kind": "field",
-              "name": "_rotation",
-              "type": {
-                "text": "number"
-              },
-              "privacy": "private",
-              "default": "0"
-            },
-            {
-              "kind": "field",
-              "name": "_isPanning",
-              "type": {
-                "text": "boolean"
-              },
-              "privacy": "private",
-              "default": "false"
-            },
-            {
-              "kind": "field",
-              "name": "_rawLoadedImage",
-              "type": {
-                "text": "HTMLImageElement | null"
+                "text": "string | null"
               },
               "privacy": "private",
               "default": "null"
             },
             {
               "kind": "field",
-              "name": "_selectedFile",
+              "name": "_sortDesc",
               "type": {
-                "text": "File | null"
+                "text": "boolean"
               },
               "privacy": "private",
-              "default": "null"
+              "default": "false"
             },
             {
               "kind": "field",
-              "name": "_pointerStartX",
+              "name": "_unsubStore",
               "type": {
-                "text": "number"
+                "text": "() => void | undefined"
               },
-              "privacy": "private",
-              "default": "0"
-            },
-            {
-              "kind": "field",
-              "name": "_pointerStartY",
-              "type": {
-                "text": "number"
-              },
-              "privacy": "private",
-              "default": "0"
-            },
-            {
-              "kind": "field",
-              "name": "_panStartX",
-              "type": {
-                "text": "number"
-              },
-              "privacy": "private",
-              "default": "0"
-            },
-            {
-              "kind": "field",
-              "name": "_panStartY",
-              "type": {
-                "text": "number"
-              },
-              "privacy": "private",
-              "default": "0"
-            },
-            {
-              "kind": "method",
-              "name": "_cleanupCropState",
               "privacy": "private"
             },
             {
               "kind": "method",
-              "name": "_computeInitials",
+              "name": "_bindStore",
               "privacy": "private",
               "return": {
                 "type": {
-                  "text": "string"
+                  "text": "void"
+                }
+              }
+            },
+            {
+              "kind": "method",
+              "name": "_unbindStore",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              }
+            },
+            {
+              "kind": "method",
+              "name": "_handleSort",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "void"
                 }
               },
               "parameters": [
                 {
-                  "name": "name",
+                  "name": "field",
                   "type": {
                     "text": "string"
                   }
                 }
-              ],
-              "description": "Compute initials from the user name"
+              ]
             },
             {
               "kind": "method",
-              "name": "_triggerFileInput",
+              "name": "_handleRowClick",
               "privacy": "private",
-              "description": "Open file picker"
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "item",
+                  "type": {
+                    "text": "T"
+                  }
+                }
+              ]
             },
             {
               "kind": "method",
-              "name": "_handleFileSelected",
+              "name": "_handleDeleteClick",
               "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
               "parameters": [
                 {
                   "name": "e",
                   "type": {
                     "text": "Event"
-                  }
-                }
-              ],
-              "description": "Handle file input selection"
-            },
-            {
-              "kind": "method",
-              "name": "_processSelectedFile",
-              "privacy": "private",
-              "parameters": [
-                {
-                  "name": "file",
-                  "type": {
-                    "text": "File"
-                  }
-                }
-              ],
-              "description": "Validate and prepare the selected image file"
-            },
-            {
-              "kind": "method",
-              "name": "_emitError",
-              "privacy": "private",
-              "parameters": [
-                {
-                  "name": "error",
-                  "type": {
-                    "text": "FzlAvatarErrorEventDetail['error']"
                   }
                 },
                 {
-                  "name": "message",
+                  "name": "item",
                   "type": {
-                    "text": "string"
-                  }
-                },
-                {
-                  "name": "file",
-                  "optional": true,
-                  "type": {
-                    "text": "File"
+                    "text": "T"
                   }
                 }
               ]
             },
             {
               "kind": "method",
-              "name": "_initCropState",
+              "name": "_getDisplayItems",
               "privacy": "private",
-              "parameters": [
-                {
-                  "name": "img",
-                  "type": {
-                    "text": "HTMLImageElement"
-                  }
+              "return": {
+                "type": {
+                  "text": "T[]"
                 }
-              ],
-              "description": "Calculate initial zoom and bounds"
-            },
-            {
-              "kind": "method",
-              "name": "_drawCropCanvas",
-              "privacy": "private",
-              "description": "Draw image and circular crop guide on the modal canvas"
-            },
-            {
-              "kind": "method",
-              "name": "_handlePointerDown",
-              "privacy": "private",
-              "parameters": [
-                {
-                  "name": "e",
-                  "type": {
-                    "text": "PointerEvent"
-                  }
-                }
-              ]
-            },
-            {
-              "kind": "method",
-              "name": "_handlePointerMove",
-              "privacy": "private",
-              "parameters": [
-                {
-                  "name": "e",
-                  "type": {
-                    "text": "PointerEvent"
-                  }
-                }
-              ]
-            },
-            {
-              "kind": "method",
-              "name": "_handlePointerUp",
-              "privacy": "private",
-              "parameters": [
-                {
-                  "name": "e",
-                  "type": {
-                    "text": "PointerEvent"
-                  }
-                }
-              ]
-            },
-            {
-              "kind": "method",
-              "name": "_handleWheel",
-              "privacy": "private",
-              "parameters": [
-                {
-                  "name": "e",
-                  "type": {
-                    "text": "WheelEvent"
-                  }
-                }
-              ]
-            },
-            {
-              "kind": "method",
-              "name": "_handleZoomSliderChange",
-              "privacy": "private",
-              "parameters": [
-                {
-                  "name": "e",
-                  "type": {
-                    "text": "Event"
-                  }
-                }
-              ]
-            },
-            {
-              "kind": "method",
-              "name": "_rotateClockwise",
-              "privacy": "private"
-            },
-            {
-              "kind": "method",
-              "name": "_zoomIn",
-              "privacy": "private"
-            },
-            {
-              "kind": "method",
-              "name": "_zoomOut",
-              "privacy": "private"
-            },
-            {
-              "kind": "method",
-              "name": "_closeCropModal",
-              "privacy": "private"
-            },
-            {
-              "kind": "method",
-              "name": "_applyCrop",
-              "privacy": "private",
-              "description": "Apply crop, export Data URL and Blob, and dispatch change event"
-            },
-            {
-              "kind": "method",
-              "name": "_handleRemoveAvatar",
-              "privacy": "private",
-              "parameters": [
-                {
-                  "name": "e",
-                  "type": {
-                    "text": "Event"
-                  }
-                }
-              ],
-              "description": "Remove avatar"
-            },
-            {
-              "kind": "method",
-              "name": "_handleDragOver",
-              "privacy": "private",
-              "parameters": [
-                {
-                  "name": "e",
-                  "type": {
-                    "text": "DragEvent"
-                  }
-                }
-              ]
-            },
-            {
-              "kind": "method",
-              "name": "_handleDragLeave",
-              "privacy": "private",
-              "parameters": [
-                {
-                  "name": "e",
-                  "type": {
-                    "text": "DragEvent"
-                  }
-                }
-              ]
-            },
-            {
-              "kind": "method",
-              "name": "_handleDrop",
-              "privacy": "private",
-              "parameters": [
-                {
-                  "name": "e",
-                  "type": {
-                    "text": "DragEvent"
-                  }
-                }
-              ]
-            },
-            {
-              "kind": "method",
-              "name": "_handleKeyDown",
-              "privacy": "private",
-              "parameters": [
-                {
-                  "name": "e",
-                  "type": {
-                    "text": "KeyboardEvent"
-                  }
-                }
-              ]
-            }
-          ],
-          "events": [
-            {
-              "name": "fzl-avatar-error",
-              "type": {
-                "text": "CustomEvent<FzlAvatarErrorEventDetail>"
-              },
-              "description": "Dispatched when validation fails (size, type)"
-            },
-            {
-              "name": "fzl-avatar-change",
-              "type": {
-                "text": "CustomEvent<FzlAvatarChangeEventDetail>"
-              },
-              "description": "Dispatched when the user crops and applies a new avatar"
-            },
-            {
-              "name": "fzl-avatar-remove",
-              "type": {
-                "text": "CustomEvent<void>"
-              },
-              "description": "Dispatched when the user removes their avatar"
-            },
-            {
-              "type": {
-                "text": "CustomEvent<{ widgetId: string; originalEvent: FocusEvent }>"
-              },
-              "description": "Dispatched when the widget gains focus",
-              "name": "fzl-focus"
-            },
-            {
-              "type": {
-                "text": "CustomEvent<{ widgetId: string; originalEvent: FocusEvent }>"
-              },
-              "description": "Dispatched when the widget loses focus",
-              "name": "fzl-blur"
+              }
             }
           ],
           "attributes": [
             {
-              "name": "src",
+              "name": "columns",
               "type": {
-                "text": "string"
+                "text": "FzlGridColumn<T>[]"
               },
-              "default": "''",
-              "description": "Current avatar image source (URL or Data URL)",
-              "fieldName": "src"
+              "default": "[]",
+              "fieldName": "columns"
             },
             {
-              "name": "name",
+              "name": "items",
               "type": {
-                "text": "string"
+                "text": "T[]"
               },
-              "default": "''",
-              "description": "User name (used for alt text and fallback initials)",
-              "fieldName": "name"
+              "default": "[]",
+              "fieldName": "items"
             },
             {
-              "name": "size",
+              "name": "selected-id",
               "type": {
-                "text": "number"
+                "text": "string | number | null"
               },
-              "default": "120",
-              "description": "Diameter of the avatar in pixels",
-              "fieldName": "size"
+              "default": "null",
+              "fieldName": "selectedId"
             },
             {
-              "name": "outputSize",
-              "type": {
-                "text": "number"
-              },
-              "default": "360",
-              "description": "Width and height of the exported square image in pixels",
-              "fieldName": "outputSize"
-            },
-            {
-              "name": "outputFormat",
-              "type": {
-                "text": "'image/png' | 'image/jpeg' | 'image/webp'"
-              },
-              "default": "'image/png'",
-              "description": "Format of the exported image",
-              "fieldName": "outputFormat"
-            },
-            {
-              "name": "outputQuality",
-              "type": {
-                "text": "number"
-              },
-              "default": "0.92",
-              "description": "Compression quality (0 to 1) for JPEG/WebP",
-              "fieldName": "outputQuality"
-            },
-            {
-              "name": "accept",
-              "type": {
-                "text": "string"
-              },
-              "default": "'image/png, image/jpeg, image/webp, image/gif'",
-              "description": "Accepted MIME types for the file picker",
-              "fieldName": "accept"
-            },
-            {
-              "name": "maxFileSize",
-              "description": "Maximum allowed file size in bytes (default: 5MB)",
-              "fieldName": "maxFileSize"
-            },
-            {
-              "name": "disabled",
+              "name": "searchable",
               "type": {
                 "text": "boolean"
               },
-              "default": "false",
-              "description": "Whether the component is disabled",
-              "fieldName": "disabled"
+              "default": "true",
+              "fieldName": "searchable"
             },
             {
-              "name": "readonly",
-              "type": {
-                "text": "boolean"
-              },
-              "default": "false",
-              "description": "Whether the avatar is read-only (displays avatar without edit actions)",
-              "fieldName": "readonly"
-            },
-            {
-              "name": "buttonLabel",
+              "name": "empty-text",
               "type": {
                 "text": "string"
               },
-              "default": "'Alterar foto'",
-              "description": "Label for the edit button",
-              "fieldName": "buttonLabel"
-            },
-            {
-              "name": "cropTitle",
-              "type": {
-                "text": "string"
-              },
-              "default": "'Recortar foto de perfil'",
-              "description": "Modal title",
-              "fieldName": "cropTitle"
+              "default": "'Nenhum registro encontrado.'",
+              "fieldName": "emptyText"
             }
           ],
           "mixins": [
@@ -6686,34 +6973,1023 @@
             "name": "LitElement",
             "package": "lit"
           },
-          "tagName": "fzl-lit-avatar-upload",
+          "tagName": "fzl-data-grid",
           "customElement": true
-        },
-        {
-          "kind": "variable",
-          "name": "dataUrl"
-        },
-        {
-          "kind": "variable",
-          "name": "blob",
-          "default": "await new Promise<Blob | null>((resolve) => { exportCanvas.toBlob(resolve, this.outputFormat, this.outputQuality); })"
         }
       ],
       "exports": [
         {
           "kind": "js",
-          "name": "FzlLitAvatarUpload",
+          "name": "FzlDataGrid",
           "declaration": {
-            "name": "FzlLitAvatarUpload",
-            "module": "src/components/avatar-upload/avatar-upload.component.ts"
+            "name": "FzlDataGrid",
+            "module": "src/components/grid/data-grid.component.ts"
           }
         },
         {
           "kind": "custom-element-definition",
-          "name": "fzl-lit-avatar-upload",
+          "name": "fzl-data-grid",
           "declaration": {
-            "name": "FzlLitAvatarUpload",
-            "module": "src/components/avatar-upload/avatar-upload.component.ts"
+            "name": "FzlDataGrid",
+            "module": "src/components/grid/data-grid.component.ts"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/components/interview-transcriber/interview-transcriber.component.ts",
+      "declarations": [
+        {
+          "kind": "class",
+          "description": "Qualitative Interview Voice Transcriber Web Component.\n\nRecords voice audio from microphone (MediaRecorder & Web Audio API),\nproduces real-time speech-to-text transcriptions (Web Speech API),\nprovides rich qualitative interview tools (speaker tags, timestamps,\nfield notes, audio review player) and sends the package (audio + transcript +\nresearch metadata) to the backend.",
+          "name": "FzlLitInterviewTranscriber",
+          "members": [
+            {
+              "kind": "field",
+              "name": "interviewId",
+              "type": {
+                "text": "string"
+              },
+              "description": "Unique qualitative interview identifier",
+              "attribute": "interview-id"
+            },
+            {
+              "kind": "field",
+              "name": "participantId",
+              "type": {
+                "text": "string"
+              },
+              "default": "'P-01'",
+              "description": "Participant / Informant Code or Pseudonym",
+              "attribute": "participant-id"
+            },
+            {
+              "kind": "field",
+              "name": "interviewer",
+              "type": {
+                "text": "string"
+              },
+              "default": "'Pesquisador'",
+              "description": "Researcher / Interviewer identifier",
+              "attribute": "interviewer"
+            },
+            {
+              "kind": "field",
+              "name": "topic",
+              "type": {
+                "text": "string"
+              },
+              "default": "'Entrevista Qualitativa'",
+              "description": "Research Topic / Question / Guide Section",
+              "attribute": "topic"
+            },
+            {
+              "kind": "field",
+              "name": "language",
+              "type": {
+                "text": "string"
+              },
+              "default": "'pt-BR'",
+              "description": "Speech recognition language code",
+              "attribute": "language"
+            },
+            {
+              "kind": "field",
+              "name": "autoTranscribe",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "true",
+              "description": "Automatically transcribe voice live while recording",
+              "attribute": "auto-transcribe"
+            },
+            {
+              "kind": "field",
+              "name": "saveUrl",
+              "type": {
+                "text": "string"
+              },
+              "default": "''",
+              "description": "Backend endpoint URL to POST results",
+              "attribute": "save-url"
+            },
+            {
+              "kind": "field",
+              "name": "backend",
+              "type": {
+                "text": "string"
+              },
+              "default": "''",
+              "description": "AppShell backend name (e.g. 'api')",
+              "attribute": "backend"
+            },
+            {
+              "kind": "field",
+              "name": "consentConfirmed",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "true",
+              "description": "Qualitative ethics & consent confirmation flag",
+              "attribute": "consent-confirmed"
+            },
+            {
+              "kind": "field",
+              "name": "allowDownload",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "true",
+              "description": "Allows raw audio and text download buttons",
+              "attribute": "allow-download"
+            },
+            {
+              "kind": "field",
+              "name": "readOnly",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false",
+              "description": "Disables interactive recording and editing",
+              "attribute": "read-only"
+            },
+            {
+              "kind": "field",
+              "name": "recordingState",
+              "type": {
+                "text": "FzlRecordingState"
+              },
+              "default": "'idle'"
+            },
+            {
+              "kind": "field",
+              "name": "savingState",
+              "type": {
+                "text": "FzlSavingState"
+              },
+              "default": "'idle'"
+            },
+            {
+              "kind": "field",
+              "name": "elapsedSeconds",
+              "type": {
+                "text": "number"
+              },
+              "default": "0"
+            },
+            {
+              "kind": "field",
+              "name": "transcript",
+              "type": {
+                "text": "string"
+              },
+              "default": "''"
+            },
+            {
+              "kind": "field",
+              "name": "interimTranscript",
+              "type": {
+                "text": "string"
+              },
+              "default": "''"
+            },
+            {
+              "kind": "field",
+              "name": "audioLevel",
+              "type": {
+                "text": "number"
+              },
+              "default": "0"
+            },
+            {
+              "kind": "field",
+              "name": "audioBlob",
+              "type": {
+                "text": "Blob | null"
+              },
+              "default": "null"
+            },
+            {
+              "kind": "field",
+              "name": "audioUrl",
+              "type": {
+                "text": "string | null"
+              },
+              "default": "null"
+            },
+            {
+              "kind": "field",
+              "name": "statusMessage",
+              "type": {
+                "text": "string"
+              },
+              "default": "''"
+            },
+            {
+              "kind": "field",
+              "name": "errorMessage",
+              "type": {
+                "text": "string"
+              },
+              "default": "''"
+            },
+            {
+              "kind": "field",
+              "name": "isSpeechRecognitionSupported",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false"
+            },
+            {
+              "kind": "field",
+              "name": "tags",
+              "type": {
+                "text": "string[]"
+              },
+              "default": "['pesquisa-qualitativa']"
+            },
+            {
+              "kind": "field",
+              "name": "_mediaStream",
+              "type": {
+                "text": "MediaStream | null"
+              },
+              "privacy": "private",
+              "default": "null"
+            },
+            {
+              "kind": "field",
+              "name": "_mediaRecorder",
+              "type": {
+                "text": "MediaRecorder | null"
+              },
+              "privacy": "private",
+              "default": "null"
+            },
+            {
+              "kind": "field",
+              "name": "_audioChunks",
+              "type": {
+                "text": "Blob[]"
+              },
+              "privacy": "private",
+              "default": "[]"
+            },
+            {
+              "kind": "field",
+              "name": "_audioContext",
+              "type": {
+                "text": "AudioContext | null"
+              },
+              "privacy": "private",
+              "default": "null"
+            },
+            {
+              "kind": "field",
+              "name": "_analyserNode",
+              "type": {
+                "text": "AnalyserNode | null"
+              },
+              "privacy": "private",
+              "default": "null"
+            },
+            {
+              "kind": "field",
+              "name": "_animFrameId",
+              "type": {
+                "text": "number | null"
+              },
+              "privacy": "private",
+              "default": "null"
+            },
+            {
+              "kind": "field",
+              "name": "_timerInterval",
+              "type": {
+                "text": "any"
+              },
+              "privacy": "private",
+              "default": "null"
+            },
+            {
+              "kind": "field",
+              "name": "_recognition",
+              "type": {
+                "text": "any"
+              },
+              "privacy": "private",
+              "default": "null"
+            },
+            {
+              "kind": "method",
+              "name": "_checkSpeechRecognitionSupport",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              }
+            },
+            {
+              "kind": "method",
+              "name": "startRecording",
+              "return": {
+                "type": {
+                  "text": "Promise<void>"
+                }
+              },
+              "description": "Starts recording voice and speech transcription."
+            },
+            {
+              "kind": "method",
+              "name": "pauseRecording",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "description": "Pauses the active recording and speech transcription."
+            },
+            {
+              "kind": "method",
+              "name": "resumeRecording",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "description": "Resumes a paused recording and speech transcription."
+            },
+            {
+              "kind": "method",
+              "name": "stopRecording",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "description": "Stops the recording, finalizes audio blob and stops mic streams."
+            },
+            {
+              "kind": "method",
+              "name": "discardRecording",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "description": "Discards the recorded audio and resets state."
+            },
+            {
+              "kind": "method",
+              "name": "saveToBackend",
+              "return": {
+                "type": {
+                  "text": "Promise<void>"
+                }
+              },
+              "description": "Saves the interview (audio, transcript and metadata) to backend."
+            },
+            {
+              "kind": "method",
+              "name": "insertQuickTag",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "snippet",
+                  "type": {
+                    "text": "string"
+                  }
+                }
+              ],
+              "description": "Inserts qualitative annotation snippet at current cursor or appends to transcript."
+            },
+            {
+              "kind": "method",
+              "name": "downloadAudio",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "description": "Downloads recorded audio file."
+            },
+            {
+              "kind": "method",
+              "name": "downloadTranscript",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "description": "Downloads transcript as text or JSON."
+            },
+            {
+              "kind": "method",
+              "name": "_startTimer",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              }
+            },
+            {
+              "kind": "method",
+              "name": "_stopTimer",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              }
+            },
+            {
+              "kind": "method",
+              "name": "_setupAudioAnalyser",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "stream",
+                  "type": {
+                    "text": "MediaStream"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "_startSpeechRecognition",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              }
+            },
+            {
+              "kind": "method",
+              "name": "_cleanupRecording",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              }
+            },
+            {
+              "kind": "method",
+              "name": "_cleanupAudioUrl",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              }
+            },
+            {
+              "kind": "method",
+              "name": "_getSupportedMimeType",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "string"
+                }
+              }
+            },
+            {
+              "kind": "method",
+              "name": "_dispatchStateChange",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              }
+            },
+            {
+              "kind": "method",
+              "name": "_dispatchTranscriptionUpdate",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "isFinal",
+                  "type": {
+                    "text": "boolean"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "_handleTranscriptInput",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "e",
+                  "type": {
+                    "text": "Event"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "_countWords",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "number"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "text",
+                  "type": {
+                    "text": "string"
+                  }
+                }
+              ]
+            }
+          ],
+          "events": [
+            {
+              "name": "fzl-interview-error",
+              "type": {
+                "text": "CustomEvent<{ message: string; error?: any }>"
+              },
+              "description": "Dispatched on recording or save error"
+            },
+            {
+              "name": "fzl-interview-save",
+              "type": {
+                "text": "CustomEvent<FzlInterviewSaveEventDetail>"
+              },
+              "description": "Dispatched when saving the interview"
+            },
+            {
+              "name": "fzl-interview-saved",
+              "type": {
+                "text": "CustomEvent<{ interviewId: string }>"
+              },
+              "description": "Dispatched after successful backend save"
+            },
+            {
+              "name": "fzl-recording-state-change",
+              "type": {
+                "text": "CustomEvent<{ state: FzlRecordingState }>"
+              },
+              "description": "Dispatched when recording state changes"
+            },
+            {
+              "name": "fzl-transcription-update",
+              "type": {
+                "text": "CustomEvent<FzlTranscriptionUpdateEventDetail>"
+              },
+              "description": "Dispatched when transcript changes"
+            }
+          ],
+          "attributes": [
+            {
+              "name": "interview-id",
+              "type": {
+                "text": "string"
+              },
+              "description": "Unique qualitative interview identifier",
+              "fieldName": "interviewId"
+            },
+            {
+              "name": "participant-id",
+              "type": {
+                "text": "string"
+              },
+              "default": "'P-01'",
+              "description": "Participant / Informant Code or Pseudonym",
+              "fieldName": "participantId"
+            },
+            {
+              "name": "interviewer",
+              "type": {
+                "text": "string"
+              },
+              "default": "'Pesquisador'",
+              "description": "Researcher / Interviewer identifier",
+              "fieldName": "interviewer"
+            },
+            {
+              "name": "topic",
+              "type": {
+                "text": "string"
+              },
+              "default": "'Entrevista Qualitativa'",
+              "description": "Research Topic / Question / Guide Section",
+              "fieldName": "topic"
+            },
+            {
+              "name": "language",
+              "type": {
+                "text": "string"
+              },
+              "default": "'pt-BR'",
+              "description": "Speech recognition language code",
+              "fieldName": "language"
+            },
+            {
+              "name": "auto-transcribe",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "true",
+              "description": "Automatically transcribe voice live while recording",
+              "fieldName": "autoTranscribe"
+            },
+            {
+              "name": "save-url",
+              "type": {
+                "text": "string"
+              },
+              "default": "''",
+              "description": "Backend endpoint URL to POST results",
+              "fieldName": "saveUrl"
+            },
+            {
+              "name": "backend",
+              "type": {
+                "text": "string"
+              },
+              "default": "''",
+              "description": "AppShell backend name (e.g. 'api')",
+              "fieldName": "backend"
+            },
+            {
+              "name": "consent-confirmed",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "true",
+              "description": "Qualitative ethics & consent confirmation flag",
+              "fieldName": "consentConfirmed"
+            },
+            {
+              "name": "allow-download",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "true",
+              "description": "Allows raw audio and text download buttons",
+              "fieldName": "allowDownload"
+            },
+            {
+              "name": "read-only",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false",
+              "description": "Disables interactive recording and editing",
+              "fieldName": "readOnly"
+            }
+          ],
+          "mixins": [
+            {
+              "name": "FzlWidgetMixin",
+              "package": "@fzl/core"
+            }
+          ],
+          "superclass": {
+            "name": "LitElement",
+            "package": "lit"
+          },
+          "tagName": "fzl-lit-interview-transcriber",
+          "customElement": true
+        },
+        {
+          "kind": "class",
+          "description": "",
+          "name": "anonymous_1",
+          "superclass": {
+            "name": "FzlLitInterviewTranscriber",
+            "module": "src/components/interview-transcriber/interview-transcriber.component.ts"
+          },
+          "tagName": "fzl-lit-voice-transcriber",
+          "customElement": true,
+          "slots": [
+            {
+              "description": "Child chips or other content",
+              "name": "",
+              "inheritedFrom": {
+                "name": "FzlReaderChapterViewGroup",
+                "module": "src/components/reader-chapterview/reader-chapterview.component.ts"
+              }
+            }
+          ],
+          "attributes": [
+            {
+              "name": "items",
+              "type": {
+                "text": "FzlChipItem[]"
+              },
+              "default": "[]",
+              "description": "Array of items when configured declaratively",
+              "fieldName": "items",
+              "inheritedFrom": {
+                "name": "FzlReaderChapterViewGroup",
+                "module": "src/components/reader-chapterview/reader-chapterview.component.ts"
+              }
+            },
+            {
+              "name": "selection-mode",
+              "type": {
+                "text": "'single' | 'multiple' | 'none'"
+              },
+              "default": "'single'",
+              "description": "Selection behavior",
+              "fieldName": "selectionMode",
+              "inheritedFrom": {
+                "name": "FzlReaderChapterViewGroup",
+                "module": "src/components/reader-chapterview/reader-chapterview.component.ts"
+              }
+            },
+            {
+              "name": "selected",
+              "type": {
+                "text": "string | string[]"
+              },
+              "default": "''",
+              "description": "Selected value (string for single, array for multiple)",
+              "fieldName": "selected",
+              "inheritedFrom": {
+                "name": "FzlReaderChapterViewGroup",
+                "module": "src/components/reader-chapterview/reader-chapterview.component.ts"
+              }
+            },
+            {
+              "name": "wrap",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "true",
+              "description": "Whether chips wrap to multiple lines",
+              "fieldName": "wrap",
+              "inheritedFrom": {
+                "name": "FzlReaderChapterViewGroup",
+                "module": "src/components/reader-chapterview/reader-chapterview.component.ts"
+              }
+            },
+            {
+              "name": "aria-label",
+              "type": {
+                "text": "string | null"
+              },
+              "default": "'Grupo de opções'",
+              "description": "Accessible label for the group",
+              "fieldName": "ariaLabel",
+              "inheritedFrom": {
+                "name": "FzlReaderChapterViewGroup",
+                "module": "src/components/reader-chapterview/reader-chapterview.component.ts"
+              }
+            }
+          ],
+          "members": [
+            {
+              "kind": "field",
+              "name": "items",
+              "type": {
+                "text": "FzlChipItem[]"
+              },
+              "default": "[]",
+              "description": "Array of items when configured declaratively",
+              "attribute": "items",
+              "inheritedFrom": {
+                "name": "FzlReaderChapterViewGroup",
+                "module": "src/components/reader-chapterview/reader-chapterview.component.ts"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "selectionMode",
+              "type": {
+                "text": "'single' | 'multiple' | 'none'"
+              },
+              "default": "'single'",
+              "description": "Selection behavior",
+              "attribute": "selection-mode",
+              "inheritedFrom": {
+                "name": "FzlReaderChapterViewGroup",
+                "module": "src/components/reader-chapterview/reader-chapterview.component.ts"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "selected",
+              "type": {
+                "text": "string | string[]"
+              },
+              "default": "''",
+              "description": "Selected value (string for single, array for multiple)",
+              "attribute": "selected",
+              "inheritedFrom": {
+                "name": "FzlReaderChapterViewGroup",
+                "module": "src/components/reader-chapterview/reader-chapterview.component.ts"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "wrap",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "true",
+              "description": "Whether chips wrap to multiple lines",
+              "attribute": "wrap",
+              "reflects": true,
+              "inheritedFrom": {
+                "name": "FzlReaderChapterViewGroup",
+                "module": "src/components/reader-chapterview/reader-chapterview.component.ts"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "ariaLabel",
+              "type": {
+                "text": "string | null"
+              },
+              "default": "'Grupo de opções'",
+              "description": "Accessible label for the group",
+              "attribute": "aria-label",
+              "inheritedFrom": {
+                "name": "FzlReaderChapterViewGroup",
+                "module": "src/components/reader-chapterview/reader-chapterview.component.ts"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "_keyNav",
+              "privacy": "private",
+              "default": "new FzlKeyNavController(this, { orientation: 'both', wrap: true, getItems: () => Array.from( this.renderRoot.querySelectorAll('fzl-reader-chapterview, button.chip, [part=\"chip\"]') as NodeListOf<HTMLElement> ), })",
+              "inheritedFrom": {
+                "name": "FzlReaderChapterViewGroup",
+                "module": "src/components/reader-chapterview/reader-chapterview.component.ts"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "_onItemClick",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "item",
+                  "type": {
+                    "text": "FzlChipItem"
+                  }
+                }
+              ],
+              "inheritedFrom": {
+                "name": "FzlReaderChapterViewGroup",
+                "module": "src/components/reader-chapterview/reader-chapterview.component.ts"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "_isItemSelected",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "boolean"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "item",
+                  "type": {
+                    "text": "FzlChipItem"
+                  }
+                }
+              ],
+              "inheritedFrom": {
+                "name": "FzlReaderChapterViewGroup",
+                "module": "src/components/reader-chapterview/reader-chapterview.component.ts"
+              }
+            }
+          ],
+          "events": [
+            {
+              "type": {
+                "text": "CustomEvent<{ selected: string | string[]; item?: FzlChipItem; value: string }>"
+              },
+              "description": "Dispatched when selection changes",
+              "name": "fzl-change",
+              "inheritedFrom": {
+                "name": "FzlReaderChapterViewGroup",
+                "module": "src/components/reader-chapterview/reader-chapterview.component.ts"
+              }
+            }
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "*",
+          "declaration": {
+            "name": "*",
+            "module": "src/components/interview-transcriber/interview-transcriber.types"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "FzlLitInterviewTranscriber",
+          "declaration": {
+            "name": "FzlLitInterviewTranscriber",
+            "module": "src/components/interview-transcriber/interview-transcriber.component.ts"
+          }
+        },
+        {
+          "kind": "custom-element-definition",
+          "name": "fzl-lit-interview-transcriber",
+          "declaration": {
+            "name": "FzlLitInterviewTranscriber",
+            "module": "src/components/interview-transcriber/interview-transcriber.component.ts"
+          }
+        },
+        {
+          "kind": "custom-element-definition",
+          "name": "fzl-lit-voice-transcriber",
+          "declaration": {
+            "name": "anonymous_1",
+            "module": "src/components/interview-transcriber/interview-transcriber.component.ts"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/components/interview-transcriber/interview-transcriber.types.ts",
+      "declarations": [
+        {
+          "kind": "function",
+          "name": "formatDuration",
+          "return": {
+            "type": {
+              "text": "string"
+            }
+          },
+          "parameters": [
+            {
+              "name": "seconds",
+              "type": {
+                "text": "number"
+              }
+            }
+          ],
+          "description": "Format elapsed seconds to HH:MM:SS or MM:SS"
+        },
+        {
+          "kind": "function",
+          "name": "generateInterviewId",
+          "return": {
+            "type": {
+              "text": "string"
+            }
+          },
+          "description": "Generate a unique qualitative interview ID"
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "formatDuration",
+          "declaration": {
+            "name": "formatDuration",
+            "module": "src/components/interview-transcriber/interview-transcriber.types.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "generateInterviewId",
+          "declaration": {
+            "name": "generateInterviewId",
+            "module": "src/components/interview-transcriber/interview-transcriber.types.ts"
           }
         }
       ]
@@ -8178,7 +9454,7 @@
             "name": "FzlReaderChapterViewGroup",
             "module": "src/components/reader-chapterview/reader-chapterview.component.ts"
           },
-          "tagName": "fzl-chip-group",
+          "tagName": "fzl-lit-voice-transcriber",
           "customElement": true,
           "slots": [
             {
@@ -8441,268 +9717,6 @@
           "declaration": {
             "name": "anonymous_1",
             "module": "src/components/reader-chapterview/reader-chapterview.component.ts"
-          }
-        }
-      ]
-    },
-    {
-      "kind": "javascript-module",
-      "path": "src/components/grid/data-grid.component.ts",
-      "declarations": [
-        {
-          "kind": "class",
-          "description": "Data Grid Component inspired by Dojo / Dijit `dojox/grid/DataGrid` and `dgrid`.\n\nDriven by `FzlStore` (`dojo/store`), offering reactive live updates via\n`store.observe()`, interactive column sorting, real-time client-side search filtering,\naccessible row selection, and keyboard navigation.",
-          "name": "FzlDataGrid",
-          "members": [
-            {
-              "kind": "field",
-              "name": "store",
-              "type": {
-                "text": "FzlStore<T> | undefined"
-              }
-            },
-            {
-              "kind": "field",
-              "name": "columns",
-              "type": {
-                "text": "FzlGridColumn<T>[]"
-              },
-              "default": "[]",
-              "attribute": "columns"
-            },
-            {
-              "kind": "field",
-              "name": "items",
-              "type": {
-                "text": "T[]"
-              },
-              "default": "[]",
-              "attribute": "items"
-            },
-            {
-              "kind": "field",
-              "name": "selectedId",
-              "type": {
-                "text": "string | number | null"
-              },
-              "default": "null",
-              "attribute": "selected-id"
-            },
-            {
-              "kind": "field",
-              "name": "searchable",
-              "type": {
-                "text": "boolean"
-              },
-              "default": "true",
-              "attribute": "searchable"
-            },
-            {
-              "kind": "field",
-              "name": "emptyText",
-              "type": {
-                "text": "string"
-              },
-              "default": "'Nenhum registro encontrado.'",
-              "attribute": "empty-text"
-            },
-            {
-              "kind": "field",
-              "name": "_searchQuery",
-              "type": {
-                "text": "string"
-              },
-              "privacy": "private",
-              "default": "''"
-            },
-            {
-              "kind": "field",
-              "name": "_sortField",
-              "type": {
-                "text": "string | null"
-              },
-              "privacy": "private",
-              "default": "null"
-            },
-            {
-              "kind": "field",
-              "name": "_sortDesc",
-              "type": {
-                "text": "boolean"
-              },
-              "privacy": "private",
-              "default": "false"
-            },
-            {
-              "kind": "field",
-              "name": "_unsubStore",
-              "type": {
-                "text": "() => void | undefined"
-              },
-              "privacy": "private"
-            },
-            {
-              "kind": "method",
-              "name": "_bindStore",
-              "privacy": "private",
-              "return": {
-                "type": {
-                  "text": "void"
-                }
-              }
-            },
-            {
-              "kind": "method",
-              "name": "_unbindStore",
-              "privacy": "private",
-              "return": {
-                "type": {
-                  "text": "void"
-                }
-              }
-            },
-            {
-              "kind": "method",
-              "name": "_handleSort",
-              "privacy": "private",
-              "return": {
-                "type": {
-                  "text": "void"
-                }
-              },
-              "parameters": [
-                {
-                  "name": "field",
-                  "type": {
-                    "text": "string"
-                  }
-                }
-              ]
-            },
-            {
-              "kind": "method",
-              "name": "_handleRowClick",
-              "privacy": "private",
-              "return": {
-                "type": {
-                  "text": "void"
-                }
-              },
-              "parameters": [
-                {
-                  "name": "item",
-                  "type": {
-                    "text": "T"
-                  }
-                }
-              ]
-            },
-            {
-              "kind": "method",
-              "name": "_handleDeleteClick",
-              "privacy": "private",
-              "return": {
-                "type": {
-                  "text": "void"
-                }
-              },
-              "parameters": [
-                {
-                  "name": "e",
-                  "type": {
-                    "text": "Event"
-                  }
-                },
-                {
-                  "name": "item",
-                  "type": {
-                    "text": "T"
-                  }
-                }
-              ]
-            },
-            {
-              "kind": "method",
-              "name": "_getDisplayItems",
-              "privacy": "private",
-              "return": {
-                "type": {
-                  "text": "T[]"
-                }
-              }
-            }
-          ],
-          "attributes": [
-            {
-              "name": "columns",
-              "type": {
-                "text": "FzlGridColumn<T>[]"
-              },
-              "default": "[]",
-              "fieldName": "columns"
-            },
-            {
-              "name": "items",
-              "type": {
-                "text": "T[]"
-              },
-              "default": "[]",
-              "fieldName": "items"
-            },
-            {
-              "name": "selected-id",
-              "type": {
-                "text": "string | number | null"
-              },
-              "default": "null",
-              "fieldName": "selectedId"
-            },
-            {
-              "name": "searchable",
-              "type": {
-                "text": "boolean"
-              },
-              "default": "true",
-              "fieldName": "searchable"
-            },
-            {
-              "name": "empty-text",
-              "type": {
-                "text": "string"
-              },
-              "default": "'Nenhum registro encontrado.'",
-              "fieldName": "emptyText"
-            }
-          ],
-          "mixins": [
-            {
-              "name": "FzlWidgetMixin",
-              "package": "@fzl/core"
-            }
-          ],
-          "superclass": {
-            "name": "LitElement",
-            "package": "lit"
-          },
-          "tagName": "fzl-data-grid",
-          "customElement": true
-        }
-      ],
-      "exports": [
-        {
-          "kind": "js",
-          "name": "FzlDataGrid",
-          "declaration": {
-            "name": "FzlDataGrid",
-            "module": "src/components/grid/data-grid.component.ts"
-          }
-        },
-        {
-          "kind": "custom-element-definition",
-          "name": "fzl-data-grid",
-          "declaration": {
-            "name": "FzlDataGrid",
-            "module": "src/components/grid/data-grid.component.ts"
           }
         }
       ]

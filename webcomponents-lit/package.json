@@ -67,6 +67,10 @@
       "types": "./dist/reader-content.d.ts",
       "import": "./dist/reader-content.js"
     },
+    "./interview-transcriber": {
+      "types": "./dist/interview-transcriber.d.ts",
+      "import": "./dist/interview-transcriber.js"
+    },
     "./custom-elements.json": "./custom-elements.json"
   },
   "scripts": {

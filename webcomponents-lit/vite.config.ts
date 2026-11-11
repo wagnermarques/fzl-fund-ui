@@ -21,7 +21,8 @@ export default defineConfig({
         form: resolve(__dirname, 'src/components/form/form.component.ts'),
         'data-grid': resolve(__dirname, 'src/components/grid/data-grid.component.ts'),
         'reader-mark-bar': resolve(__dirname, 'src/components/reader/reader-mark-bar.component.ts'),
-        'reader-content': resolve(__dirname, 'src/components/reader/reader-content.component.ts')
+        'reader-content': resolve(__dirname, 'src/components/reader/reader-content.component.ts'),
+        'interview-transcriber': resolve(__dirname, 'src/components/interview-transcriber/interview-transcriber.component.ts')
       },
       formats: ['es']
     },

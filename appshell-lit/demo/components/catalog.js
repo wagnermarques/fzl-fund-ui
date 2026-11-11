@@ -21,6 +21,7 @@ import geoExplorerDoc from '../../../docs/components/geo-explorer.md?raw'
 import formDoc from '../../../docs/components/form.md?raw'
 import dataGridDoc from '../../../docs/components/data-grid.md?raw'
 import readerMarkBarDoc from '../../../docs/components/reader-mark-bar.md?raw'
+import interviewTranscriberDoc from '../../../docs/components/interview-transcriber.md?raw'
 
 /** Catálogo da documentação viva (#/componentes). Cada componente aponta
  *  para a sua especificação em docs/components/ (o texto) e para as
@@ -627,6 +628,34 @@ export const catalog = [
         packageName: '@fzl/webcomponents-lit',
         manifest: litManifest,
         load: () => import('@fzl/webcomponents-lit/reader-content'),
+      },
+    ],
+  },
+  {
+    id: 'interview-transcriber',
+    name: 'Gravador & Transcritor Qualitativo',
+    icon: 'mic',
+    summary:
+      'Componente para gravação de voz (MediaRecorder), medição de nível sonoro com VU Meter (Web Audio API), transcrição assistida ao vivo (Web Speech API) e persistência estruturada de entrevistas qualitativas no backend.',
+    doc: interviewTranscriberDoc,
+    slotText: '',
+    initialValues: {
+      'participant-id': 'P-01',
+      interviewer: 'Pesquisador Responsável',
+      topic: 'Avaliação Qualitativa de Fundos & Percepção de Risco',
+      language: 'pt-BR',
+      'auto-transcribe': true,
+      'allow-download': true,
+      'consent-confirmed': true,
+    },
+    implementations: [
+      {
+        id: 'lit',
+        label: 'Lit',
+        tag: 'fzl-lit-interview-transcriber',
+        packageName: '@fzl/webcomponents-lit',
+        manifest: litManifest,
+        load: () => import('@fzl/webcomponents-lit/interview-transcriber'),
       },
     ],
   },

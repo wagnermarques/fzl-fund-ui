@@ -278,7 +278,14 @@ export function applyPersistedCardOrder(items: FzlCardItem[], orderIds: string[]
                   *ngIf="isItemCollapsible(item)"
                   aria-hidden="true"
                 >▾</span>
-                <h3 class="fzl-card-title">{{ item.title }}</h3>
+                <h3
+                  class="fzl-card-title is-clickable"
+                  role="button"
+                  tabindex="0"
+                  (click)="onTitleClick($event, item, idx)"
+                  (keydown.enter)="onTitleClick($event, item, idx)"
+                  (keydown.space)="onTitleClick($event, item, idx)"
+                >{{ item.title }}</h3>
               </div>
               <span class="fzl-card-subtitle" *ngIf="item.subtitle">{{ item.subtitle }}</span>
             </div>
@@ -630,6 +637,20 @@ export function applyPersistedCardOrder(items: FzlCardItem[], orderIds: string[]
         color: var(--_fzl-color-text);
         margin: 0;
         line-height: 1.3;
+        cursor: pointer;
+        user-select: none;
+        transition: color var(--_fzl-transition-fast), text-decoration var(--_fzl-transition-fast);
+      }
+
+      .fzl-card-title:hover {
+        color: var(--_fzl-color-primary);
+        text-decoration: underline;
+      }
+
+      .fzl-card-title:focus-visible {
+        outline: 2px solid var(--_fzl-color-primary);
+        outline-offset: 2px;
+        border-radius: var(--_fzl-radius-sm);
       }
 
       .fzl-card-subtitle {

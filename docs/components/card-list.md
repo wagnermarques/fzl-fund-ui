@@ -165,6 +165,7 @@ Displays structured cards with sorting, filtering, and responsive scrolling.
 | `fzl-card-toggle` | `CustomEvent` |  |
 | `fzl-filter-change` | `CustomEvent<{ filter: string }>` | Dispatched when search filter text changes |
 | `fzl-sort-change` | `CustomEvent<{ sortBy: string; sortOrder: FzlSortOrder }>` | Dispatched when sorting criteria changes |
+| `fzl-card-title-click` | `CustomEvent<{ item: FzlCardItem; index: number; originalEvent: MouseEvent }>` | Dispatched when a card title is clicked |
 | `fzl-card-click` | `CustomEvent<{ item: FzlCardItem; index: number; originalEvent: MouseEvent }>` | Dispatched when a card is clicked |
 | `fzl-card-action` | `CustomEvent<{ action: string; item: FzlCardItem; index: number; originalEvent: MouseEvent }>` | Dispatched when card action button is clicked |
 | `fzl-cards-reorder` | `CustomEvent<{ items: FzlCardItem[]; orderIds: string[]; fromIndex: number; toIndex: number; item: FzlCardItem }>` | Dispatched when cards are reordered |

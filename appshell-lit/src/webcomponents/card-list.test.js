@@ -310,6 +310,77 @@ describe('CardList Helper Functions', () => {
   })
 
   describe('Card Accordion / Collapsible Variation', () => {
+    it('clicar no título do card emite fzl-card-title-click e fzl-card-click sem colapsar/expandir o acordeão', async () => {
+      const el = document.createElement('fzl-lit-card-list')
+      el.collapsibleCards = true
+      el.items = sampleItems
+      document.body.appendChild(el)
+      await el.updateComplete
+
+      let titleClickDetail = null
+      let cardClickDetail = null
+      let toggleDetail = null
+
+      el.addEventListener('fzl-card-title-click', (e) => {
+        titleClickDetail = e.detail
+      })
+      el.addEventListener('fzl-card-click', (e) => {
+        cardClickDetail = e.detail
+      })
+      el.addEventListener('fzl-card-toggle', (e) => {
+        toggleDetail = e.detail
+      })
+
+      const firstCard = el.renderRoot.querySelector('.fzl-card')
+      const titleEl = firstCard.querySelector('.fzl-card-title')
+
+      expect(titleEl).not.toBeNull()
+      expect(titleEl.getAttribute('role')).toBe('button')
+      expect(titleEl.classList.contains('is-clickable')).toBe(true)
+
+      // Clica no título
+      titleEl.dispatchEvent(new MouseEvent('click', { bubbles: true }))
+      await el.updateComplete
+
+      // Emite evento de título e card-click
+      expect(titleClickDetail).not.toBeNull()
+      expect(titleClickDetail.item.id).toBe('task-1')
+      expect(cardClickDetail).not.toBeNull()
+      expect(cardClickDetail.fromTitle).toBe(true)
+
+      // Não dispara o acordeão (stopPropagation)
+      expect(toggleDetail).toBeNull()
+      expect(firstCard.classList.contains('collapsed')).toBe(true)
+
+      document.body.removeChild(el)
+    })
+
+    it('teclas Enter e Space no título disparam fzl-card-title-click (A11y)', async () => {
+      const el = document.createElement('fzl-lit-card-list')
+      el.items = sampleItems
+      document.body.appendChild(el)
+      await el.updateComplete
+
+      let titleClickCount = 0
+      el.addEventListener('fzl-card-title-click', () => {
+        titleClickCount++
+      })
+
+      const firstCard = el.renderRoot.querySelector('.fzl-card')
+      const titleEl = firstCard.querySelector('.fzl-card-title')
+
+      titleEl.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }))
+      await el.updateComplete
+      expect(titleClickCount).toBe(1)
+
+      titleEl.dispatchEvent(new KeyboardEvent('keydown', { key: ' ', bubbles: true }))
+      await el.updateComplete
+      expect(titleClickCount).toBe(2)
+
+      document.body.removeChild(el)
+    })
+
+
     it('com collapsible-cards=true, cards iniciam colapsados com chevron e título', async () => {
       const el = document.createElement('fzl-lit-card-list')
       el.collapsibleCards = true

@@ -139,6 +139,7 @@ export function applyPersistedCardOrder(items: FzlCardItem[], orderIds: string[]
  * @tag fzl-lit-card-list
  *
  * @fires {CustomEvent<{ item: FzlCardItem; index: number; originalEvent: MouseEvent }>} fzl-card-click - Dispatched when a card is clicked
+ * @fires {CustomEvent<{ item: FzlCardItem; index: number; originalEvent: MouseEvent }>} fzl-card-title-click - Dispatched when a card title is clicked
  * @fires {CustomEvent<{ item: FzlCardItem; index: number; expanded: boolean }>} fzl-card-toggle - Dispatched when a collapsible card is expanded or collapsed
  * @fires {CustomEvent<{ action: string; item: FzlCardItem; index: number; originalEvent: MouseEvent }>} fzl-card-action - Dispatched when card action button is clicked
  * @fires {CustomEvent<{ sortBy: string; sortOrder: FzlSortOrder }>} fzl-sort-change - Dispatched when sorting criteria changes
@@ -439,6 +440,20 @@ export class FzlLitCardList extends FzlWidgetMixin(LitElement) {
         color: var(--_fzl-color-text);
         margin: 0;
         line-height: 1.3;
+        cursor: pointer;
+        user-select: none;
+        transition: color var(--_fzl-transition-fast), text-decoration var(--_fzl-transition-fast);
+      }
+
+      .fzl-card-title:hover {
+        color: var(--_fzl-color-primary);
+        text-decoration: underline;
+      }
+
+      .fzl-card-title:focus-visible {
+        outline: 2px solid var(--_fzl-color-primary);
+        outline-offset: 2px;
+        border-radius: var(--_fzl-radius-sm);
       }
 
       .fzl-card-subtitle {
@@ -866,6 +881,24 @@ export class FzlLitCardList extends FzlWidgetMixin(LitElement) {
     this._dragOverIndex = null;
   }
 
+  private _handleTitleClick(item: FzlCardItem, index: number, event: MouseEvent) {
+    event.stopPropagation();
+    this.dispatchEvent(
+      new CustomEvent('fzl-card-title-click', {
+        detail: { item, index, originalEvent: event },
+        bubbles: true,
+        composed: true,
+      })
+    );
+    this.dispatchEvent(
+      new CustomEvent('fzl-card-click', {
+        detail: { item, index, originalEvent: event, fromTitle: true },
+        bubbles: true,
+        composed: true,
+      })
+    );
+  }
+
   private _handleCardClick(item: FzlCardItem, index: number, event: MouseEvent) {
     this.dispatchEvent(
       new CustomEvent('fzl-card-click', {
@@ -1054,7 +1087,20 @@ export class FzlLitCardList extends FzlWidgetMixin(LitElement) {
                           ${isCollapsible
                             ? html`<span class="fzl-card-accordion-chevron" aria-hidden="true">▾</span>`
                             : ''}
-                          <h3 class="fzl-card-title">${item.title}</h3>
+                          <h3
+                            class="fzl-card-title is-clickable"
+                            role="button"
+                            tabindex="0"
+                            title="Abrir tarefa"
+                            @click=${(e: MouseEvent) => this._handleTitleClick(item, index, e)}
+                            @keydown=${(e: KeyboardEvent) => {
+                              if (e.key === 'Enter' || e.key === ' ') {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                this._handleTitleClick(item, index, e as unknown as MouseEvent);
+                              }
+                            }}
+                          >${item.title}</h3>
                         </div>
                         ${item.subtitle ? html`<span class="fzl-card-subtitle">${item.subtitle}</span>` : ''}
                       </div>

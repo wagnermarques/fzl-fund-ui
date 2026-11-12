@@ -105,6 +105,20 @@ template.innerHTML = `
       color: var(--_fzl-color-text);
       margin: 0;
       line-height: 1.3;
+      cursor: pointer;
+      user-select: none;
+      transition: color var(--_fzl-transition-fast), text-decoration var(--_fzl-transition-fast);
+    }
+
+    .fzl-card-title:hover {
+      color: var(--_fzl-color-primary);
+      text-decoration: underline;
+    }
+
+    .fzl-card-title:focus-visible {
+      outline: 2px solid var(--_fzl-color-primary);
+      outline-offset: 2px;
+      border-radius: var(--_fzl-radius-sm);
     }
 
     .fzl-card-subtitle {

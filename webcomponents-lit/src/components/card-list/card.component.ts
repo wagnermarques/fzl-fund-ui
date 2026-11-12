@@ -14,6 +14,7 @@ export type FzlBadgeVariant = 'default' | 'success' | 'warning' | 'danger' | 'in
  * @tag fzl-lit-card
  *
  * @fires {CustomEvent<{ expanded: boolean }>} fzl-card-toggle - Dispatched when card expansion state toggles
+ * @fires {CustomEvent<{ title: string; originalEvent: MouseEvent }>} fzl-card-title-click - Dispatched when card title is clicked
  * @fires {CustomEvent<{ action: string; originalEvent: MouseEvent }>} fzl-card-action - Dispatched when action button is clicked
  *
  * @csspart card - The card container
@@ -123,6 +124,20 @@ export class FzlLitCard extends FzlWidgetMixin(LitElement) {
         color: var(--_fzl-color-text);
         margin: 0;
         line-height: 1.3;
+        cursor: pointer;
+        user-select: none;
+        transition: color var(--_fzl-transition-fast), text-decoration var(--_fzl-transition-fast);
+      }
+
+      .fzl-card-title:hover {
+        color: var(--_fzl-color-primary);
+        text-decoration: underline;
+      }
+
+      .fzl-card-title:focus-visible {
+        outline: 2px solid var(--_fzl-color-primary);
+        outline-offset: 2px;
+        border-radius: var(--_fzl-radius-sm);
       }
 
       .fzl-card-subtitle {
@@ -264,6 +279,17 @@ export class FzlLitCard extends FzlWidgetMixin(LitElement) {
     return this.expanded;
   }
 
+  private _handleTitleTextClick(e: MouseEvent) {
+    e.stopPropagation();
+    this.dispatchEvent(
+      new CustomEvent("fzl-card-title-click", {
+        detail: { title: this.title, originalEvent: e },
+        bubbles: true,
+        composed: true,
+      })
+    );
+  }
+
   private _handleTitleClick(e: MouseEvent) {
     if (!this.collapsible) return;
     e.stopPropagation();
@@ -313,7 +339,21 @@ export class FzlLitCard extends FzlWidgetMixin(LitElement) {
               ${isCollapsible
                 ? html`<span class="fzl-card-accordion-chevron" aria-hidden="true">▾</span>`
                 : ''}
-              <slot name="title"><h3 class="fzl-card-title">${this.title}</h3></slot>
+              <slot name="title">
+                <h3
+                  class="fzl-card-title is-clickable"
+                  role="button"
+                  tabindex="0"
+                  @click=${this._handleTitleTextClick}
+                  @keydown=${(e: KeyboardEvent) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      this._handleTitleTextClick(e as unknown as MouseEvent);
+                    }
+                  }}
+                >${this.title}</h3>
+              </slot>
             </div>
             ${this.subtitle || this.querySelector('[slot="subtitle"]')
               ? html`<slot name="subtitle"><span class="fzl-card-subtitle">${this.subtitle}</span></slot>`

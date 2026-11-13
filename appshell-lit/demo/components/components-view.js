@@ -5,7 +5,7 @@ import { fzlTokens } from '@fzl/design-tokens'
 import { fzlRegistry, fzlFocus } from '@fzl/webcomponents-lit'
 import '@fzl/webcomponents-lit/button'
 import '@fzl/webcomponents-lit/crumb'
-import { catalog } from './catalog.js'
+import { catalog, componentCategories, findCategory } from './catalog.js'
 import { controlsFor, findDeclaration } from './manifest.js'
 
 const DEFAULT_PRIMARY = fzlTokens['color-primary']
@@ -51,6 +51,8 @@ const sharedStyles = css`
 /** #/componentes — a lista do catálogo. */
 export class ComponentsView extends LitElement {
   static properties = {
+    _selectedCategory: { state: true },
+    _searchQuery: { state: true },
     _labHc: { state: true },
     _labRm: { state: true },
     _labRtl: { state: true },
@@ -65,6 +67,123 @@ export class ComponentsView extends LitElement {
   static styles = [
     sharedStyles,
     css`
+      .catalog-toolbar {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+        margin-bottom: 28px;
+      }
+      .search-box {
+        position: relative;
+        display: flex;
+        align-items: center;
+        max-width: 460px;
+      }
+      .search-box md-icon {
+        position: absolute;
+        left: 12px;
+        color: var(--md-sys-color-on-surface-variant);
+        pointer-events: none;
+        font-size: 20px;
+      }
+      .search-box input {
+        width: 100%;
+        padding: 10px 36px 10px 40px;
+        border: 1px solid var(--md-sys-color-outline-variant);
+        border-radius: 999px;
+        background: var(--md-sys-color-surface);
+        color: inherit;
+        font-family: inherit;
+        font-size: 0.9rem;
+        outline: none;
+        transition: border-color 0.15s ease, box-shadow 0.15s ease;
+      }
+      .search-box input:focus {
+        border-color: var(--md-sys-color-primary);
+        box-shadow: 0 0 0 2px color-mix(in srgb, var(--md-sys-color-primary) 20%, transparent);
+      }
+      .search-clear {
+        position: absolute;
+        right: 8px;
+        background: none;
+        border: none;
+        color: var(--md-sys-color-on-surface-variant);
+        cursor: pointer;
+        padding: 4px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+      }
+      .search-clear:hover {
+        background: var(--md-sys-color-surface-variant);
+      }
+      .category-pills {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      .category-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 12px;
+        border-radius: 999px;
+        border: 1px solid var(--md-sys-color-outline-variant);
+        background: var(--md-sys-color-surface);
+        color: inherit;
+        font-family: inherit;
+        font-size: 0.82rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+      }
+      .category-pill:hover {
+        background: var(--md-sys-color-surface-variant);
+      }
+      .category-pill.active {
+        background: var(--md-sys-color-primary);
+        color: var(--md-sys-color-on-primary);
+        border-color: var(--md-sys-color-primary);
+      }
+      .pill-count {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 20px;
+        height: 18px;
+        padding: 0 5px;
+        border-radius: 999px;
+        font-size: 0.72rem;
+        font-weight: 600;
+        background: var(--md-sys-color-surface-container-high);
+        color: var(--md-sys-color-on-surface-variant);
+      }
+      .category-pill.active .pill-count {
+        background: rgba(255, 255, 255, 0.22);
+        color: inherit;
+      }
+      .category-section {
+        margin-bottom: 36px;
+      }
+      .category-header {
+        margin-bottom: 14px;
+        padding-bottom: 8px;
+        border-bottom: 1px solid var(--md-sys-color-outline-variant);
+      }
+      .category-title-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin: 0 0 4px;
+        font-size: 1.2rem;
+      }
+      .category-desc {
+        margin: 0;
+        font-size: 0.86rem;
+        color: var(--md-sys-color-on-surface-variant);
+        line-height: 1.45;
+      }
       .grid {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
@@ -99,6 +218,13 @@ export class ComponentsView extends LitElement {
         line-height: 1.45;
         color: var(--md-sys-color-on-surface-variant);
       }
+      .card-badges {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 6px;
+      }
       .impls {
         display: inline-flex;
         align-items: center;
@@ -109,6 +235,28 @@ export class ComponentsView extends LitElement {
         font-size: 0.75rem;
         font-weight: 500;
         width: fit-content;
+      }
+      .cat-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 3px 8px;
+        border-radius: 6px;
+        background: var(--md-sys-color-surface-variant);
+        color: var(--md-sys-color-on-surface-variant);
+        font-size: 0.72rem;
+        font-weight: 500;
+      }
+      .empty-catalog {
+        padding: 36px 20px;
+        text-align: center;
+        border: 1px dashed var(--md-sys-color-outline-variant);
+        border-radius: 12px;
+        color: var(--md-sys-color-on-surface-variant);
+      }
+      .empty-catalog md-icon {
+        font-size: 36px;
+        margin-bottom: 8px;
       }
       .infra-section {
         margin-top: 40px;
@@ -281,6 +429,8 @@ export class ComponentsView extends LitElement {
 
   constructor() {
     super()
+    this._selectedCategory = 'all'
+    this._searchQuery = ''
     this._labHc = false
     this._labRm = false
     this._labRtl = false
@@ -315,27 +465,146 @@ export class ComponentsView extends LitElement {
     this._labActiveId = host?.hasAttribute('data-fzl-active') ? widget.widgetId : ''
   }
 
+  _matchesQuery(component, query) {
+    if (!query) return true
+    const needle = query.trim().toLowerCase()
+    if (!needle) return true
+    if (component.name?.toLowerCase().includes(needle)) return true
+    if (component.id?.toLowerCase().includes(needle)) return true
+    if (component.summary?.toLowerCase().includes(needle)) return true
+    return (component.implementations ?? []).some((impl) => impl.tag?.toLowerCase().includes(needle))
+  }
+
+  _clearFilters() {
+    this._selectedCategory = 'all'
+    this._searchQuery = ''
+  }
+
+  _renderCard(component, showCategoryBadge = false) {
+    const category = findCategory(component.category)
+    return html`
+      <a class="card" href="#/componentes/${component.id}">
+        <div>
+          <h2><md-icon aria-hidden="true">${component.icon}</md-icon>${component.name}</h2>
+          <p>${component.summary}</p>
+        </div>
+        <div class="card-badges">
+          <div class="impls">${component.implementations.map((impl) => impl.label).join(' · ')}</div>
+          ${showCategoryBadge && category
+            ? html`<span class="cat-badge">${category.emoji} ${category.shortLabel}</span>`
+            : nothing}
+        </div>
+      </a>
+    `
+  }
+
   render() {
     const registeredCount = fzlRegistry.length
+    const query = this._searchQuery.trim()
+    const searchMatching = catalog.filter((c) => this._matchesQuery(c, query))
+    const visibleCategories =
+      this._selectedCategory === 'all'
+        ? componentCategories
+        : componentCategories.filter((cat) => cat.id === this._selectedCategory)
+
+    const sections = visibleCategories
+      .map((category) => ({
+        category,
+        items: searchMatching.filter((c) => c.category === category.id),
+      }))
+      .filter((section) => section.items.length > 0)
+
+    const totalVisible = sections.reduce((acc, s) => acc + s.items.length, 0)
+
     return html`
       <h1>Componentes</h1>
       <p class="subtitle">
-        Documentação viva e playground interativo dos web components: cada página apresenta o componente funcionando no palco,
-        com controles reativos, código gerado, histórico de eventos, tabela de API e especificação técnica.
+        Documentação viva e playground interativo dos web components classificados por domínio: cada página apresenta o
+        componente funcionando no palco, com controles reativos, código gerado, histórico de eventos e tabela de API.
       </p>
-      <div class="grid">
-        ${catalog.map(
-          (component) => html`
-            <a class="card" href="#/componentes/${component.id}">
-              <div>
-                <h2><md-icon aria-hidden="true">${component.icon}</md-icon>${component.name}</h2>
-                <p>${component.summary}</p>
-              </div>
-              <div class="impls">${component.implementations.map((impl) => impl.label).join(' · ')}</div>
-            </a>
-          `,
-        )}
+
+      <div class="catalog-toolbar" role="search" aria-label="Filtrar catálogo de componentes">
+        <div class="search-box">
+          <md-icon aria-hidden="true">search</md-icon>
+          <input
+            type="search"
+            aria-label="Filtrar componentes por nome, tag ou funcionalidade"
+            placeholder="Filtrar componentes por nome, tag ou funcionalidade..."
+            .value=${this._searchQuery}
+            @input=${(e) => {
+              this._searchQuery = e.target.value
+            }}
+          />
+          ${this._searchQuery
+            ? html`
+                <button
+                  type="button"
+                  class="search-clear"
+                  aria-label="Limpar busca"
+                  @click=${() => (this._searchQuery = '')}
+                >
+                  <md-icon aria-hidden="true">close</md-icon>
+                </button>
+              `
+            : nothing}
+        </div>
+
+        <div class="category-pills" role="tablist" aria-label="Categorias de componentes">
+          <button
+            type="button"
+            role="tab"
+            class="category-pill ${this._selectedCategory === 'all' ? 'active' : ''}"
+            aria-selected=${this._selectedCategory === 'all' ? 'true' : 'false'}
+            @click=${() => (this._selectedCategory = 'all')}
+          >
+            <span>Todos</span>
+            <span class="pill-count">${searchMatching.length}</span>
+          </button>
+          ${componentCategories.map((cat) => {
+            const count = searchMatching.filter((c) => c.category === cat.id).length
+            const isActive = this._selectedCategory === cat.id
+            return html`
+              <button
+                type="button"
+                role="tab"
+                class="category-pill ${isActive ? 'active' : ''}"
+                aria-selected=${isActive ? 'true' : 'false'}
+                @click=${() => (this._selectedCategory = cat.id)}
+              >
+                <span aria-hidden="true">${cat.emoji}</span>
+                <span>${cat.shortLabel}</span>
+                <span class="pill-count">${count}</span>
+              </button>
+            `
+          })}
+        </div>
       </div>
+
+      ${totalVisible === 0
+        ? html`
+            <div class="empty-catalog">
+              <md-icon aria-hidden="true">search_off</md-icon>
+              <p>Nenhum componente encontrado para os filtros aplicados.</p>
+              <md-outlined-button @click=${this._clearFilters}>Limpar filtros</md-outlined-button>
+            </div>
+          `
+        : sections.map(
+            (section) => html`
+              <section class="category-section" aria-labelledby="cat-${section.category.id}">
+                <header class="category-header">
+                  <h2 id="cat-${section.category.id}" class="category-title-row">
+                    <span aria-hidden="true">${section.category.emoji}</span>
+                    <span>${section.category.name}</span>
+                    <span class="pill-count">${section.items.length}</span>
+                  </h2>
+                  <p class="category-desc">${section.category.description}</p>
+                </header>
+                <div class="grid">
+                  ${section.items.map((component) => this._renderCard(component, Boolean(query)))}
+                </div>
+              </section>
+            `,
+          )}
 
       <section class="infra-section" aria-labelledby="components-infra-heading">
         <h2 id="components-infra-heading" class="infra-header">
@@ -530,6 +799,31 @@ export class ComponentDocsView extends LitElement {
   static styles = [
     sharedStyles,
     css`
+      .docs-title-row {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-bottom: 4px;
+      }
+      .docs-title-row h1 {
+        margin: 0;
+      }
+      .docs-category-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 10px;
+        border-radius: 999px;
+        background: var(--md-sys-color-surface-container-high);
+        color: var(--md-sys-color-primary);
+        font-size: 0.78rem;
+        font-weight: 500;
+        text-decoration: none;
+      }
+      .docs-category-badge:hover {
+        background: var(--md-sys-color-surface-variant);
+      }
       .impl-tabs {
         display: flex;
         flex-wrap: wrap;
@@ -896,8 +1190,19 @@ export class ComponentDocsView extends LitElement {
     const impl = this._implementation
     if (!component || !impl) return html`<p>Componente não encontrado. <a href="#/componentes">Ver todos</a></p>`
     const declaration = findDeclaration(impl.manifest, impl.tag)
+    const category = findCategory(component.category)
     return html`
-      <h1>${component.name}</h1>
+      <div class="docs-title-row">
+        <h1>${component.name}</h1>
+        ${category
+          ? html`
+              <a class="docs-category-badge" href="#/componentes" title="${category.description}">
+                <span aria-hidden="true">${category.emoji}</span>
+                <span>${category.name}</span>
+              </a>
+            `
+          : nothing}
+      </div>
       <p class="subtitle">${declaration?.description ?? component.summary}</p>
 
       <nav class="impl-tabs" aria-label="Implementações">

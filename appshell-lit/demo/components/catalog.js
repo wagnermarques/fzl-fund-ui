@@ -25,6 +25,82 @@ import interviewTranscriberDoc from '../../../docs/components/interview-transcri
 import contactPickerDoc from '../../../docs/components/contact-picker.md?raw'
 import cameraCaptureDoc from '../../../docs/components/camera-capture.md?raw'
 
+/** Categorias taxonômicas para classificação dos Web Components do ecossistema FZL. */
+export const componentCategories = [
+  {
+    id: 'mobile',
+    name: 'Mobile & Dispositivos Nativos',
+    shortLabel: 'Mobile',
+    icon: 'smartphone',
+    emoji: '📱',
+    description:
+      'Integração direta com recursos de hardware do celular e APIs W3C modernas (Contact Picker, MediaDevices, Web Push) com fallback elegante para desktop.',
+  },
+  {
+    id: 'forms',
+    name: 'Formulários & Controles de Entrada',
+    shortLabel: 'Formulários',
+    icon: 'edit_note',
+    emoji: '📝',
+    description:
+      'Controles de entrada de dados, validação agregada, upload/corte de imagem e botões acessíveis com suporte a disparo typematic.',
+  },
+  {
+    id: 'data',
+    name: 'Apresentação de Dados & Grades',
+    shortLabel: 'Dados & Grades',
+    icon: 'table_chart',
+    emoji: '📊',
+    description:
+      'Exibição estruturada de coleções e tabelas de dados reativas conectadas ao FzlStore (dojo/store), com paginação, busca, ordenação e exportação.',
+  },
+  {
+    id: 'navigation',
+    name: 'Navegação & Estrutura de Layout',
+    shortLabel: 'Navegação',
+    icon: 'explore',
+    emoji: '🧭',
+    description:
+      'Orientação espacial (wayfinding), trilhas estruturais (breadcrumbs), menus sanfonados e barras mestras de cabeçalho e rodapé.',
+  },
+  {
+    id: 'multimedia',
+    name: 'Multimídia & Pesquisa Qualitativa',
+    shortLabel: 'Multimídia',
+    icon: 'mic',
+    emoji: '🎙️',
+    description:
+      'Captura de áudio em alta fidelidade, medição sonora em tempo real (VU Meter), transcrição ao vivo e instrumentação de entrevistas de campo.',
+  },
+  {
+    id: 'geo',
+    name: 'Geoespacial & Mapas (GIS)',
+    shortLabel: 'Geoespacial',
+    icon: 'map',
+    emoji: '🗺️',
+    description:
+      'Visualização cartográfica interativa, gerenciamento de camadas vetoriais, alternador de mapas-base e integração às malhas estatísticas do IBGE.',
+  },
+  {
+    id: 'reader',
+    name: 'Conteúdo, Leitura & Estudo Interativo',
+    shortLabel: 'Leitor & Conteúdo',
+    icon: 'menu_book',
+    emoji: '📖',
+    description:
+      'Leitura imersiva, seleção de texto sem conflito com gestos nativos, barra flutuante arrastável de marcações e seletores de capítulos em chips.',
+  },
+  {
+    id: 'system',
+    name: 'Sistema, AppShell & Conformidade (LGPD)',
+    shortLabel: 'Sistema & LGPD',
+    icon: 'security',
+    emoji: '⚙️',
+    description:
+      'Módulos de infraestrutura da casca da aplicação, gestão de consentimento e privacidade (LGPD/GDPR), telemetria de rede, perfil e relógio.',
+  },
+]
+
 /** Catálogo da documentação viva (#/componentes). Cada componente aponta
  *  para a sua especificação em docs/components/ (o texto) e para as
  *  implementações do monorepo; a API (atributos, eventos, slots, parts) e
@@ -32,6 +108,7 @@ import cameraCaptureDoc from '../../../docs/components/camera-capture.md?raw'
 export const catalog = [
   {
     id: 'button',
+    category: 'forms',
     name: 'Button',
     icon: 'smart_button',
     summary:
@@ -67,6 +144,7 @@ export const catalog = [
   },
   {
     id: 'crumb',
+    category: 'navigation',
     name: 'Crumb (Breadcrumb)',
     icon: 'linear_scale',
     summary:
@@ -106,6 +184,7 @@ export const catalog = [
   },
   {
     id: 'card-list',
+    category: 'data',
     name: 'Card List',
     icon: 'dashboard_customize',
     summary:
@@ -216,6 +295,7 @@ export const catalog = [
   },
   {
     id: 'reader-chapterview',
+    category: 'reader',
     name: 'Reader ChapterView (Chip)',
     icon: 'label',
     summary:
@@ -280,6 +360,7 @@ export const catalog = [
   },
   {
     id: 'reader-chapterview-group',
+    category: 'reader',
     name: 'Reader ChapterView Group',
     icon: 'view_timeline',
     summary:
@@ -314,6 +395,7 @@ export const catalog = [
   },
   {
     id: 'avatar-upload',
+    category: 'forms',
     name: 'Avatar Upload & Crop',
     icon: 'account_circle',
     summary:
@@ -339,6 +421,7 @@ export const catalog = [
   },
   {
     id: 'connection-status',
+    category: 'system',
     name: 'Connection Status',
     icon: 'wifi',
     summary:
@@ -357,6 +440,7 @@ export const catalog = [
   },
   {
     id: 'app-clock',
+    category: 'system',
     name: 'App Clock',
     icon: 'schedule',
     summary:
@@ -375,6 +459,7 @@ export const catalog = [
   },
   {
     id: 'app-version',
+    category: 'system',
     name: 'App Version',
     icon: 'tag',
     summary:
@@ -393,6 +478,7 @@ export const catalog = [
   },
   {
     id: 'nav-accordion',
+    category: 'navigation',
     name: 'Nav Accordion',
     icon: 'expand_more',
     summary:
@@ -417,6 +503,7 @@ export const catalog = [
   },
   {
     id: 'app-header',
+    category: 'navigation',
     name: 'App Header',
     icon: 'web_asset',
     summary:
@@ -439,6 +526,7 @@ export const catalog = [
   },
   {
     id: 'app-footer',
+    category: 'navigation',
     name: 'App Footer',
     icon: 'bottom_panel_open',
     summary:
@@ -458,6 +546,7 @@ export const catalog = [
   },
   {
     id: 'consent-banner',
+    category: 'system',
     name: 'Consent Banner (LGPD)',
     icon: 'cookie',
     summary:
@@ -480,6 +569,7 @@ export const catalog = [
   },
   {
     id: 'user-status',
+    category: 'system',
     name: 'User Status & Notifications',
     icon: 'notifications',
     summary:
@@ -499,6 +589,7 @@ export const catalog = [
   },
   {
     id: 'web-push',
+    category: 'mobile',
     name: 'Web Push',
     icon: 'send_to_mobile',
     summary:
@@ -523,6 +614,7 @@ export const catalog = [
   },
   {
     id: 'geo-explorer',
+    category: 'geo',
     name: 'Explorador Geográfico & Malhas IBGE',
     icon: 'map',
     summary:
@@ -550,6 +642,7 @@ export const catalog = [
   },
   {
     id: 'form',
+    category: 'forms',
     name: 'Formulário & Controles de Entrada',
     icon: 'edit_note',
     summary:
@@ -569,6 +662,7 @@ export const catalog = [
   },
   {
     id: 'data-grid',
+    category: 'data',
     name: 'DataGrid Reativo',
     icon: 'table_chart',
     summary:
@@ -604,6 +698,7 @@ export const catalog = [
   },
   {
     id: 'reader-mark-bar',
+    category: 'reader',
     name: 'Barra de Marcação do Leitor (Draggable Floating Island)',
     icon: 'brush',
     summary:
@@ -628,6 +723,7 @@ export const catalog = [
   },
   {
     id: 'reader-content',
+    category: 'reader',
     name: 'Área de Leitura & Grifos Interativos',
     icon: 'menu_book',
     summary:
@@ -651,6 +747,7 @@ export const catalog = [
   },
   {
     id: 'interview-transcriber',
+    category: 'multimedia',
     name: 'Gravador & Transcritor Qualitativo',
     icon: 'mic',
     summary:
@@ -679,6 +776,7 @@ export const catalog = [
   },
   {
     id: 'contact-picker',
+    category: 'mobile',
     name: 'Seletor de Contatos Mobile',
     icon: 'contacts',
     summary:
@@ -705,6 +803,7 @@ export const catalog = [
   },
   {
     id: 'camera-capture',
+    category: 'mobile',
     name: 'Câmera, Foto & Vídeo',
     icon: 'photo_camera',
     summary:
@@ -735,4 +834,8 @@ export const catalog = [
 
 export function findComponent(id) {
   return catalog.find((component) => component.id === id)
+}
+
+export function findCategory(categoryId) {
+  return componentCategories.find((category) => category.id === categoryId)
 }

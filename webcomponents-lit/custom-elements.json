@@ -230,6 +230,38 @@
             "name": "*",
             "module": "src/components/interview-transcriber/interview-transcriber.component"
           }
+        },
+        {
+          "kind": "js",
+          "name": "*",
+          "declaration": {
+            "name": "*",
+            "module": "src/components/contact-picker/contact-picker.types"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "*",
+          "declaration": {
+            "name": "*",
+            "module": "src/components/contact-picker/contact-picker.component"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "*",
+          "declaration": {
+            "name": "*",
+            "module": "src/components/camera-capture/camera-capture.types"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "*",
+          "declaration": {
+            "name": "*",
+            "module": "src/components/camera-capture/camera-capture.component"
+          }
         }
       ]
     },
@@ -1647,6 +1679,1696 @@
     },
     {
       "kind": "javascript-module",
+      "path": "src/components/button/button.component.ts",
+      "declarations": [
+        {
+          "kind": "class",
+          "description": "Reactive Lit-based Custom Element button with Shadow DOM encapsulation.",
+          "name": "FzlLitButton",
+          "cssParts": [
+            {
+              "description": "The internal native `<button>` element",
+              "name": "button"
+            }
+          ],
+          "slots": [
+            {
+              "description": "Content to be displayed inside the button",
+              "name": ""
+            }
+          ],
+          "members": [
+            {
+              "kind": "field",
+              "name": "shadowRootOptions",
+              "type": {
+                "text": "ShadowRootInit"
+              },
+              "static": true,
+              "default": "{ ...LitElement.shadowRootOptions, delegatesFocus: true, }"
+            },
+            {
+              "kind": "field",
+              "name": "variant",
+              "type": {
+                "text": "FzlButtonVariant"
+              },
+              "default": "'primary'",
+              "description": "Visual appearance variant",
+              "attribute": "variant",
+              "reflects": true
+            },
+            {
+              "kind": "field",
+              "name": "size",
+              "type": {
+                "text": "FzlButtonSize"
+              },
+              "default": "'md'",
+              "description": "Size scale of the button",
+              "attribute": "size",
+              "reflects": true
+            },
+            {
+              "kind": "field",
+              "name": "disabled",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false",
+              "description": "Whether the button is disabled",
+              "attribute": "disabled",
+              "reflects": true
+            },
+            {
+              "kind": "field",
+              "name": "type",
+              "type": {
+                "text": "'button' | 'submit' | 'reset'"
+              },
+              "default": "'button'",
+              "description": "Form button behavior",
+              "attribute": "type",
+              "reflects": true
+            },
+            {
+              "kind": "field",
+              "name": "typematic",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false",
+              "description": "Enables typematic repeat firing of `fzl-click` while held down",
+              "attribute": "typematic",
+              "reflects": true
+            },
+            {
+              "kind": "field",
+              "name": "_typematicCleanup",
+              "type": {
+                "text": "(() => void) | null"
+              },
+              "privacy": "private",
+              "default": "null"
+            },
+            {
+              "kind": "field",
+              "name": "_lastTypematicTick",
+              "type": {
+                "text": "boolean"
+              },
+              "privacy": "private",
+              "default": "false"
+            },
+            {
+              "kind": "method",
+              "name": "_clearTypematic",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              }
+            },
+            {
+              "kind": "method",
+              "name": "_syncTypematic",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              }
+            },
+            {
+              "kind": "method",
+              "name": "_handleClick",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "event",
+                  "type": {
+                    "text": "MouseEvent"
+                  }
+                }
+              ]
+            }
+          ],
+          "events": [
+            {
+              "type": {
+                "text": "CustomEvent<{ originalEvent: MouseEvent | KeyboardEvent; repeatCount?: number }>"
+              },
+              "description": "Dispatched when the button is activated",
+              "name": "fzl-click"
+            },
+            {
+              "type": {
+                "text": "CustomEvent<{ widgetId: string; originalEvent: FocusEvent }>"
+              },
+              "description": "Dispatched when the widget gains focus",
+              "name": "fzl-focus"
+            },
+            {
+              "type": {
+                "text": "CustomEvent<{ widgetId: string; originalEvent: FocusEvent }>"
+              },
+              "description": "Dispatched when the widget loses focus",
+              "name": "fzl-blur"
+            }
+          ],
+          "attributes": [
+            {
+              "name": "variant",
+              "type": {
+                "text": "FzlButtonVariant"
+              },
+              "default": "'primary'",
+              "description": "Visual appearance variant",
+              "fieldName": "variant",
+              "attribute": "variant"
+            },
+            {
+              "name": "size",
+              "type": {
+                "text": "FzlButtonSize"
+              },
+              "default": "'md'",
+              "description": "Size scale of the button",
+              "fieldName": "size",
+              "attribute": "size"
+            },
+            {
+              "name": "disabled",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false",
+              "description": "Whether the button is disabled",
+              "fieldName": "disabled",
+              "attribute": "disabled"
+            },
+            {
+              "name": "type",
+              "type": {
+                "text": "'button' | 'submit' | 'reset'"
+              },
+              "default": "'button'",
+              "description": "Form button behavior",
+              "fieldName": "type",
+              "attribute": "type"
+            },
+            {
+              "name": "typematic",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false",
+              "description": "Enables typematic repeat firing of `fzl-click` while held down",
+              "fieldName": "typematic",
+              "attribute": "typematic"
+            }
+          ],
+          "mixins": [
+            {
+              "name": "FzlWidgetMixin",
+              "package": "@fzl/core"
+            }
+          ],
+          "superclass": {
+            "name": "LitElement",
+            "package": "lit"
+          },
+          "tagName": "fzl-lit-button",
+          "customElement": true
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "FzlLitButton",
+          "declaration": {
+            "name": "FzlLitButton",
+            "module": "src/components/button/button.component.ts"
+          }
+        },
+        {
+          "kind": "custom-element-definition",
+          "name": "fzl-lit-button",
+          "declaration": {
+            "name": "FzlLitButton",
+            "module": "src/components/button/button.component.ts"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/components/camera-capture/camera-capture.component.ts",
+      "declarations": [
+        {
+          "kind": "class",
+          "description": "Mobile-first Camera, Photo and Video Capture Web Component (`fzl-camera-capture`).\n\nProvides a native-like mobile camera viewfinder with live streaming, camera flipping\n(front/rear), torch/flashlight support, document/face framing guidelines,\nhigh-resolution photo snapshots via HTML5 Canvas, and video recording with MediaRecorder,\ncomplete with fallback to HTML5 Media Capture.",
+          "name": "FzlCameraCapture",
+          "cssParts": [
+            {
+              "description": "The outer root container",
+              "name": "container"
+            },
+            {
+              "description": "The camera video stream container",
+              "name": "viewfinder"
+            },
+            {
+              "description": "The bottom shutter and control buttons bar",
+              "name": "controls"
+            },
+            {
+              "description": "The review screen container",
+              "name": "review"
+            }
+          ],
+          "members": [
+            {
+              "kind": "field",
+              "name": "mode",
+              "type": {
+                "text": "FzlCameraMode"
+              },
+              "default": "'both'",
+              "attribute": "mode"
+            },
+            {
+              "kind": "field",
+              "name": "facingMode",
+              "type": {
+                "text": "FzlCameraFacing"
+              },
+              "default": "'environment'",
+              "attribute": "facing-mode"
+            },
+            {
+              "kind": "field",
+              "name": "overlay",
+              "type": {
+                "text": "FzlCaptureOverlay"
+              },
+              "default": "'none'",
+              "attribute": "overlay"
+            },
+            {
+              "kind": "field",
+              "name": "maxVideoDuration",
+              "type": {
+                "text": "number"
+              },
+              "default": "60",
+              "attribute": "max-video-duration"
+            },
+            {
+              "kind": "field",
+              "name": "imageQuality",
+              "type": {
+                "text": "number"
+              },
+              "default": "0.92",
+              "attribute": "image-quality"
+            },
+            {
+              "kind": "field",
+              "name": "imageFormat",
+              "type": {
+                "text": "'image/jpeg' | 'image/webp' | 'image/png'"
+              },
+              "default": "'image/jpeg'",
+              "attribute": "image-format"
+            },
+            {
+              "kind": "field",
+              "name": "allowTorch",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "true",
+              "attribute": "allow-torch"
+            },
+            {
+              "kind": "field",
+              "name": "allowFlip",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "true",
+              "attribute": "allow-flip"
+            },
+            {
+              "kind": "field",
+              "name": "countdown",
+              "type": {
+                "text": "number"
+              },
+              "default": "0",
+              "attribute": "countdown"
+            },
+            {
+              "kind": "field",
+              "name": "disabled",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false",
+              "attribute": "disabled"
+            },
+            {
+              "kind": "field",
+              "name": "_isStreaming",
+              "type": {
+                "text": "boolean"
+              },
+              "privacy": "private",
+              "default": "false"
+            },
+            {
+              "kind": "field",
+              "name": "_currentFacing",
+              "type": {
+                "text": "FzlCameraFacing"
+              },
+              "privacy": "private",
+              "default": "'environment'"
+            },
+            {
+              "kind": "field",
+              "name": "_activeMode",
+              "type": {
+                "text": "'photo' | 'video'"
+              },
+              "privacy": "private",
+              "default": "'photo'"
+            },
+            {
+              "kind": "field",
+              "name": "_hasTorch",
+              "type": {
+                "text": "boolean"
+              },
+              "privacy": "private",
+              "default": "false"
+            },
+            {
+              "kind": "field",
+              "name": "_isTorchOn",
+              "type": {
+                "text": "boolean"
+              },
+              "privacy": "private",
+              "default": "false"
+            },
+            {
+              "kind": "field",
+              "name": "_isRecording",
+              "type": {
+                "text": "boolean"
+              },
+              "privacy": "private",
+              "default": "false"
+            },
+            {
+              "kind": "field",
+              "name": "_recordingSeconds",
+              "type": {
+                "text": "number"
+              },
+              "privacy": "private",
+              "default": "0"
+            },
+            {
+              "kind": "field",
+              "name": "_countdownActive",
+              "type": {
+                "text": "number | null"
+              },
+              "privacy": "private",
+              "default": "null"
+            },
+            {
+              "kind": "field",
+              "name": "_previewPhoto",
+              "type": {
+                "text": "FzlCapturedPhoto | null"
+              },
+              "privacy": "private",
+              "default": "null"
+            },
+            {
+              "kind": "field",
+              "name": "_previewVideo",
+              "type": {
+                "text": "FzlCapturedVideo | null"
+              },
+              "privacy": "private",
+              "default": "null"
+            },
+            {
+              "kind": "field",
+              "name": "_errorMessage",
+              "type": {
+                "text": "string"
+              },
+              "privacy": "private",
+              "default": "''"
+            },
+            {
+              "kind": "field",
+              "name": "_videoEl",
+              "type": {
+                "text": "HTMLVideoElement | undefined"
+              },
+              "privacy": "private"
+            },
+            {
+              "kind": "field",
+              "name": "_stream",
+              "type": {
+                "text": "MediaStream | null"
+              },
+              "privacy": "private",
+              "default": "null"
+            },
+            {
+              "kind": "field",
+              "name": "_mediaRecorder",
+              "type": {
+                "text": "MediaRecorder | null"
+              },
+              "privacy": "private",
+              "default": "null"
+            },
+            {
+              "kind": "field",
+              "name": "_recordedChunks",
+              "type": {
+                "text": "Blob[]"
+              },
+              "privacy": "private",
+              "default": "[]"
+            },
+            {
+              "kind": "field",
+              "name": "_recordTimer",
+              "type": {
+                "text": "any"
+              },
+              "privacy": "private",
+              "default": "null"
+            },
+            {
+              "kind": "field",
+              "name": "_countdownTimer",
+              "type": {
+                "text": "any"
+              },
+              "privacy": "private",
+              "default": "null"
+            },
+            {
+              "kind": "method",
+              "name": "_clearTimers",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              }
+            },
+            {
+              "kind": "method",
+              "name": "startCamera",
+              "return": {
+                "type": {
+                  "text": "Promise<void>"
+                }
+              },
+              "description": "Starts the camera stream."
+            },
+            {
+              "kind": "method",
+              "name": "_stopStream",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              }
+            },
+            {
+              "kind": "method",
+              "name": "flipCamera",
+              "return": {
+                "type": {
+                  "text": "Promise<void>"
+                }
+              },
+              "description": "Flips between front and rear cameras."
+            },
+            {
+              "kind": "method",
+              "name": "toggleTorch",
+              "return": {
+                "type": {
+                  "text": "Promise<void>"
+                }
+              },
+              "description": "Toggles flashlight / torch if supported."
+            },
+            {
+              "kind": "method",
+              "name": "takePhoto",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "description": "Triggers a photo capture with optional countdown."
+            },
+            {
+              "kind": "method",
+              "name": "_captureSnapshot",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              }
+            },
+            {
+              "kind": "method",
+              "name": "toggleRecordVideo",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "description": "Starts or stops video recording via MediaRecorder."
+            },
+            {
+              "kind": "method",
+              "name": "_startRecording",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              }
+            },
+            {
+              "kind": "method",
+              "name": "_stopRecording",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              }
+            },
+            {
+              "kind": "method",
+              "name": "_discardReview",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              }
+            },
+            {
+              "kind": "method",
+              "name": "_confirmPhoto",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              }
+            },
+            {
+              "kind": "method",
+              "name": "_confirmVideo",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              }
+            },
+            {
+              "kind": "method",
+              "name": "_handleFallbackFile",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "Promise<void>"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "files",
+                  "type": {
+                    "text": "FileList | null"
+                  }
+                }
+              ]
+            }
+          ],
+          "events": [
+            {
+              "name": "fzl-camera-ready",
+              "type": {
+                "text": "CustomEvent<{ stream: MediaStream; facingMode: string }>"
+              },
+              "description": "Dispatched when camera stream begins"
+            },
+            {
+              "name": "fzl-camera-error",
+              "type": {
+                "text": "CustomEvent<{ error: string }>"
+              },
+              "description": "Dispatched when camera access fails"
+            },
+            {
+              "name": "fzl-camera-stop",
+              "type": {
+                "text": "CustomEvent<void>"
+              },
+              "description": "Dispatched when camera stream is closed"
+            },
+            {
+              "name": "fzl-capture-photo",
+              "type": {
+                "text": "CustomEvent<{ photo: FzlCapturedPhoto }>"
+              },
+              "description": "Dispatched when a photo is confirmed"
+            },
+            {
+              "name": "fzl-capture-video",
+              "type": {
+                "text": "CustomEvent<{ video: FzlCapturedVideo }>"
+              },
+              "description": "Dispatched when a video recording is confirmed"
+            }
+          ],
+          "attributes": [
+            {
+              "type": {
+                "text": "FzlCameraMode"
+              },
+              "description": "Capture mode",
+              "name": "mode",
+              "default": "'both'",
+              "fieldName": "mode"
+            },
+            {
+              "type": {
+                "text": "FzlCameraFacing"
+              },
+              "description": "Initial camera direction",
+              "name": "facing-mode",
+              "default": "'environment'",
+              "fieldName": "facingMode"
+            },
+            {
+              "type": {
+                "text": "FzlCaptureOverlay"
+              },
+              "description": "Framing overlay guide",
+              "name": "overlay",
+              "default": "'none'",
+              "fieldName": "overlay"
+            },
+            {
+              "type": {
+                "text": "number"
+              },
+              "description": "Max recording duration in seconds",
+              "name": "max-video-duration",
+              "default": "60",
+              "fieldName": "maxVideoDuration"
+            },
+            {
+              "type": {
+                "text": "number"
+              },
+              "description": "JPEG/WebP compression quality (0.1 to 1.0)",
+              "name": "image-quality",
+              "default": "0.92",
+              "fieldName": "imageQuality"
+            },
+            {
+              "type": {
+                "text": "'image/jpeg' | 'image/webp' | 'image/png'"
+              },
+              "description": "Photo MIME type",
+              "name": "image-format",
+              "default": "'image/jpeg'",
+              "fieldName": "imageFormat"
+            },
+            {
+              "type": {
+                "text": "boolean"
+              },
+              "description": "Whether to allow flashlight/torch control",
+              "name": "allow-torch",
+              "default": "true",
+              "fieldName": "allowTorch"
+            },
+            {
+              "type": {
+                "text": "boolean"
+              },
+              "description": "Whether to allow switching cameras",
+              "name": "allow-flip",
+              "default": "true",
+              "fieldName": "allowFlip"
+            },
+            {
+              "type": {
+                "text": "number"
+              },
+              "description": "Photo countdown timer in seconds (0 = instant)",
+              "name": "countdown",
+              "default": "0",
+              "fieldName": "countdown"
+            },
+            {
+              "type": {
+                "text": "boolean"
+              },
+              "description": "Disables interactions",
+              "name": "disabled",
+              "default": "false",
+              "fieldName": "disabled"
+            }
+          ],
+          "mixins": [
+            {
+              "name": "FzlWidgetMixin",
+              "package": "@fzl/core"
+            }
+          ],
+          "superclass": {
+            "name": "LitElement",
+            "package": "lit"
+          },
+          "tagName": "fzl-camera-capture",
+          "customElement": true
+        },
+        {
+          "kind": "class",
+          "description": "",
+          "name": "FzlLitCameraCapture",
+          "superclass": {
+            "name": "FzlCameraCapture",
+            "module": "src/components/camera-capture/camera-capture.component.ts"
+          },
+          "tagName": "fzl-lit-camera-capture",
+          "customElement": true,
+          "cssParts": [
+            {
+              "description": "The outer root container",
+              "name": "container",
+              "inheritedFrom": {
+                "name": "FzlCameraCapture",
+                "module": "src/components/camera-capture/camera-capture.component.ts"
+              }
+            },
+            {
+              "description": "The camera video stream container",
+              "name": "viewfinder",
+              "inheritedFrom": {
+                "name": "FzlCameraCapture",
+                "module": "src/components/camera-capture/camera-capture.component.ts"
+              }
+            },
+            {
+              "description": "The bottom shutter and control buttons bar",
+              "name": "controls",
+              "inheritedFrom": {
+                "name": "FzlCameraCapture",
+                "module": "src/components/camera-capture/camera-capture.component.ts"
+              }
+            },
+            {
+              "description": "The review screen container",
+              "name": "review",
+              "inheritedFrom": {
+                "name": "FzlCameraCapture",
+                "module": "src/components/camera-capture/camera-capture.component.ts"
+              }
+            }
+          ],
+          "attributes": [
+            {
+              "type": {
+                "text": "FzlCameraMode"
+              },
+              "description": "Capture mode",
+              "name": "mode",
+              "default": "'both'",
+              "fieldName": "mode",
+              "inheritedFrom": {
+                "name": "FzlCameraCapture",
+                "module": "src/components/camera-capture/camera-capture.component.ts"
+              }
+            },
+            {
+              "type": {
+                "text": "FzlCameraFacing"
+              },
+              "description": "Initial camera direction",
+              "name": "facing-mode",
+              "default": "'environment'",
+              "fieldName": "facingMode",
+              "inheritedFrom": {
+                "name": "FzlCameraCapture",
+                "module": "src/components/camera-capture/camera-capture.component.ts"
+              }
+            },
+            {
+              "type": {
+                "text": "FzlCaptureOverlay"
+              },
+              "description": "Framing overlay guide",
+              "name": "overlay",
+              "default": "'none'",
+              "fieldName": "overlay",
+              "inheritedFrom": {
+                "name": "FzlCameraCapture",
+                "module": "src/components/camera-capture/camera-capture.component.ts"
+              }
+            },
+            {
+              "type": {
+                "text": "number"
+              },
+              "description": "Max recording duration in seconds",
+              "name": "max-video-duration",
+              "default": "60",
+              "fieldName": "maxVideoDuration",
+              "inheritedFrom": {
+                "name": "FzlCameraCapture",
+                "module": "src/components/camera-capture/camera-capture.component.ts"
+              }
+            },
+            {
+              "type": {
+                "text": "number"
+              },
+              "description": "JPEG/WebP compression quality (0.1 to 1.0)",
+              "name": "image-quality",
+              "default": "0.92",
+              "fieldName": "imageQuality",
+              "inheritedFrom": {
+                "name": "FzlCameraCapture",
+                "module": "src/components/camera-capture/camera-capture.component.ts"
+              }
+            },
+            {
+              "type": {
+                "text": "'image/jpeg' | 'image/webp' | 'image/png'"
+              },
+              "description": "Photo MIME type",
+              "name": "image-format",
+              "default": "'image/jpeg'",
+              "fieldName": "imageFormat",
+              "inheritedFrom": {
+                "name": "FzlCameraCapture",
+                "module": "src/components/camera-capture/camera-capture.component.ts"
+              }
+            },
+            {
+              "type": {
+                "text": "boolean"
+              },
+              "description": "Whether to allow flashlight/torch control",
+              "name": "allow-torch",
+              "default": "true",
+              "fieldName": "allowTorch",
+              "inheritedFrom": {
+                "name": "FzlCameraCapture",
+                "module": "src/components/camera-capture/camera-capture.component.ts"
+              }
+            },
+            {
+              "type": {
+                "text": "boolean"
+              },
+              "description": "Whether to allow switching cameras",
+              "name": "allow-flip",
+              "default": "true",
+              "fieldName": "allowFlip",
+              "inheritedFrom": {
+                "name": "FzlCameraCapture",
+                "module": "src/components/camera-capture/camera-capture.component.ts"
+              }
+            },
+            {
+              "type": {
+                "text": "number"
+              },
+              "description": "Photo countdown timer in seconds (0 = instant)",
+              "name": "countdown",
+              "default": "0",
+              "fieldName": "countdown",
+              "inheritedFrom": {
+                "name": "FzlCameraCapture",
+                "module": "src/components/camera-capture/camera-capture.component.ts"
+              }
+            },
+            {
+              "type": {
+                "text": "boolean"
+              },
+              "description": "Disables interactions",
+              "name": "disabled",
+              "default": "false",
+              "fieldName": "disabled",
+              "inheritedFrom": {
+                "name": "FzlCameraCapture",
+                "module": "src/components/camera-capture/camera-capture.component.ts"
+              }
+            }
+          ],
+          "members": [
+            {
+              "kind": "field",
+              "name": "mode",
+              "type": {
+                "text": "FzlCameraMode"
+              },
+              "default": "'both'",
+              "attribute": "mode",
+              "inheritedFrom": {
+                "name": "FzlCameraCapture",
+                "module": "src/components/camera-capture/camera-capture.component.ts"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "facingMode",
+              "type": {
+                "text": "FzlCameraFacing"
+              },
+              "default": "'environment'",
+              "attribute": "facing-mode",
+              "inheritedFrom": {
+                "name": "FzlCameraCapture",
+                "module": "src/components/camera-capture/camera-capture.component.ts"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "overlay",
+              "type": {
+                "text": "FzlCaptureOverlay"
+              },
+              "default": "'none'",
+              "attribute": "overlay",
+              "inheritedFrom": {
+                "name": "FzlCameraCapture",
+                "module": "src/components/camera-capture/camera-capture.component.ts"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "maxVideoDuration",
+              "type": {
+                "text": "number"
+              },
+              "default": "60",
+              "attribute": "max-video-duration",
+              "inheritedFrom": {
+                "name": "FzlCameraCapture",
+                "module": "src/components/camera-capture/camera-capture.component.ts"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "imageQuality",
+              "type": {
+                "text": "number"
+              },
+              "default": "0.92",
+              "attribute": "image-quality",
+              "inheritedFrom": {
+                "name": "FzlCameraCapture",
+                "module": "src/components/camera-capture/camera-capture.component.ts"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "imageFormat",
+              "type": {
+                "text": "'image/jpeg' | 'image/webp' | 'image/png'"
+              },
+              "default": "'image/jpeg'",
+              "attribute": "image-format",
+              "inheritedFrom": {
+                "name": "FzlCameraCapture",
+                "module": "src/components/camera-capture/camera-capture.component.ts"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "allowTorch",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "true",
+              "attribute": "allow-torch",
+              "inheritedFrom": {
+                "name": "FzlCameraCapture",
+                "module": "src/components/camera-capture/camera-capture.component.ts"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "allowFlip",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "true",
+              "attribute": "allow-flip",
+              "inheritedFrom": {
+                "name": "FzlCameraCapture",
+                "module": "src/components/camera-capture/camera-capture.component.ts"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "countdown",
+              "type": {
+                "text": "number"
+              },
+              "default": "0",
+              "attribute": "countdown",
+              "inheritedFrom": {
+                "name": "FzlCameraCapture",
+                "module": "src/components/camera-capture/camera-capture.component.ts"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "disabled",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false",
+              "attribute": "disabled",
+              "inheritedFrom": {
+                "name": "FzlCameraCapture",
+                "module": "src/components/camera-capture/camera-capture.component.ts"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "_isStreaming",
+              "type": {
+                "text": "boolean"
+              },
+              "privacy": "private",
+              "default": "false",
+              "inheritedFrom": {
+                "name": "FzlCameraCapture",
+                "module": "src/components/camera-capture/camera-capture.component.ts"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "_currentFacing",
+              "type": {
+                "text": "FzlCameraFacing"
+              },
+              "privacy": "private",
+              "default": "'environment'",
+              "inheritedFrom": {
+                "name": "FzlCameraCapture",
+                "module": "src/components/camera-capture/camera-capture.component.ts"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "_activeMode",
+              "type": {
+                "text": "'photo' | 'video'"
+              },
+              "privacy": "private",
+              "default": "'photo'",
+              "inheritedFrom": {
+                "name": "FzlCameraCapture",
+                "module": "src/components/camera-capture/camera-capture.component.ts"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "_hasTorch",
+              "type": {
+                "text": "boolean"
+              },
+              "privacy": "private",
+              "default": "false",
+              "inheritedFrom": {
+                "name": "FzlCameraCapture",
+                "module": "src/components/camera-capture/camera-capture.component.ts"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "_isTorchOn",
+              "type": {
+                "text": "boolean"
+              },
+              "privacy": "private",
+              "default": "false",
+              "inheritedFrom": {
+                "name": "FzlCameraCapture",
+                "module": "src/components/camera-capture/camera-capture.component.ts"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "_isRecording",
+              "type": {
+                "text": "boolean"
+              },
+              "privacy": "private",
+              "default": "false",
+              "inheritedFrom": {
+                "name": "FzlCameraCapture",
+                "module": "src/components/camera-capture/camera-capture.component.ts"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "_recordingSeconds",
+              "type": {
+                "text": "number"
+              },
+              "privacy": "private",
+              "default": "0",
+              "inheritedFrom": {
+                "name": "FzlCameraCapture",
+                "module": "src/components/camera-capture/camera-capture.component.ts"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "_countdownActive",
+              "type": {
+                "text": "number | null"
+              },
+              "privacy": "private",
+              "default": "null",
+              "inheritedFrom": {
+                "name": "FzlCameraCapture",
+                "module": "src/components/camera-capture/camera-capture.component.ts"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "_previewPhoto",
+              "type": {
+                "text": "FzlCapturedPhoto | null"
+              },
+              "privacy": "private",
+              "default": "null",
+              "inheritedFrom": {
+                "name": "FzlCameraCapture",
+                "module": "src/components/camera-capture/camera-capture.component.ts"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "_previewVideo",
+              "type": {
+                "text": "FzlCapturedVideo | null"
+              },
+              "privacy": "private",
+              "default": "null",
+              "inheritedFrom": {
+                "name": "FzlCameraCapture",
+                "module": "src/components/camera-capture/camera-capture.component.ts"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "_errorMessage",
+              "type": {
+                "text": "string"
+              },
+              "privacy": "private",
+              "default": "''",
+              "inheritedFrom": {
+                "name": "FzlCameraCapture",
+                "module": "src/components/camera-capture/camera-capture.component.ts"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "_videoEl",
+              "type": {
+                "text": "HTMLVideoElement | undefined"
+              },
+              "privacy": "private",
+              "inheritedFrom": {
+                "name": "FzlCameraCapture",
+                "module": "src/components/camera-capture/camera-capture.component.ts"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "_stream",
+              "type": {
+                "text": "MediaStream | null"
+              },
+              "privacy": "private",
+              "default": "null",
+              "inheritedFrom": {
+                "name": "FzlCameraCapture",
+                "module": "src/components/camera-capture/camera-capture.component.ts"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "_mediaRecorder",
+              "type": {
+                "text": "MediaRecorder | null"
+              },
+              "privacy": "private",
+              "default": "null",
+              "inheritedFrom": {
+                "name": "FzlCameraCapture",
+                "module": "src/components/camera-capture/camera-capture.component.ts"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "_recordedChunks",
+              "type": {
+                "text": "Blob[]"
+              },
+              "privacy": "private",
+              "default": "[]",
+              "inheritedFrom": {
+                "name": "FzlCameraCapture",
+                "module": "src/components/camera-capture/camera-capture.component.ts"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "_recordTimer",
+              "type": {
+                "text": "any"
+              },
+              "privacy": "private",
+              "default": "null",
+              "inheritedFrom": {
+                "name": "FzlCameraCapture",
+                "module": "src/components/camera-capture/camera-capture.component.ts"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "_countdownTimer",
+              "type": {
+                "text": "any"
+              },
+              "privacy": "private",
+              "default": "null",
+              "inheritedFrom": {
+                "name": "FzlCameraCapture",
+                "module": "src/components/camera-capture/camera-capture.component.ts"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "_clearTimers",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "inheritedFrom": {
+                "name": "FzlCameraCapture",
+                "module": "src/components/camera-capture/camera-capture.component.ts"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "startCamera",
+              "return": {
+                "type": {
+                  "text": "Promise<void>"
+                }
+              },
+              "description": "Starts the camera stream.",
+              "inheritedFrom": {
+                "name": "FzlCameraCapture",
+                "module": "src/components/camera-capture/camera-capture.component.ts"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "_stopStream",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "inheritedFrom": {
+                "name": "FzlCameraCapture",
+                "module": "src/components/camera-capture/camera-capture.component.ts"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "flipCamera",
+              "return": {
+                "type": {
+                  "text": "Promise<void>"
+                }
+              },
+              "description": "Flips between front and rear cameras.",
+              "inheritedFrom": {
+                "name": "FzlCameraCapture",
+                "module": "src/components/camera-capture/camera-capture.component.ts"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "toggleTorch",
+              "return": {
+                "type": {
+                  "text": "Promise<void>"
+                }
+              },
+              "description": "Toggles flashlight / torch if supported.",
+              "inheritedFrom": {
+                "name": "FzlCameraCapture",
+                "module": "src/components/camera-capture/camera-capture.component.ts"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "takePhoto",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "description": "Triggers a photo capture with optional countdown.",
+              "inheritedFrom": {
+                "name": "FzlCameraCapture",
+                "module": "src/components/camera-capture/camera-capture.component.ts"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "_captureSnapshot",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "inheritedFrom": {
+                "name": "FzlCameraCapture",
+                "module": "src/components/camera-capture/camera-capture.component.ts"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "toggleRecordVideo",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "description": "Starts or stops video recording via MediaRecorder.",
+              "inheritedFrom": {
+                "name": "FzlCameraCapture",
+                "module": "src/components/camera-capture/camera-capture.component.ts"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "_startRecording",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "inheritedFrom": {
+                "name": "FzlCameraCapture",
+                "module": "src/components/camera-capture/camera-capture.component.ts"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "_stopRecording",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "inheritedFrom": {
+                "name": "FzlCameraCapture",
+                "module": "src/components/camera-capture/camera-capture.component.ts"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "_discardReview",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "inheritedFrom": {
+                "name": "FzlCameraCapture",
+                "module": "src/components/camera-capture/camera-capture.component.ts"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "_confirmPhoto",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "inheritedFrom": {
+                "name": "FzlCameraCapture",
+                "module": "src/components/camera-capture/camera-capture.component.ts"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "_confirmVideo",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "inheritedFrom": {
+                "name": "FzlCameraCapture",
+                "module": "src/components/camera-capture/camera-capture.component.ts"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "_handleFallbackFile",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "Promise<void>"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "files",
+                  "type": {
+                    "text": "FileList | null"
+                  }
+                }
+              ],
+              "inheritedFrom": {
+                "name": "FzlCameraCapture",
+                "module": "src/components/camera-capture/camera-capture.component.ts"
+              }
+            }
+          ],
+          "events": [
+            {
+              "name": "fzl-camera-ready",
+              "type": {
+                "text": "CustomEvent<{ stream: MediaStream; facingMode: string }>"
+              },
+              "description": "Dispatched when camera stream begins",
+              "inheritedFrom": {
+                "name": "FzlCameraCapture",
+                "module": "src/components/camera-capture/camera-capture.component.ts"
+              }
+            },
+            {
+              "name": "fzl-camera-error",
+              "type": {
+                "text": "CustomEvent<{ error: string }>"
+              },
+              "description": "Dispatched when camera access fails",
+              "inheritedFrom": {
+                "name": "FzlCameraCapture",
+                "module": "src/components/camera-capture/camera-capture.component.ts"
+              }
+            },
+            {
+              "name": "fzl-camera-stop",
+              "type": {
+                "text": "CustomEvent<void>"
+              },
+              "description": "Dispatched when camera stream is closed",
+              "inheritedFrom": {
+                "name": "FzlCameraCapture",
+                "module": "src/components/camera-capture/camera-capture.component.ts"
+              }
+            },
+            {
+              "name": "fzl-capture-photo",
+              "type": {
+                "text": "CustomEvent<{ photo: FzlCapturedPhoto }>"
+              },
+              "description": "Dispatched when a photo is confirmed",
+              "inheritedFrom": {
+                "name": "FzlCameraCapture",
+                "module": "src/components/camera-capture/camera-capture.component.ts"
+              }
+            },
+            {
+              "name": "fzl-capture-video",
+              "type": {
+                "text": "CustomEvent<{ video: FzlCapturedVideo }>"
+              },
+              "description": "Dispatched when a video recording is confirmed",
+              "inheritedFrom": {
+                "name": "FzlCameraCapture",
+                "module": "src/components/camera-capture/camera-capture.component.ts"
+              }
+            }
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "*",
+          "declaration": {
+            "name": "*",
+            "module": "src/components/camera-capture/camera-capture.types"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "FzlCameraCapture",
+          "declaration": {
+            "name": "FzlCameraCapture",
+            "module": "src/components/camera-capture/camera-capture.component.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "FzlLitCameraCapture",
+          "declaration": {
+            "name": "FzlLitCameraCapture",
+            "module": "src/components/camera-capture/camera-capture.component.ts"
+          }
+        },
+        {
+          "kind": "custom-element-definition",
+          "name": "fzl-camera-capture",
+          "declaration": {
+            "name": "FzlCameraCapture",
+            "module": "src/components/camera-capture/camera-capture.component.ts"
+          }
+        },
+        {
+          "kind": "custom-element-definition",
+          "name": "fzl-lit-camera-capture",
+          "declaration": {
+            "name": "FzlLitCameraCapture",
+            "module": "src/components/camera-capture/camera-capture.component.ts"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/components/camera-capture/camera-capture.types.ts",
+      "declarations": [
+        {
+          "kind": "function",
+          "name": "isMediaDevicesSupported",
+          "return": {
+            "type": {
+              "text": "boolean"
+            }
+          }
+        },
+        {
+          "kind": "function",
+          "name": "formatCameraDuration",
+          "return": {
+            "type": {
+              "text": "string"
+            }
+          },
+          "parameters": [
+            {
+              "name": "seconds",
+              "type": {
+                "text": "number"
+              }
+            }
+          ],
+          "description": "Format elapsed seconds into mm:ss string"
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "isMediaDevicesSupported",
+          "declaration": {
+            "name": "isMediaDevicesSupported",
+            "module": "src/components/camera-capture/camera-capture.types.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "formatCameraDuration",
+          "declaration": {
+            "name": "formatCameraDuration",
+            "module": "src/components/camera-capture/camera-capture.types.ts"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
       "path": "src/components/card-list/card-list.component.ts",
       "declarations": [
         {
@@ -2250,6 +3972,31 @@
             },
             {
               "kind": "method",
+              "name": "_handleTitleClick",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "item",
+                  "type": {
+                    "text": "FzlCardItem"
+                  }
+                },
+                {
+                  "name": "index",
+                  "type": {
+                    "text": "number"
+                  }
+                },
+                {
+                  "name": "event",
+                  "type": {
+                    "text": "MouseEvent"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
               "name": "_handleCardClick",
               "privacy": "private",
               "parameters": [
@@ -2337,6 +4084,13 @@
                 "text": "CustomEvent<{ item: FzlCardItem; index: number; expanded: boolean }>"
               },
               "description": "Dispatched when a collapsible card is expanded or collapsed"
+            },
+            {
+              "name": "fzl-card-title-click",
+              "type": {
+                "text": "CustomEvent<{ item: FzlCardItem; index: number; originalEvent: MouseEvent }>"
+              },
+              "description": "Dispatched when a card title is clicked"
             },
             {
               "name": "fzl-card-click",
@@ -2702,6 +4456,19 @@
             },
             {
               "kind": "method",
+              "name": "_handleTitleTextClick",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "e",
+                  "type": {
+                    "text": "MouseEvent"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
               "name": "_handleTitleClick",
               "privacy": "private",
               "parameters": [
@@ -2747,6 +4514,13 @@
                 "text": "CustomEvent<{ expanded: boolean }>"
               },
               "description": "Dispatched when card expansion state toggles"
+            },
+            {
+              "name": "fzl-card-title-click",
+              "type": {
+                "text": "CustomEvent<{ title: string; originalEvent: MouseEvent }>"
+              },
+              "description": "Dispatched when card title is clicked"
             },
             {
               "name": "fzl-card-action",
@@ -2851,6 +4625,1184 @@
           "declaration": {
             "name": "FzlLitCard",
             "module": "src/components/card-list/card.component.ts"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/components/contact-picker/contact-picker.component.ts",
+      "declarations": [
+        {
+          "kind": "class",
+          "description": "Mobile-first Contact Picker Web Component (`fzl-contact-picker`).\n\nIntegrates natively with the W3C Contact Picker API (`navigator.contacts.select`)\non supported mobile devices (e.g. Android Chrome), and provides a polished,\naccessible fallback UI with vCard (.vcf) import and manual contact entry\nfor desktop or unsupported environments.",
+          "name": "FzlContactPicker",
+          "cssParts": [
+            {
+              "description": "The root container",
+              "name": "container"
+            },
+            {
+              "description": "The main trigger button",
+              "name": "trigger-btn"
+            },
+            {
+              "description": "The selected contacts list container",
+              "name": "contacts-list"
+            },
+            {
+              "description": "Each individual contact card",
+              "name": "contact-card"
+            },
+            {
+              "description": "The fallback modal dialog",
+              "name": "modal"
+            }
+          ],
+          "members": [
+            {
+              "kind": "field",
+              "name": "multiple",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false",
+              "attribute": "multiple"
+            },
+            {
+              "kind": "field",
+              "name": "buttonLabel",
+              "type": {
+                "text": "string"
+              },
+              "default": "'Selecionar Contato'",
+              "attribute": "button-label"
+            },
+            {
+              "kind": "field",
+              "name": "allowImportVcard",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "true",
+              "attribute": "allow-import-vcard"
+            },
+            {
+              "kind": "field",
+              "name": "allowManualAdd",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "true",
+              "attribute": "allow-manual-add"
+            },
+            {
+              "kind": "field",
+              "name": "disabled",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false",
+              "attribute": "disabled"
+            },
+            {
+              "kind": "field",
+              "name": "readonly",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false",
+              "attribute": "readonly"
+            },
+            {
+              "kind": "field",
+              "name": "selectedContacts",
+              "type": {
+                "text": "FzlContact[]"
+              },
+              "attribute": "selectedContacts"
+            },
+            {
+              "kind": "field",
+              "name": "presetContacts",
+              "type": {
+                "text": "FzlContact[] | string"
+              },
+              "default": "[]",
+              "attribute": "presetContacts"
+            },
+            {
+              "kind": "field",
+              "name": "_selectedContacts",
+              "type": {
+                "text": "FzlContact[]"
+              },
+              "privacy": "private",
+              "default": "[]"
+            },
+            {
+              "kind": "field",
+              "name": "_isNativeSupported",
+              "type": {
+                "text": "boolean"
+              },
+              "privacy": "private",
+              "default": "false"
+            },
+            {
+              "kind": "field",
+              "name": "_showModal",
+              "type": {
+                "text": "boolean"
+              },
+              "privacy": "private",
+              "default": "false"
+            },
+            {
+              "kind": "field",
+              "name": "_modalTab",
+              "type": {
+                "text": "'manual' | 'vcard' | 'presets'"
+              },
+              "privacy": "private",
+              "default": "'manual'"
+            },
+            {
+              "kind": "field",
+              "name": "_manualName",
+              "type": {
+                "text": "string"
+              },
+              "privacy": "private",
+              "default": "''"
+            },
+            {
+              "kind": "field",
+              "name": "_manualTel",
+              "type": {
+                "text": "string"
+              },
+              "privacy": "private",
+              "default": "''"
+            },
+            {
+              "kind": "field",
+              "name": "_manualEmail",
+              "type": {
+                "text": "string"
+              },
+              "privacy": "private",
+              "default": "''"
+            },
+            {
+              "kind": "field",
+              "name": "_manualOrg",
+              "type": {
+                "text": "string"
+              },
+              "privacy": "private",
+              "default": "''"
+            },
+            {
+              "kind": "field",
+              "name": "_errorMessage",
+              "type": {
+                "text": "string"
+              },
+              "privacy": "private",
+              "default": "''"
+            },
+            {
+              "kind": "field",
+              "name": "_isDragOver",
+              "type": {
+                "text": "boolean"
+              },
+              "privacy": "private",
+              "default": "false"
+            },
+            {
+              "kind": "field",
+              "name": "parsedPresetContacts",
+              "type": {
+                "text": "FzlContact[]"
+              },
+              "readonly": true
+            },
+            {
+              "kind": "method",
+              "name": "openPicker",
+              "return": {
+                "type": {
+                  "text": "Promise<void>"
+                }
+              },
+              "description": "Opens the contact picker (native if supported, otherwise fallback modal)."
+            },
+            {
+              "kind": "method",
+              "name": "_openModal",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              }
+            },
+            {
+              "kind": "method",
+              "name": "_closeModal",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              }
+            },
+            {
+              "kind": "method",
+              "name": "_resetManualForm",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              }
+            },
+            {
+              "kind": "method",
+              "name": "_addContacts",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "newContacts",
+                  "type": {
+                    "text": "FzlContact[]"
+                  }
+                },
+                {
+                  "name": "isNative",
+                  "type": {
+                    "text": "boolean"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "removeContact",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "id",
+                  "type": {
+                    "text": "string"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "clear",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              }
+            },
+            {
+              "kind": "method",
+              "name": "_submitManualContact",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              }
+            },
+            {
+              "kind": "method",
+              "name": "_handleVCardFiles",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "Promise<void>"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "files",
+                  "type": {
+                    "text": "FileList | null"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "_getInitials",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "string"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "name",
+                  "optional": true,
+                  "type": {
+                    "text": "string[]"
+                  }
+                }
+              ]
+            }
+          ],
+          "events": [
+            {
+              "name": "fzl-contact-error",
+              "type": {
+                "text": "CustomEvent<FzlContactErrorDetail>"
+              },
+              "description": "Dispatched when an error occurs during selection"
+            },
+            {
+              "name": "fzl-contact-select",
+              "type": {
+                "text": "CustomEvent<FzlContactSelectDetail>"
+              },
+              "description": "Dispatched when one or more contacts are selected"
+            },
+            {
+              "name": "fzl-contact-remove",
+              "type": {
+                "text": "CustomEvent<FzlContactRemoveDetail>"
+              },
+              "description": "Dispatched when a contact is removed from the selection"
+            }
+          ],
+          "attributes": [
+            {
+              "type": {
+                "text": "boolean"
+              },
+              "description": "Whether multiple contacts can be chosen",
+              "name": "multiple",
+              "default": "false",
+              "fieldName": "multiple"
+            },
+            {
+              "type": {
+                "text": "string"
+              },
+              "description": "Comma-separated list of properties to query ('name', 'tel', 'email', 'address', 'icon')",
+              "name": "properties",
+              "default": "'name,tel,email'",
+              "fieldName": "properties"
+            },
+            {
+              "type": {
+                "text": "string"
+              },
+              "description": "Text for the primary trigger button",
+              "name": "button-label",
+              "default": "'Selecionar Contato'",
+              "fieldName": "buttonLabel"
+            },
+            {
+              "type": {
+                "text": "boolean"
+              },
+              "description": "Whether to allow importing contacts from .vcf files",
+              "name": "allow-import-vcard",
+              "default": "true",
+              "fieldName": "allowImportVcard"
+            },
+            {
+              "type": {
+                "text": "boolean"
+              },
+              "description": "Whether to allow manual contact addition in fallback mode",
+              "name": "allow-manual-add",
+              "default": "true",
+              "fieldName": "allowManualAdd"
+            },
+            {
+              "type": {
+                "text": "boolean"
+              },
+              "description": "Disables interaction",
+              "name": "disabled",
+              "default": "false",
+              "fieldName": "disabled"
+            },
+            {
+              "type": {
+                "text": "boolean"
+              },
+              "description": "Read-only mode showing existing contacts without edit actions",
+              "name": "readonly",
+              "default": "false",
+              "fieldName": "readonly"
+            },
+            {
+              "name": "selectedContacts",
+              "type": {
+                "text": "FzlContact[]"
+              },
+              "fieldName": "selectedContacts"
+            },
+            {
+              "name": "presetContacts",
+              "type": {
+                "text": "FzlContact[] | string"
+              },
+              "default": "[]",
+              "fieldName": "presetContacts"
+            }
+          ],
+          "mixins": [
+            {
+              "name": "FzlWidgetMixin",
+              "package": "@fzl/core"
+            }
+          ],
+          "superclass": {
+            "name": "LitElement",
+            "package": "lit"
+          },
+          "tagName": "fzl-contact-picker",
+          "customElement": true
+        },
+        {
+          "kind": "class",
+          "description": "",
+          "name": "FzlLitContactPicker",
+          "superclass": {
+            "name": "FzlContactPicker",
+            "module": "src/components/contact-picker/contact-picker.component.ts"
+          },
+          "tagName": "fzl-lit-contact-picker",
+          "customElement": true,
+          "cssParts": [
+            {
+              "description": "The root container",
+              "name": "container",
+              "inheritedFrom": {
+                "name": "FzlContactPicker",
+                "module": "src/components/contact-picker/contact-picker.component.ts"
+              }
+            },
+            {
+              "description": "The main trigger button",
+              "name": "trigger-btn",
+              "inheritedFrom": {
+                "name": "FzlContactPicker",
+                "module": "src/components/contact-picker/contact-picker.component.ts"
+              }
+            },
+            {
+              "description": "The selected contacts list container",
+              "name": "contacts-list",
+              "inheritedFrom": {
+                "name": "FzlContactPicker",
+                "module": "src/components/contact-picker/contact-picker.component.ts"
+              }
+            },
+            {
+              "description": "Each individual contact card",
+              "name": "contact-card",
+              "inheritedFrom": {
+                "name": "FzlContactPicker",
+                "module": "src/components/contact-picker/contact-picker.component.ts"
+              }
+            },
+            {
+              "description": "The fallback modal dialog",
+              "name": "modal",
+              "inheritedFrom": {
+                "name": "FzlContactPicker",
+                "module": "src/components/contact-picker/contact-picker.component.ts"
+              }
+            }
+          ],
+          "attributes": [
+            {
+              "type": {
+                "text": "boolean"
+              },
+              "description": "Whether multiple contacts can be chosen",
+              "name": "multiple",
+              "default": "false",
+              "fieldName": "multiple",
+              "inheritedFrom": {
+                "name": "FzlContactPicker",
+                "module": "src/components/contact-picker/contact-picker.component.ts"
+              }
+            },
+            {
+              "type": {
+                "text": "string"
+              },
+              "description": "Comma-separated list of properties to query ('name', 'tel', 'email', 'address', 'icon')",
+              "name": "properties",
+              "default": "'name,tel,email'",
+              "fieldName": "properties",
+              "inheritedFrom": {
+                "name": "FzlContactPicker",
+                "module": "src/components/contact-picker/contact-picker.component.ts"
+              }
+            },
+            {
+              "type": {
+                "text": "string"
+              },
+              "description": "Text for the primary trigger button",
+              "name": "button-label",
+              "default": "'Selecionar Contato'",
+              "fieldName": "buttonLabel",
+              "inheritedFrom": {
+                "name": "FzlContactPicker",
+                "module": "src/components/contact-picker/contact-picker.component.ts"
+              }
+            },
+            {
+              "type": {
+                "text": "boolean"
+              },
+              "description": "Whether to allow importing contacts from .vcf files",
+              "name": "allow-import-vcard",
+              "default": "true",
+              "fieldName": "allowImportVcard",
+              "inheritedFrom": {
+                "name": "FzlContactPicker",
+                "module": "src/components/contact-picker/contact-picker.component.ts"
+              }
+            },
+            {
+              "type": {
+                "text": "boolean"
+              },
+              "description": "Whether to allow manual contact addition in fallback mode",
+              "name": "allow-manual-add",
+              "default": "true",
+              "fieldName": "allowManualAdd",
+              "inheritedFrom": {
+                "name": "FzlContactPicker",
+                "module": "src/components/contact-picker/contact-picker.component.ts"
+              }
+            },
+            {
+              "type": {
+                "text": "boolean"
+              },
+              "description": "Disables interaction",
+              "name": "disabled",
+              "default": "false",
+              "fieldName": "disabled",
+              "inheritedFrom": {
+                "name": "FzlContactPicker",
+                "module": "src/components/contact-picker/contact-picker.component.ts"
+              }
+            },
+            {
+              "type": {
+                "text": "boolean"
+              },
+              "description": "Read-only mode showing existing contacts without edit actions",
+              "name": "readonly",
+              "default": "false",
+              "fieldName": "readonly",
+              "inheritedFrom": {
+                "name": "FzlContactPicker",
+                "module": "src/components/contact-picker/contact-picker.component.ts"
+              }
+            },
+            {
+              "name": "selectedContacts",
+              "type": {
+                "text": "FzlContact[]"
+              },
+              "fieldName": "selectedContacts",
+              "inheritedFrom": {
+                "name": "FzlContactPicker",
+                "module": "src/components/contact-picker/contact-picker.component.ts"
+              }
+            },
+            {
+              "name": "presetContacts",
+              "type": {
+                "text": "FzlContact[] | string"
+              },
+              "default": "[]",
+              "fieldName": "presetContacts",
+              "inheritedFrom": {
+                "name": "FzlContactPicker",
+                "module": "src/components/contact-picker/contact-picker.component.ts"
+              }
+            }
+          ],
+          "members": [
+            {
+              "kind": "field",
+              "name": "multiple",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false",
+              "attribute": "multiple",
+              "inheritedFrom": {
+                "name": "FzlContactPicker",
+                "module": "src/components/contact-picker/contact-picker.component.ts"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "buttonLabel",
+              "type": {
+                "text": "string"
+              },
+              "default": "'Selecionar Contato'",
+              "attribute": "button-label",
+              "inheritedFrom": {
+                "name": "FzlContactPicker",
+                "module": "src/components/contact-picker/contact-picker.component.ts"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "allowImportVcard",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "true",
+              "attribute": "allow-import-vcard",
+              "inheritedFrom": {
+                "name": "FzlContactPicker",
+                "module": "src/components/contact-picker/contact-picker.component.ts"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "allowManualAdd",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "true",
+              "attribute": "allow-manual-add",
+              "inheritedFrom": {
+                "name": "FzlContactPicker",
+                "module": "src/components/contact-picker/contact-picker.component.ts"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "disabled",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false",
+              "attribute": "disabled",
+              "inheritedFrom": {
+                "name": "FzlContactPicker",
+                "module": "src/components/contact-picker/contact-picker.component.ts"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "readonly",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false",
+              "attribute": "readonly",
+              "inheritedFrom": {
+                "name": "FzlContactPicker",
+                "module": "src/components/contact-picker/contact-picker.component.ts"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "selectedContacts",
+              "type": {
+                "text": "FzlContact[]"
+              },
+              "attribute": "selectedContacts",
+              "inheritedFrom": {
+                "name": "FzlContactPicker",
+                "module": "src/components/contact-picker/contact-picker.component.ts"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "presetContacts",
+              "type": {
+                "text": "FzlContact[] | string"
+              },
+              "default": "[]",
+              "attribute": "presetContacts",
+              "inheritedFrom": {
+                "name": "FzlContactPicker",
+                "module": "src/components/contact-picker/contact-picker.component.ts"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "_selectedContacts",
+              "type": {
+                "text": "FzlContact[]"
+              },
+              "privacy": "private",
+              "default": "[]",
+              "inheritedFrom": {
+                "name": "FzlContactPicker",
+                "module": "src/components/contact-picker/contact-picker.component.ts"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "_isNativeSupported",
+              "type": {
+                "text": "boolean"
+              },
+              "privacy": "private",
+              "default": "false",
+              "inheritedFrom": {
+                "name": "FzlContactPicker",
+                "module": "src/components/contact-picker/contact-picker.component.ts"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "_showModal",
+              "type": {
+                "text": "boolean"
+              },
+              "privacy": "private",
+              "default": "false",
+              "inheritedFrom": {
+                "name": "FzlContactPicker",
+                "module": "src/components/contact-picker/contact-picker.component.ts"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "_modalTab",
+              "type": {
+                "text": "'manual' | 'vcard' | 'presets'"
+              },
+              "privacy": "private",
+              "default": "'manual'",
+              "inheritedFrom": {
+                "name": "FzlContactPicker",
+                "module": "src/components/contact-picker/contact-picker.component.ts"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "_manualName",
+              "type": {
+                "text": "string"
+              },
+              "privacy": "private",
+              "default": "''",
+              "inheritedFrom": {
+                "name": "FzlContactPicker",
+                "module": "src/components/contact-picker/contact-picker.component.ts"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "_manualTel",
+              "type": {
+                "text": "string"
+              },
+              "privacy": "private",
+              "default": "''",
+              "inheritedFrom": {
+                "name": "FzlContactPicker",
+                "module": "src/components/contact-picker/contact-picker.component.ts"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "_manualEmail",
+              "type": {
+                "text": "string"
+              },
+              "privacy": "private",
+              "default": "''",
+              "inheritedFrom": {
+                "name": "FzlContactPicker",
+                "module": "src/components/contact-picker/contact-picker.component.ts"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "_manualOrg",
+              "type": {
+                "text": "string"
+              },
+              "privacy": "private",
+              "default": "''",
+              "inheritedFrom": {
+                "name": "FzlContactPicker",
+                "module": "src/components/contact-picker/contact-picker.component.ts"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "_errorMessage",
+              "type": {
+                "text": "string"
+              },
+              "privacy": "private",
+              "default": "''",
+              "inheritedFrom": {
+                "name": "FzlContactPicker",
+                "module": "src/components/contact-picker/contact-picker.component.ts"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "_isDragOver",
+              "type": {
+                "text": "boolean"
+              },
+              "privacy": "private",
+              "default": "false",
+              "inheritedFrom": {
+                "name": "FzlContactPicker",
+                "module": "src/components/contact-picker/contact-picker.component.ts"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "parsedPresetContacts",
+              "type": {
+                "text": "FzlContact[]"
+              },
+              "readonly": true,
+              "inheritedFrom": {
+                "name": "FzlContactPicker",
+                "module": "src/components/contact-picker/contact-picker.component.ts"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "openPicker",
+              "return": {
+                "type": {
+                  "text": "Promise<void>"
+                }
+              },
+              "description": "Opens the contact picker (native if supported, otherwise fallback modal).",
+              "inheritedFrom": {
+                "name": "FzlContactPicker",
+                "module": "src/components/contact-picker/contact-picker.component.ts"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "_openModal",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "inheritedFrom": {
+                "name": "FzlContactPicker",
+                "module": "src/components/contact-picker/contact-picker.component.ts"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "_closeModal",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "inheritedFrom": {
+                "name": "FzlContactPicker",
+                "module": "src/components/contact-picker/contact-picker.component.ts"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "_resetManualForm",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "inheritedFrom": {
+                "name": "FzlContactPicker",
+                "module": "src/components/contact-picker/contact-picker.component.ts"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "_addContacts",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "newContacts",
+                  "type": {
+                    "text": "FzlContact[]"
+                  }
+                },
+                {
+                  "name": "isNative",
+                  "type": {
+                    "text": "boolean"
+                  }
+                }
+              ],
+              "inheritedFrom": {
+                "name": "FzlContactPicker",
+                "module": "src/components/contact-picker/contact-picker.component.ts"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "removeContact",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "id",
+                  "type": {
+                    "text": "string"
+                  }
+                }
+              ],
+              "inheritedFrom": {
+                "name": "FzlContactPicker",
+                "module": "src/components/contact-picker/contact-picker.component.ts"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "clear",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "inheritedFrom": {
+                "name": "FzlContactPicker",
+                "module": "src/components/contact-picker/contact-picker.component.ts"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "_submitManualContact",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "inheritedFrom": {
+                "name": "FzlContactPicker",
+                "module": "src/components/contact-picker/contact-picker.component.ts"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "_handleVCardFiles",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "Promise<void>"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "files",
+                  "type": {
+                    "text": "FileList | null"
+                  }
+                }
+              ],
+              "inheritedFrom": {
+                "name": "FzlContactPicker",
+                "module": "src/components/contact-picker/contact-picker.component.ts"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "_getInitials",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "string"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "name",
+                  "optional": true,
+                  "type": {
+                    "text": "string[]"
+                  }
+                }
+              ],
+              "inheritedFrom": {
+                "name": "FzlContactPicker",
+                "module": "src/components/contact-picker/contact-picker.component.ts"
+              }
+            }
+          ],
+          "events": [
+            {
+              "name": "fzl-contact-error",
+              "type": {
+                "text": "CustomEvent<FzlContactErrorDetail>"
+              },
+              "description": "Dispatched when an error occurs during selection",
+              "inheritedFrom": {
+                "name": "FzlContactPicker",
+                "module": "src/components/contact-picker/contact-picker.component.ts"
+              }
+            },
+            {
+              "name": "fzl-contact-select",
+              "type": {
+                "text": "CustomEvent<FzlContactSelectDetail>"
+              },
+              "description": "Dispatched when one or more contacts are selected",
+              "inheritedFrom": {
+                "name": "FzlContactPicker",
+                "module": "src/components/contact-picker/contact-picker.component.ts"
+              }
+            },
+            {
+              "name": "fzl-contact-remove",
+              "type": {
+                "text": "CustomEvent<FzlContactRemoveDetail>"
+              },
+              "description": "Dispatched when a contact is removed from the selection",
+              "inheritedFrom": {
+                "name": "FzlContactPicker",
+                "module": "src/components/contact-picker/contact-picker.component.ts"
+              }
+            }
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "*",
+          "declaration": {
+            "name": "*",
+            "module": "src/components/contact-picker/contact-picker.types"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "FzlContactPicker",
+          "declaration": {
+            "name": "FzlContactPicker",
+            "module": "src/components/contact-picker/contact-picker.component.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "FzlLitContactPicker",
+          "declaration": {
+            "name": "FzlLitContactPicker",
+            "module": "src/components/contact-picker/contact-picker.component.ts"
+          }
+        },
+        {
+          "kind": "custom-element-definition",
+          "name": "fzl-contact-picker",
+          "declaration": {
+            "name": "FzlContactPicker",
+            "module": "src/components/contact-picker/contact-picker.component.ts"
+          }
+        },
+        {
+          "kind": "custom-element-definition",
+          "name": "fzl-lit-contact-picker",
+          "declaration": {
+            "name": "FzlLitContactPicker",
+            "module": "src/components/contact-picker/contact-picker.component.ts"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/components/contact-picker/contact-picker.types.ts",
+      "declarations": [
+        {
+          "kind": "function",
+          "name": "isContactPickerSupported",
+          "return": {
+            "type": {
+              "text": "boolean"
+            }
+          },
+          "description": "Checks whether the W3C Contact Picker API is supported in the current browser."
+        },
+        {
+          "kind": "function",
+          "name": "parseVCard",
+          "return": {
+            "type": {
+              "text": "FzlContact[]"
+            }
+          },
+          "parameters": [
+            {
+              "name": "vcfText",
+              "type": {
+                "text": "string"
+              }
+            }
+          ],
+          "description": "Lightweight, robust parser for vCard (.vcf) format (vCard 2.1, 3.0, 4.0)"
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "isContactPickerSupported",
+          "declaration": {
+            "name": "isContactPickerSupported",
+            "module": "src/components/contact-picker/contact-picker.types.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "parseVCard",
+          "declaration": {
+            "name": "parseVCard",
+            "module": "src/components/contact-picker/contact-picker.types.ts"
           }
         }
       ]
@@ -4548,251 +7500,6 @@
           "declaration": {
             "name": "FzlTextInput",
             "module": "src/components/form/text-input.component.ts"
-          }
-        }
-      ]
-    },
-    {
-      "kind": "javascript-module",
-      "path": "src/components/button/button.component.ts",
-      "declarations": [
-        {
-          "kind": "class",
-          "description": "Reactive Lit-based Custom Element button with Shadow DOM encapsulation.",
-          "name": "FzlLitButton",
-          "cssParts": [
-            {
-              "description": "The internal native `<button>` element",
-              "name": "button"
-            }
-          ],
-          "slots": [
-            {
-              "description": "Content to be displayed inside the button",
-              "name": ""
-            }
-          ],
-          "members": [
-            {
-              "kind": "field",
-              "name": "shadowRootOptions",
-              "type": {
-                "text": "ShadowRootInit"
-              },
-              "static": true,
-              "default": "{ ...LitElement.shadowRootOptions, delegatesFocus: true, }"
-            },
-            {
-              "kind": "field",
-              "name": "variant",
-              "type": {
-                "text": "FzlButtonVariant"
-              },
-              "default": "'primary'",
-              "description": "Visual appearance variant",
-              "attribute": "variant",
-              "reflects": true
-            },
-            {
-              "kind": "field",
-              "name": "size",
-              "type": {
-                "text": "FzlButtonSize"
-              },
-              "default": "'md'",
-              "description": "Size scale of the button",
-              "attribute": "size",
-              "reflects": true
-            },
-            {
-              "kind": "field",
-              "name": "disabled",
-              "type": {
-                "text": "boolean"
-              },
-              "default": "false",
-              "description": "Whether the button is disabled",
-              "attribute": "disabled",
-              "reflects": true
-            },
-            {
-              "kind": "field",
-              "name": "type",
-              "type": {
-                "text": "'button' | 'submit' | 'reset'"
-              },
-              "default": "'button'",
-              "description": "Form button behavior",
-              "attribute": "type",
-              "reflects": true
-            },
-            {
-              "kind": "field",
-              "name": "typematic",
-              "type": {
-                "text": "boolean"
-              },
-              "default": "false",
-              "description": "Enables typematic repeat firing of `fzl-click` while held down",
-              "attribute": "typematic",
-              "reflects": true
-            },
-            {
-              "kind": "field",
-              "name": "_typematicCleanup",
-              "type": {
-                "text": "(() => void) | null"
-              },
-              "privacy": "private",
-              "default": "null"
-            },
-            {
-              "kind": "field",
-              "name": "_lastTypematicTick",
-              "type": {
-                "text": "boolean"
-              },
-              "privacy": "private",
-              "default": "false"
-            },
-            {
-              "kind": "method",
-              "name": "_clearTypematic",
-              "privacy": "private",
-              "return": {
-                "type": {
-                  "text": "void"
-                }
-              }
-            },
-            {
-              "kind": "method",
-              "name": "_syncTypematic",
-              "privacy": "private",
-              "return": {
-                "type": {
-                  "text": "void"
-                }
-              }
-            },
-            {
-              "kind": "method",
-              "name": "_handleClick",
-              "privacy": "private",
-              "parameters": [
-                {
-                  "name": "event",
-                  "type": {
-                    "text": "MouseEvent"
-                  }
-                }
-              ]
-            }
-          ],
-          "events": [
-            {
-              "type": {
-                "text": "CustomEvent<{ originalEvent: MouseEvent | KeyboardEvent; repeatCount?: number }>"
-              },
-              "description": "Dispatched when the button is activated",
-              "name": "fzl-click"
-            },
-            {
-              "type": {
-                "text": "CustomEvent<{ widgetId: string; originalEvent: FocusEvent }>"
-              },
-              "description": "Dispatched when the widget gains focus",
-              "name": "fzl-focus"
-            },
-            {
-              "type": {
-                "text": "CustomEvent<{ widgetId: string; originalEvent: FocusEvent }>"
-              },
-              "description": "Dispatched when the widget loses focus",
-              "name": "fzl-blur"
-            }
-          ],
-          "attributes": [
-            {
-              "name": "variant",
-              "type": {
-                "text": "FzlButtonVariant"
-              },
-              "default": "'primary'",
-              "description": "Visual appearance variant",
-              "fieldName": "variant",
-              "attribute": "variant"
-            },
-            {
-              "name": "size",
-              "type": {
-                "text": "FzlButtonSize"
-              },
-              "default": "'md'",
-              "description": "Size scale of the button",
-              "fieldName": "size",
-              "attribute": "size"
-            },
-            {
-              "name": "disabled",
-              "type": {
-                "text": "boolean"
-              },
-              "default": "false",
-              "description": "Whether the button is disabled",
-              "fieldName": "disabled",
-              "attribute": "disabled"
-            },
-            {
-              "name": "type",
-              "type": {
-                "text": "'button' | 'submit' | 'reset'"
-              },
-              "default": "'button'",
-              "description": "Form button behavior",
-              "fieldName": "type",
-              "attribute": "type"
-            },
-            {
-              "name": "typematic",
-              "type": {
-                "text": "boolean"
-              },
-              "default": "false",
-              "description": "Enables typematic repeat firing of `fzl-click` while held down",
-              "fieldName": "typematic",
-              "attribute": "typematic"
-            }
-          ],
-          "mixins": [
-            {
-              "name": "FzlWidgetMixin",
-              "package": "@fzl/core"
-            }
-          ],
-          "superclass": {
-            "name": "LitElement",
-            "package": "lit"
-          },
-          "tagName": "fzl-lit-button",
-          "customElement": true
-        }
-      ],
-      "exports": [
-        {
-          "kind": "js",
-          "name": "FzlLitButton",
-          "declaration": {
-            "name": "FzlLitButton",
-            "module": "src/components/button/button.component.ts"
-          }
-        },
-        {
-          "kind": "custom-element-definition",
-          "name": "fzl-lit-button",
-          "declaration": {
-            "name": "FzlLitButton",
-            "module": "src/components/button/button.component.ts"
           }
         }
       ]
@@ -6736,972 +9443,6 @@
     },
     {
       "kind": "javascript-module",
-      "path": "src/components/grid/data-grid.component.ts",
-      "declarations": [
-        {
-          "kind": "class",
-          "description": "Enterprise Data Grid Web Component inspired by Dojo / Dijit `dojox/grid/DataGrid` and `dgrid`.\n\nSupported features:\n- Reactive data binding via `FzlStore` (`dojo/store`) with `store.observe()`\n- Static data binding via `items` array or JSON attribute\n- Flexible column definitions (`columns` or Dojo `structure` alias)\n- Sorting (single column asc/desc/reset)\n- Live search/filtering\n- Pagination bar (page navigation, page size selector: 5, 10, 25, 50, 100, All)\n- Selection modes (`'none' | 'single' | 'multiple'` with checkbox column and Select All)\n- CSV Export (`exportCsv()`)\n- WCAG / ARIA accessibility (`role=\"grid\"`, keyboard navigation)",
-          "name": "FzlDataGrid",
-          "members": [
-            {
-              "kind": "field",
-              "name": "store",
-              "type": {
-                "text": "FzlStore<T> | undefined"
-              },
-              "description": "Reactive FzlStore instance (`dojo/store`)"
-            },
-            {
-              "kind": "field",
-              "name": "columns",
-              "type": {
-                "text": "FzlGridColumn<T>[]"
-              },
-              "default": "[]",
-              "description": "Column descriptors",
-              "attribute": "columns"
-            },
-            {
-              "kind": "field",
-              "name": "structure",
-              "type": {
-                "text": "FzlGridColumn<T>[]"
-              },
-              "default": "[]",
-              "description": "Dojo compatibility alias for `columns`",
-              "attribute": "structure"
-            },
-            {
-              "kind": "field",
-              "name": "items",
-              "type": {
-                "text": "T[]"
-              },
-              "default": "[]",
-              "description": "Static dataset",
-              "attribute": "items"
-            },
-            {
-              "kind": "field",
-              "name": "selectionMode",
-              "type": {
-                "text": "FzlGridSelectionMode"
-              },
-              "default": "'single'",
-              "description": "Selection Mode: 'none' | 'single' | 'multiple'",
-              "attribute": "selection-mode"
-            },
-            {
-              "kind": "field",
-              "name": "selectedId",
-              "type": {
-                "text": "string | number | null"
-              },
-              "default": "null",
-              "description": "Selected ID in single-selection mode",
-              "attribute": "selected-id"
-            },
-            {
-              "kind": "field",
-              "name": "selectedIds",
-              "type": {
-                "text": "(string | number)[]"
-              },
-              "default": "[]",
-              "description": "Set of selected IDs in multi-selection mode",
-              "attribute": "selected-ids"
-            },
-            {
-              "kind": "field",
-              "name": "searchable",
-              "type": {
-                "text": "boolean"
-              },
-              "default": "true",
-              "description": "Enable search / filter bar",
-              "attribute": "searchable"
-            },
-            {
-              "kind": "field",
-              "name": "pagination",
-              "type": {
-                "text": "boolean"
-              },
-              "default": "true",
-              "description": "Enable pagination bar",
-              "attribute": "pagination"
-            },
-            {
-              "kind": "field",
-              "name": "pageSize",
-              "type": {
-                "text": "number"
-              },
-              "default": "10",
-              "description": "Rows per page (Dojo `rowsPerPage` style, 0 for unlimited)",
-              "attribute": "page-size"
-            },
-            {
-              "kind": "field",
-              "name": "page",
-              "type": {
-                "text": "number"
-              },
-              "default": "1",
-              "description": "Current active page (1-based index)",
-              "attribute": "page"
-            },
-            {
-              "kind": "field",
-              "name": "pageSizes",
-              "type": {
-                "text": "number[]"
-              },
-              "default": "[5, 10, 25, 50, 100]",
-              "description": "Allowed page sizes dropdown options",
-              "attribute": "page-sizes"
-            },
-            {
-              "kind": "field",
-              "name": "exportable",
-              "type": {
-                "text": "boolean"
-              },
-              "default": "true",
-              "description": "Enable CSV export button in toolbar",
-              "attribute": "exportable"
-            },
-            {
-              "kind": "field",
-              "name": "emptyText",
-              "type": {
-                "text": "string"
-              },
-              "default": "'Nenhum registro encontrado.'",
-              "description": "Message displayed when no records match",
-              "attribute": "empty-text"
-            },
-            {
-              "kind": "field",
-              "name": "_searchQuery",
-              "type": {
-                "text": "string"
-              },
-              "privacy": "private",
-              "default": "''"
-            },
-            {
-              "kind": "field",
-              "name": "_sortField",
-              "type": {
-                "text": "string | null"
-              },
-              "privacy": "private",
-              "default": "null"
-            },
-            {
-              "kind": "field",
-              "name": "_sortDesc",
-              "type": {
-                "text": "boolean"
-              },
-              "privacy": "private",
-              "default": "false"
-            },
-            {
-              "kind": "field",
-              "name": "_unsubStore",
-              "type": {
-                "text": "() => void | undefined"
-              },
-              "privacy": "private"
-            },
-            {
-              "kind": "method",
-              "name": "_bindStore",
-              "privacy": "private",
-              "return": {
-                "type": {
-                  "text": "void"
-                }
-              }
-            },
-            {
-              "kind": "method",
-              "name": "_unbindStore",
-              "privacy": "private",
-              "return": {
-                "type": {
-                  "text": "void"
-                }
-              }
-            },
-            {
-              "kind": "method",
-              "name": "_getActiveColumns",
-              "privacy": "private",
-              "return": {
-                "type": {
-                  "text": "FzlGridColumn<T>[]"
-                }
-              }
-            },
-            {
-              "kind": "method",
-              "name": "_handleSort",
-              "privacy": "private",
-              "return": {
-                "type": {
-                  "text": "void"
-                }
-              },
-              "parameters": [
-                {
-                  "name": "field",
-                  "type": {
-                    "text": "string"
-                  }
-                }
-              ]
-            },
-            {
-              "kind": "method",
-              "name": "_handleRowClick",
-              "privacy": "private",
-              "return": {
-                "type": {
-                  "text": "void"
-                }
-              },
-              "parameters": [
-                {
-                  "name": "item",
-                  "type": {
-                    "text": "T"
-                  }
-                },
-                {
-                  "name": "_event",
-                  "optional": true,
-                  "type": {
-                    "text": "Event"
-                  }
-                }
-              ]
-            },
-            {
-              "kind": "method",
-              "name": "_toggleSelectMulti",
-              "privacy": "private",
-              "return": {
-                "type": {
-                  "text": "void"
-                }
-              },
-              "parameters": [
-                {
-                  "name": "id",
-                  "type": {
-                    "text": "string | number"
-                  }
-                },
-                {
-                  "name": "_item",
-                  "optional": true,
-                  "type": {
-                    "text": "T"
-                  }
-                }
-              ]
-            },
-            {
-              "kind": "method",
-              "name": "_handleSelectAllToggle",
-              "privacy": "private",
-              "return": {
-                "type": {
-                  "text": "void"
-                }
-              },
-              "parameters": [
-                {
-                  "name": "e",
-                  "type": {
-                    "text": "Event"
-                  }
-                },
-                {
-                  "name": "allItems",
-                  "type": {
-                    "text": "T[]"
-                  }
-                }
-              ]
-            },
-            {
-              "kind": "method",
-              "name": "_dispatchSelectionChange",
-              "privacy": "private",
-              "return": {
-                "type": {
-                  "text": "void"
-                }
-              }
-            },
-            {
-              "kind": "method",
-              "name": "_getItemId",
-              "privacy": "private",
-              "return": {
-                "type": {
-                  "text": "string | number"
-                }
-              },
-              "parameters": [
-                {
-                  "name": "item",
-                  "type": {
-                    "text": "T"
-                  }
-                }
-              ]
-            },
-            {
-              "kind": "method",
-              "name": "_handleDeleteClick",
-              "privacy": "private",
-              "return": {
-                "type": {
-                  "text": "void"
-                }
-              },
-              "parameters": [
-                {
-                  "name": "e",
-                  "type": {
-                    "text": "Event"
-                  }
-                },
-                {
-                  "name": "item",
-                  "type": {
-                    "text": "T"
-                  }
-                }
-              ]
-            },
-            {
-              "kind": "method",
-              "name": "_getAllFilteredItems",
-              "privacy": "private",
-              "return": {
-                "type": {
-                  "text": "T[]"
-                }
-              }
-            },
-            {
-              "kind": "method",
-              "name": "_getPagedItems",
-              "privacy": "private",
-              "return": {
-                "type": {
-                  "text": "T[]"
-                }
-              },
-              "parameters": [
-                {
-                  "name": "filteredItems",
-                  "type": {
-                    "text": "T[]"
-                  }
-                }
-              ]
-            },
-            {
-              "kind": "method",
-              "name": "exportCsv",
-              "return": {
-                "type": {
-                  "text": "string"
-                }
-              },
-              "parameters": [
-                {
-                  "name": "filename",
-                  "default": "'grid-export.csv'",
-                  "type": {
-                    "text": "string"
-                  }
-                }
-              ],
-              "description": "Export grid data to CSV file"
-            },
-            {
-              "kind": "method",
-              "name": "_setPage",
-              "privacy": "private",
-              "return": {
-                "type": {
-                  "text": "void"
-                }
-              },
-              "parameters": [
-                {
-                  "name": "newPage",
-                  "type": {
-                    "text": "number"
-                  }
-                },
-                {
-                  "name": "totalPages",
-                  "type": {
-                    "text": "number"
-                  }
-                }
-              ]
-            },
-            {
-              "kind": "method",
-              "name": "_handlePageSizeChange",
-              "privacy": "private",
-              "return": {
-                "type": {
-                  "text": "void"
-                }
-              },
-              "parameters": [
-                {
-                  "name": "e",
-                  "type": {
-                    "text": "Event"
-                  }
-                }
-              ]
-            }
-          ],
-          "events": [
-            {
-              "name": "fzl-grid-select",
-              "type": {
-                "text": "CustomEvent<{ item: T; id: any }>"
-              },
-              "description": "Dispatched when a row is selected in single mode"
-            },
-            {
-              "name": "fzl-grid-selection-change",
-              "type": {
-                "text": "CustomEvent<{ selectedIds: any[]; selectedItems: T[] }>"
-              },
-              "description": "Dispatched when multi-selection changes"
-            },
-            {
-              "name": "fzl-grid-delete",
-              "type": {
-                "text": "CustomEvent<{ item: T; id: any }>"
-              },
-              "description": "Dispatched when row delete action is clicked"
-            },
-            {
-              "name": "fzl-grid-page-change",
-              "type": {
-                "text": "CustomEvent<{ page: number; pageSize: number }>"
-              },
-              "description": "Dispatched when page changes"
-            }
-          ],
-          "attributes": [
-            {
-              "name": "columns",
-              "type": {
-                "text": "FzlGridColumn<T>[]"
-              },
-              "default": "[]",
-              "description": "Column descriptors",
-              "fieldName": "columns"
-            },
-            {
-              "name": "structure",
-              "type": {
-                "text": "FzlGridColumn<T>[]"
-              },
-              "default": "[]",
-              "description": "Dojo compatibility alias for `columns`",
-              "fieldName": "structure"
-            },
-            {
-              "name": "items",
-              "type": {
-                "text": "T[]"
-              },
-              "default": "[]",
-              "description": "Static dataset",
-              "fieldName": "items"
-            },
-            {
-              "name": "selection-mode",
-              "type": {
-                "text": "FzlGridSelectionMode"
-              },
-              "default": "'single'",
-              "description": "Selection Mode: 'none' | 'single' | 'multiple'",
-              "fieldName": "selectionMode"
-            },
-            {
-              "name": "selected-id",
-              "type": {
-                "text": "string | number | null"
-              },
-              "default": "null",
-              "description": "Selected ID in single-selection mode",
-              "fieldName": "selectedId"
-            },
-            {
-              "name": "selected-ids",
-              "type": {
-                "text": "(string | number)[]"
-              },
-              "default": "[]",
-              "description": "Set of selected IDs in multi-selection mode",
-              "fieldName": "selectedIds"
-            },
-            {
-              "name": "searchable",
-              "type": {
-                "text": "boolean"
-              },
-              "default": "true",
-              "description": "Enable search / filter bar",
-              "fieldName": "searchable"
-            },
-            {
-              "name": "pagination",
-              "type": {
-                "text": "boolean"
-              },
-              "default": "true",
-              "description": "Enable pagination bar",
-              "fieldName": "pagination"
-            },
-            {
-              "name": "page-size",
-              "type": {
-                "text": "number"
-              },
-              "default": "10",
-              "description": "Rows per page (Dojo `rowsPerPage` style, 0 for unlimited)",
-              "fieldName": "pageSize"
-            },
-            {
-              "name": "page",
-              "type": {
-                "text": "number"
-              },
-              "default": "1",
-              "description": "Current active page (1-based index)",
-              "fieldName": "page"
-            },
-            {
-              "name": "page-sizes",
-              "type": {
-                "text": "number[]"
-              },
-              "default": "[5, 10, 25, 50, 100]",
-              "description": "Allowed page sizes dropdown options",
-              "fieldName": "pageSizes"
-            },
-            {
-              "name": "exportable",
-              "type": {
-                "text": "boolean"
-              },
-              "default": "true",
-              "description": "Enable CSV export button in toolbar",
-              "fieldName": "exportable"
-            },
-            {
-              "name": "empty-text",
-              "type": {
-                "text": "string"
-              },
-              "default": "'Nenhum registro encontrado.'",
-              "description": "Message displayed when no records match",
-              "fieldName": "emptyText"
-            }
-          ],
-          "mixins": [
-            {
-              "name": "FzlWidgetMixin",
-              "package": "@fzl/core"
-            }
-          ],
-          "superclass": {
-            "name": "LitElement",
-            "package": "lit"
-          },
-          "tagName": "fzl-data-grid",
-          "customElement": true
-        },
-        {
-          "kind": "class",
-          "description": "",
-          "name": "anonymous_1",
-          "superclass": {
-            "name": "FzlDataGrid",
-            "module": "src/components/grid/data-grid.component.ts"
-          },
-          "tagName": "fzl-lit-data-grid",
-          "customElement": true,
-          "slots": [
-            {
-              "description": "Child chips or other content",
-              "name": "",
-              "inheritedFrom": {
-                "name": "FzlReaderChapterViewGroup",
-                "module": "src/components/reader-chapterview/reader-chapterview.component.ts"
-              }
-            }
-          ],
-          "attributes": [
-            {
-              "name": "items",
-              "type": {
-                "text": "FzlChipItem[]"
-              },
-              "default": "[]",
-              "description": "Array of items when configured declaratively",
-              "fieldName": "items",
-              "inheritedFrom": {
-                "name": "FzlReaderChapterViewGroup",
-                "module": "src/components/reader-chapterview/reader-chapterview.component.ts"
-              }
-            },
-            {
-              "name": "selection-mode",
-              "type": {
-                "text": "'single' | 'multiple' | 'none'"
-              },
-              "default": "'single'",
-              "description": "Selection behavior",
-              "fieldName": "selectionMode",
-              "inheritedFrom": {
-                "name": "FzlReaderChapterViewGroup",
-                "module": "src/components/reader-chapterview/reader-chapterview.component.ts"
-              }
-            },
-            {
-              "name": "selected",
-              "type": {
-                "text": "string | string[]"
-              },
-              "default": "''",
-              "description": "Selected value (string for single, array for multiple)",
-              "fieldName": "selected",
-              "inheritedFrom": {
-                "name": "FzlReaderChapterViewGroup",
-                "module": "src/components/reader-chapterview/reader-chapterview.component.ts"
-              }
-            },
-            {
-              "name": "wrap",
-              "type": {
-                "text": "boolean"
-              },
-              "default": "true",
-              "description": "Whether chips wrap to multiple lines",
-              "fieldName": "wrap",
-              "inheritedFrom": {
-                "name": "FzlReaderChapterViewGroup",
-                "module": "src/components/reader-chapterview/reader-chapterview.component.ts"
-              }
-            },
-            {
-              "name": "aria-label",
-              "type": {
-                "text": "string | null"
-              },
-              "default": "'Grupo de opções'",
-              "description": "Accessible label for the group",
-              "fieldName": "ariaLabel",
-              "inheritedFrom": {
-                "name": "FzlReaderChapterViewGroup",
-                "module": "src/components/reader-chapterview/reader-chapterview.component.ts"
-              }
-            }
-          ],
-          "members": [
-            {
-              "kind": "field",
-              "name": "items",
-              "type": {
-                "text": "FzlChipItem[]"
-              },
-              "default": "[]",
-              "description": "Array of items when configured declaratively",
-              "attribute": "items",
-              "inheritedFrom": {
-                "name": "FzlReaderChapterViewGroup",
-                "module": "src/components/reader-chapterview/reader-chapterview.component.ts"
-              }
-            },
-            {
-              "kind": "field",
-              "name": "selectionMode",
-              "type": {
-                "text": "'single' | 'multiple' | 'none'"
-              },
-              "default": "'single'",
-              "description": "Selection behavior",
-              "attribute": "selection-mode",
-              "inheritedFrom": {
-                "name": "FzlReaderChapterViewGroup",
-                "module": "src/components/reader-chapterview/reader-chapterview.component.ts"
-              }
-            },
-            {
-              "kind": "field",
-              "name": "selected",
-              "type": {
-                "text": "string | string[]"
-              },
-              "default": "''",
-              "description": "Selected value (string for single, array for multiple)",
-              "attribute": "selected",
-              "inheritedFrom": {
-                "name": "FzlReaderChapterViewGroup",
-                "module": "src/components/reader-chapterview/reader-chapterview.component.ts"
-              }
-            },
-            {
-              "kind": "field",
-              "name": "wrap",
-              "type": {
-                "text": "boolean"
-              },
-              "default": "true",
-              "description": "Whether chips wrap to multiple lines",
-              "attribute": "wrap",
-              "reflects": true,
-              "inheritedFrom": {
-                "name": "FzlReaderChapterViewGroup",
-                "module": "src/components/reader-chapterview/reader-chapterview.component.ts"
-              }
-            },
-            {
-              "kind": "field",
-              "name": "ariaLabel",
-              "type": {
-                "text": "string | null"
-              },
-              "default": "'Grupo de opções'",
-              "description": "Accessible label for the group",
-              "attribute": "aria-label",
-              "inheritedFrom": {
-                "name": "FzlReaderChapterViewGroup",
-                "module": "src/components/reader-chapterview/reader-chapterview.component.ts"
-              }
-            },
-            {
-              "kind": "field",
-              "name": "_keyNav",
-              "privacy": "private",
-              "default": "new FzlKeyNavController(this, { orientation: 'both', wrap: true, getItems: () => Array.from( this.renderRoot.querySelectorAll('fzl-reader-chapterview, button.chip, [part=\"chip\"]') as NodeListOf<HTMLElement> ), })",
-              "inheritedFrom": {
-                "name": "FzlReaderChapterViewGroup",
-                "module": "src/components/reader-chapterview/reader-chapterview.component.ts"
-              }
-            },
-            {
-              "kind": "method",
-              "name": "_onItemClick",
-              "privacy": "private",
-              "parameters": [
-                {
-                  "name": "item",
-                  "type": {
-                    "text": "FzlChipItem"
-                  }
-                }
-              ],
-              "inheritedFrom": {
-                "name": "FzlReaderChapterViewGroup",
-                "module": "src/components/reader-chapterview/reader-chapterview.component.ts"
-              }
-            },
-            {
-              "kind": "method",
-              "name": "_isItemSelected",
-              "privacy": "private",
-              "return": {
-                "type": {
-                  "text": "boolean"
-                }
-              },
-              "parameters": [
-                {
-                  "name": "item",
-                  "type": {
-                    "text": "FzlChipItem"
-                  }
-                }
-              ],
-              "inheritedFrom": {
-                "name": "FzlReaderChapterViewGroup",
-                "module": "src/components/reader-chapterview/reader-chapterview.component.ts"
-              }
-            }
-          ],
-          "events": [
-            {
-              "type": {
-                "text": "CustomEvent<{ selected: string | string[]; item?: FzlChipItem; value: string }>"
-              },
-              "description": "Dispatched when selection changes",
-              "name": "fzl-change",
-              "inheritedFrom": {
-                "name": "FzlReaderChapterViewGroup",
-                "module": "src/components/reader-chapterview/reader-chapterview.component.ts"
-              }
-            }
-          ]
-        }
-      ],
-      "exports": [
-        {
-          "kind": "js",
-          "name": "*",
-          "declaration": {
-            "name": "*",
-            "module": "src/components/grid/data-grid.types"
-          }
-        },
-        {
-          "kind": "js",
-          "name": "FzlDataGrid",
-          "declaration": {
-            "name": "FzlDataGrid",
-            "module": "src/components/grid/data-grid.component.ts"
-          }
-        },
-        {
-          "kind": "custom-element-definition",
-          "name": "fzl-data-grid",
-          "declaration": {
-            "name": "FzlDataGrid",
-            "module": "src/components/grid/data-grid.component.ts"
-          }
-        },
-        {
-          "kind": "custom-element-definition",
-          "name": "fzl-lit-data-grid",
-          "declaration": {
-            "name": "anonymous_1",
-            "module": "src/components/grid/data-grid.component.ts"
-          }
-        }
-      ]
-    },
-    {
-      "kind": "javascript-module",
-      "path": "src/components/grid/data-grid.types.ts",
-      "declarations": [
-        {
-          "kind": "function",
-          "name": "parseGridColumns",
-          "return": {
-            "type": {
-              "text": "FzlGridColumn[]"
-            }
-          },
-          "parameters": [
-            {
-              "name": "columns",
-              "type": {
-                "text": "any"
-              }
-            }
-          ],
-          "description": "Safely parses columns from Array or JSON string (supports Dojo `structure` alias)."
-        },
-        {
-          "kind": "function",
-          "name": "parseGridItems",
-          "return": {
-            "type": {
-              "text": "any[]"
-            }
-          },
-          "parameters": [
-            {
-              "name": "items",
-              "type": {
-                "text": "any"
-              }
-            }
-          ],
-          "description": "Safely parses items from Array or JSON string."
-        },
-        {
-          "kind": "function",
-          "name": "exportToCsv",
-          "return": {
-            "type": {
-              "text": "string"
-            }
-          },
-          "parameters": [
-            {
-              "name": "items",
-              "type": {
-                "text": "any[]"
-              }
-            },
-            {
-              "name": "columns",
-              "type": {
-                "text": "FzlGridColumn[]"
-              }
-            },
-            {
-              "name": "filename",
-              "default": "'export.csv'",
-              "type": {
-                "text": "string"
-              }
-            }
-          ],
-          "description": "Generates and downloads a CSV export from the given items and columns."
-        }
-      ],
-      "exports": [
-        {
-          "kind": "js",
-          "name": "parseGridColumns",
-          "declaration": {
-            "name": "parseGridColumns",
-            "module": "src/components/grid/data-grid.types.ts"
-          }
-        },
-        {
-          "kind": "js",
-          "name": "parseGridItems",
-          "declaration": {
-            "name": "parseGridItems",
-            "module": "src/components/grid/data-grid.types.ts"
-          }
-        },
-        {
-          "kind": "js",
-          "name": "exportToCsv",
-          "declaration": {
-            "name": "exportToCsv",
-            "module": "src/components/grid/data-grid.types.ts"
-          }
-        }
-      ]
-    },
-    {
-      "kind": "javascript-module",
       "path": "src/components/interview-transcriber/interview-transcriber.component.ts",
       "declarations": [
         {
@@ -8395,7 +10136,7 @@
             "name": "FzlLitInterviewTranscriber",
             "module": "src/components/interview-transcriber/interview-transcriber.component.ts"
           },
-          "tagName": "fzl-lit-data-grid",
+          "tagName": "fzl-lit-voice-transcriber",
           "customElement": true,
           "slots": [
             {
@@ -8694,6 +10435,972 @@
           "declaration": {
             "name": "generateInterviewId",
             "module": "src/components/interview-transcriber/interview-transcriber.types.ts"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/components/grid/data-grid.component.ts",
+      "declarations": [
+        {
+          "kind": "class",
+          "description": "Enterprise Data Grid Web Component inspired by Dojo / Dijit `dojox/grid/DataGrid` and `dgrid`.\n\nSupported features:\n- Reactive data binding via `FzlStore` (`dojo/store`) with `store.observe()`\n- Static data binding via `items` array or JSON attribute\n- Flexible column definitions (`columns` or Dojo `structure` alias)\n- Sorting (single column asc/desc/reset)\n- Live search/filtering\n- Pagination bar (page navigation, page size selector: 5, 10, 25, 50, 100, All)\n- Selection modes (`'none' | 'single' | 'multiple'` with checkbox column and Select All)\n- CSV Export (`exportCsv()`)\n- WCAG / ARIA accessibility (`role=\"grid\"`, keyboard navigation)",
+          "name": "FzlDataGrid",
+          "members": [
+            {
+              "kind": "field",
+              "name": "store",
+              "type": {
+                "text": "FzlStore<T> | undefined"
+              },
+              "description": "Reactive FzlStore instance (`dojo/store`)"
+            },
+            {
+              "kind": "field",
+              "name": "columns",
+              "type": {
+                "text": "FzlGridColumn<T>[]"
+              },
+              "default": "[]",
+              "description": "Column descriptors",
+              "attribute": "columns"
+            },
+            {
+              "kind": "field",
+              "name": "structure",
+              "type": {
+                "text": "FzlGridColumn<T>[]"
+              },
+              "default": "[]",
+              "description": "Dojo compatibility alias for `columns`",
+              "attribute": "structure"
+            },
+            {
+              "kind": "field",
+              "name": "items",
+              "type": {
+                "text": "T[]"
+              },
+              "default": "[]",
+              "description": "Static dataset",
+              "attribute": "items"
+            },
+            {
+              "kind": "field",
+              "name": "selectionMode",
+              "type": {
+                "text": "FzlGridSelectionMode"
+              },
+              "default": "'single'",
+              "description": "Selection Mode: 'none' | 'single' | 'multiple'",
+              "attribute": "selection-mode"
+            },
+            {
+              "kind": "field",
+              "name": "selectedId",
+              "type": {
+                "text": "string | number | null"
+              },
+              "default": "null",
+              "description": "Selected ID in single-selection mode",
+              "attribute": "selected-id"
+            },
+            {
+              "kind": "field",
+              "name": "selectedIds",
+              "type": {
+                "text": "(string | number)[]"
+              },
+              "default": "[]",
+              "description": "Set of selected IDs in multi-selection mode",
+              "attribute": "selected-ids"
+            },
+            {
+              "kind": "field",
+              "name": "searchable",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "true",
+              "description": "Enable search / filter bar",
+              "attribute": "searchable"
+            },
+            {
+              "kind": "field",
+              "name": "pagination",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "true",
+              "description": "Enable pagination bar",
+              "attribute": "pagination"
+            },
+            {
+              "kind": "field",
+              "name": "pageSize",
+              "type": {
+                "text": "number"
+              },
+              "default": "10",
+              "description": "Rows per page (Dojo `rowsPerPage` style, 0 for unlimited)",
+              "attribute": "page-size"
+            },
+            {
+              "kind": "field",
+              "name": "page",
+              "type": {
+                "text": "number"
+              },
+              "default": "1",
+              "description": "Current active page (1-based index)",
+              "attribute": "page"
+            },
+            {
+              "kind": "field",
+              "name": "pageSizes",
+              "type": {
+                "text": "number[]"
+              },
+              "default": "[5, 10, 25, 50, 100]",
+              "description": "Allowed page sizes dropdown options",
+              "attribute": "page-sizes"
+            },
+            {
+              "kind": "field",
+              "name": "exportable",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "true",
+              "description": "Enable CSV export button in toolbar",
+              "attribute": "exportable"
+            },
+            {
+              "kind": "field",
+              "name": "emptyText",
+              "type": {
+                "text": "string"
+              },
+              "default": "'Nenhum registro encontrado.'",
+              "description": "Message displayed when no records match",
+              "attribute": "empty-text"
+            },
+            {
+              "kind": "field",
+              "name": "_searchQuery",
+              "type": {
+                "text": "string"
+              },
+              "privacy": "private",
+              "default": "''"
+            },
+            {
+              "kind": "field",
+              "name": "_sortField",
+              "type": {
+                "text": "string | null"
+              },
+              "privacy": "private",
+              "default": "null"
+            },
+            {
+              "kind": "field",
+              "name": "_sortDesc",
+              "type": {
+                "text": "boolean"
+              },
+              "privacy": "private",
+              "default": "false"
+            },
+            {
+              "kind": "field",
+              "name": "_unsubStore",
+              "type": {
+                "text": "() => void | undefined"
+              },
+              "privacy": "private"
+            },
+            {
+              "kind": "method",
+              "name": "_bindStore",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              }
+            },
+            {
+              "kind": "method",
+              "name": "_unbindStore",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              }
+            },
+            {
+              "kind": "method",
+              "name": "_getActiveColumns",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "FzlGridColumn<T>[]"
+                }
+              }
+            },
+            {
+              "kind": "method",
+              "name": "_handleSort",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "field",
+                  "type": {
+                    "text": "string"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "_handleRowClick",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "item",
+                  "type": {
+                    "text": "T"
+                  }
+                },
+                {
+                  "name": "_event",
+                  "optional": true,
+                  "type": {
+                    "text": "Event"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "_toggleSelectMulti",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "id",
+                  "type": {
+                    "text": "string | number"
+                  }
+                },
+                {
+                  "name": "_item",
+                  "optional": true,
+                  "type": {
+                    "text": "T"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "_handleSelectAllToggle",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "e",
+                  "type": {
+                    "text": "Event"
+                  }
+                },
+                {
+                  "name": "allItems",
+                  "type": {
+                    "text": "T[]"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "_dispatchSelectionChange",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              }
+            },
+            {
+              "kind": "method",
+              "name": "_getItemId",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "string | number"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "item",
+                  "type": {
+                    "text": "T"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "_handleDeleteClick",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "e",
+                  "type": {
+                    "text": "Event"
+                  }
+                },
+                {
+                  "name": "item",
+                  "type": {
+                    "text": "T"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "_getAllFilteredItems",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "T[]"
+                }
+              }
+            },
+            {
+              "kind": "method",
+              "name": "_getPagedItems",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "T[]"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "filteredItems",
+                  "type": {
+                    "text": "T[]"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "exportCsv",
+              "return": {
+                "type": {
+                  "text": "string"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "filename",
+                  "default": "'grid-export.csv'",
+                  "type": {
+                    "text": "string"
+                  }
+                }
+              ],
+              "description": "Export grid data to CSV file"
+            },
+            {
+              "kind": "method",
+              "name": "_setPage",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "newPage",
+                  "type": {
+                    "text": "number"
+                  }
+                },
+                {
+                  "name": "totalPages",
+                  "type": {
+                    "text": "number"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "_handlePageSizeChange",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "e",
+                  "type": {
+                    "text": "Event"
+                  }
+                }
+              ]
+            }
+          ],
+          "events": [
+            {
+              "name": "fzl-grid-select",
+              "type": {
+                "text": "CustomEvent<{ item: T; id: any }>"
+              },
+              "description": "Dispatched when a row is selected in single mode"
+            },
+            {
+              "name": "fzl-grid-selection-change",
+              "type": {
+                "text": "CustomEvent<{ selectedIds: any[]; selectedItems: T[] }>"
+              },
+              "description": "Dispatched when multi-selection changes"
+            },
+            {
+              "name": "fzl-grid-delete",
+              "type": {
+                "text": "CustomEvent<{ item: T; id: any }>"
+              },
+              "description": "Dispatched when row delete action is clicked"
+            },
+            {
+              "name": "fzl-grid-page-change",
+              "type": {
+                "text": "CustomEvent<{ page: number; pageSize: number }>"
+              },
+              "description": "Dispatched when page changes"
+            }
+          ],
+          "attributes": [
+            {
+              "name": "columns",
+              "type": {
+                "text": "FzlGridColumn<T>[]"
+              },
+              "default": "[]",
+              "description": "Column descriptors",
+              "fieldName": "columns"
+            },
+            {
+              "name": "structure",
+              "type": {
+                "text": "FzlGridColumn<T>[]"
+              },
+              "default": "[]",
+              "description": "Dojo compatibility alias for `columns`",
+              "fieldName": "structure"
+            },
+            {
+              "name": "items",
+              "type": {
+                "text": "T[]"
+              },
+              "default": "[]",
+              "description": "Static dataset",
+              "fieldName": "items"
+            },
+            {
+              "name": "selection-mode",
+              "type": {
+                "text": "FzlGridSelectionMode"
+              },
+              "default": "'single'",
+              "description": "Selection Mode: 'none' | 'single' | 'multiple'",
+              "fieldName": "selectionMode"
+            },
+            {
+              "name": "selected-id",
+              "type": {
+                "text": "string | number | null"
+              },
+              "default": "null",
+              "description": "Selected ID in single-selection mode",
+              "fieldName": "selectedId"
+            },
+            {
+              "name": "selected-ids",
+              "type": {
+                "text": "(string | number)[]"
+              },
+              "default": "[]",
+              "description": "Set of selected IDs in multi-selection mode",
+              "fieldName": "selectedIds"
+            },
+            {
+              "name": "searchable",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "true",
+              "description": "Enable search / filter bar",
+              "fieldName": "searchable"
+            },
+            {
+              "name": "pagination",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "true",
+              "description": "Enable pagination bar",
+              "fieldName": "pagination"
+            },
+            {
+              "name": "page-size",
+              "type": {
+                "text": "number"
+              },
+              "default": "10",
+              "description": "Rows per page (Dojo `rowsPerPage` style, 0 for unlimited)",
+              "fieldName": "pageSize"
+            },
+            {
+              "name": "page",
+              "type": {
+                "text": "number"
+              },
+              "default": "1",
+              "description": "Current active page (1-based index)",
+              "fieldName": "page"
+            },
+            {
+              "name": "page-sizes",
+              "type": {
+                "text": "number[]"
+              },
+              "default": "[5, 10, 25, 50, 100]",
+              "description": "Allowed page sizes dropdown options",
+              "fieldName": "pageSizes"
+            },
+            {
+              "name": "exportable",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "true",
+              "description": "Enable CSV export button in toolbar",
+              "fieldName": "exportable"
+            },
+            {
+              "name": "empty-text",
+              "type": {
+                "text": "string"
+              },
+              "default": "'Nenhum registro encontrado.'",
+              "description": "Message displayed when no records match",
+              "fieldName": "emptyText"
+            }
+          ],
+          "mixins": [
+            {
+              "name": "FzlWidgetMixin",
+              "package": "@fzl/core"
+            }
+          ],
+          "superclass": {
+            "name": "LitElement",
+            "package": "lit"
+          },
+          "tagName": "fzl-data-grid",
+          "customElement": true
+        },
+        {
+          "kind": "class",
+          "description": "",
+          "name": "anonymous_1",
+          "superclass": {
+            "name": "FzlDataGrid",
+            "module": "src/components/grid/data-grid.component.ts"
+          },
+          "tagName": "fzl-lit-voice-transcriber",
+          "customElement": true,
+          "slots": [
+            {
+              "description": "Child chips or other content",
+              "name": "",
+              "inheritedFrom": {
+                "name": "FzlReaderChapterViewGroup",
+                "module": "src/components/reader-chapterview/reader-chapterview.component.ts"
+              }
+            }
+          ],
+          "attributes": [
+            {
+              "name": "items",
+              "type": {
+                "text": "FzlChipItem[]"
+              },
+              "default": "[]",
+              "description": "Array of items when configured declaratively",
+              "fieldName": "items",
+              "inheritedFrom": {
+                "name": "FzlReaderChapterViewGroup",
+                "module": "src/components/reader-chapterview/reader-chapterview.component.ts"
+              }
+            },
+            {
+              "name": "selection-mode",
+              "type": {
+                "text": "'single' | 'multiple' | 'none'"
+              },
+              "default": "'single'",
+              "description": "Selection behavior",
+              "fieldName": "selectionMode",
+              "inheritedFrom": {
+                "name": "FzlReaderChapterViewGroup",
+                "module": "src/components/reader-chapterview/reader-chapterview.component.ts"
+              }
+            },
+            {
+              "name": "selected",
+              "type": {
+                "text": "string | string[]"
+              },
+              "default": "''",
+              "description": "Selected value (string for single, array for multiple)",
+              "fieldName": "selected",
+              "inheritedFrom": {
+                "name": "FzlReaderChapterViewGroup",
+                "module": "src/components/reader-chapterview/reader-chapterview.component.ts"
+              }
+            },
+            {
+              "name": "wrap",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "true",
+              "description": "Whether chips wrap to multiple lines",
+              "fieldName": "wrap",
+              "inheritedFrom": {
+                "name": "FzlReaderChapterViewGroup",
+                "module": "src/components/reader-chapterview/reader-chapterview.component.ts"
+              }
+            },
+            {
+              "name": "aria-label",
+              "type": {
+                "text": "string | null"
+              },
+              "default": "'Grupo de opções'",
+              "description": "Accessible label for the group",
+              "fieldName": "ariaLabel",
+              "inheritedFrom": {
+                "name": "FzlReaderChapterViewGroup",
+                "module": "src/components/reader-chapterview/reader-chapterview.component.ts"
+              }
+            }
+          ],
+          "members": [
+            {
+              "kind": "field",
+              "name": "items",
+              "type": {
+                "text": "FzlChipItem[]"
+              },
+              "default": "[]",
+              "description": "Array of items when configured declaratively",
+              "attribute": "items",
+              "inheritedFrom": {
+                "name": "FzlReaderChapterViewGroup",
+                "module": "src/components/reader-chapterview/reader-chapterview.component.ts"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "selectionMode",
+              "type": {
+                "text": "'single' | 'multiple' | 'none'"
+              },
+              "default": "'single'",
+              "description": "Selection behavior",
+              "attribute": "selection-mode",
+              "inheritedFrom": {
+                "name": "FzlReaderChapterViewGroup",
+                "module": "src/components/reader-chapterview/reader-chapterview.component.ts"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "selected",
+              "type": {
+                "text": "string | string[]"
+              },
+              "default": "''",
+              "description": "Selected value (string for single, array for multiple)",
+              "attribute": "selected",
+              "inheritedFrom": {
+                "name": "FzlReaderChapterViewGroup",
+                "module": "src/components/reader-chapterview/reader-chapterview.component.ts"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "wrap",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "true",
+              "description": "Whether chips wrap to multiple lines",
+              "attribute": "wrap",
+              "reflects": true,
+              "inheritedFrom": {
+                "name": "FzlReaderChapterViewGroup",
+                "module": "src/components/reader-chapterview/reader-chapterview.component.ts"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "ariaLabel",
+              "type": {
+                "text": "string | null"
+              },
+              "default": "'Grupo de opções'",
+              "description": "Accessible label for the group",
+              "attribute": "aria-label",
+              "inheritedFrom": {
+                "name": "FzlReaderChapterViewGroup",
+                "module": "src/components/reader-chapterview/reader-chapterview.component.ts"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "_keyNav",
+              "privacy": "private",
+              "default": "new FzlKeyNavController(this, { orientation: 'both', wrap: true, getItems: () => Array.from( this.renderRoot.querySelectorAll('fzl-reader-chapterview, button.chip, [part=\"chip\"]') as NodeListOf<HTMLElement> ), })",
+              "inheritedFrom": {
+                "name": "FzlReaderChapterViewGroup",
+                "module": "src/components/reader-chapterview/reader-chapterview.component.ts"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "_onItemClick",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "item",
+                  "type": {
+                    "text": "FzlChipItem"
+                  }
+                }
+              ],
+              "inheritedFrom": {
+                "name": "FzlReaderChapterViewGroup",
+                "module": "src/components/reader-chapterview/reader-chapterview.component.ts"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "_isItemSelected",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "boolean"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "item",
+                  "type": {
+                    "text": "FzlChipItem"
+                  }
+                }
+              ],
+              "inheritedFrom": {
+                "name": "FzlReaderChapterViewGroup",
+                "module": "src/components/reader-chapterview/reader-chapterview.component.ts"
+              }
+            }
+          ],
+          "events": [
+            {
+              "type": {
+                "text": "CustomEvent<{ selected: string | string[]; item?: FzlChipItem; value: string }>"
+              },
+              "description": "Dispatched when selection changes",
+              "name": "fzl-change",
+              "inheritedFrom": {
+                "name": "FzlReaderChapterViewGroup",
+                "module": "src/components/reader-chapterview/reader-chapterview.component.ts"
+              }
+            }
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "*",
+          "declaration": {
+            "name": "*",
+            "module": "src/components/grid/data-grid.types"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "FzlDataGrid",
+          "declaration": {
+            "name": "FzlDataGrid",
+            "module": "src/components/grid/data-grid.component.ts"
+          }
+        },
+        {
+          "kind": "custom-element-definition",
+          "name": "fzl-data-grid",
+          "declaration": {
+            "name": "FzlDataGrid",
+            "module": "src/components/grid/data-grid.component.ts"
+          }
+        },
+        {
+          "kind": "custom-element-definition",
+          "name": "fzl-lit-data-grid",
+          "declaration": {
+            "name": "anonymous_1",
+            "module": "src/components/grid/data-grid.component.ts"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/components/grid/data-grid.types.ts",
+      "declarations": [
+        {
+          "kind": "function",
+          "name": "parseGridColumns",
+          "return": {
+            "type": {
+              "text": "FzlGridColumn[]"
+            }
+          },
+          "parameters": [
+            {
+              "name": "columns",
+              "type": {
+                "text": "any"
+              }
+            }
+          ],
+          "description": "Safely parses columns from Array or JSON string (supports Dojo `structure` alias)."
+        },
+        {
+          "kind": "function",
+          "name": "parseGridItems",
+          "return": {
+            "type": {
+              "text": "any[]"
+            }
+          },
+          "parameters": [
+            {
+              "name": "items",
+              "type": {
+                "text": "any"
+              }
+            }
+          ],
+          "description": "Safely parses items from Array or JSON string."
+        },
+        {
+          "kind": "function",
+          "name": "exportToCsv",
+          "return": {
+            "type": {
+              "text": "string"
+            }
+          },
+          "parameters": [
+            {
+              "name": "items",
+              "type": {
+                "text": "any[]"
+              }
+            },
+            {
+              "name": "columns",
+              "type": {
+                "text": "FzlGridColumn[]"
+              }
+            },
+            {
+              "name": "filename",
+              "default": "'export.csv'",
+              "type": {
+                "text": "string"
+              }
+            }
+          ],
+          "description": "Generates and downloads a CSV export from the given items and columns."
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "parseGridColumns",
+          "declaration": {
+            "name": "parseGridColumns",
+            "module": "src/components/grid/data-grid.types.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "parseGridItems",
+          "declaration": {
+            "name": "parseGridItems",
+            "module": "src/components/grid/data-grid.types.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "exportToCsv",
+          "declaration": {
+            "name": "exportToCsv",
+            "module": "src/components/grid/data-grid.types.ts"
           }
         }
       ]
@@ -10158,7 +12865,7 @@
             "name": "FzlReaderChapterViewGroup",
             "module": "src/components/reader-chapterview/reader-chapterview.component.ts"
           },
-          "tagName": "fzl-lit-data-grid",
+          "tagName": "fzl-lit-voice-transcriber",
           "customElement": true,
           "slots": [
             {

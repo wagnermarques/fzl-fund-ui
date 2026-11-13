@@ -26,3 +26,7 @@ export * from './components/reader/reader-mark-bar.component';
 export * from './components/reader/reader-content.component';
 export * from './components/interview-transcriber/interview-transcriber.types';
 export * from './components/interview-transcriber/interview-transcriber.component';
+export * from './components/contact-picker/contact-picker.types';
+export * from './components/contact-picker/contact-picker.component';
+export * from './components/camera-capture/camera-capture.types';
+export * from './components/camera-capture/camera-capture.component';

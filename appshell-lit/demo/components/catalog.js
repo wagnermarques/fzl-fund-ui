@@ -22,6 +22,8 @@ import formDoc from '../../../docs/components/form.md?raw'
 import dataGridDoc from '../../../docs/components/data-grid.md?raw'
 import readerMarkBarDoc from '../../../docs/components/reader-mark-bar.md?raw'
 import interviewTranscriberDoc from '../../../docs/components/interview-transcriber.md?raw'
+import contactPickerDoc from '../../../docs/components/contact-picker.md?raw'
+import cameraCaptureDoc from '../../../docs/components/camera-capture.md?raw'
 
 /** Catálogo da documentação viva (#/componentes). Cada componente aponta
  *  para a sua especificação em docs/components/ (o texto) e para as
@@ -672,6 +674,60 @@ export const catalog = [
         packageName: '@fzl/webcomponents-lit',
         manifest: litManifest,
         load: () => import('@fzl/webcomponents-lit/interview-transcriber'),
+      },
+    ],
+  },
+  {
+    id: 'contact-picker',
+    name: 'Seletor de Contatos Mobile',
+    icon: 'contacts',
+    summary:
+      'Seletor nativo de contatos móveis (W3C Contact Picker API: navigator.contacts.select) com fallback para vCard (.vcf) e digitação manual.',
+    doc: contactPickerDoc,
+    slotText: '',
+    initialValues: {
+      'button-label': 'Selecionar Contato',
+      multiple: true,
+      properties: 'name,tel,email',
+      'allow-import-vcard': true,
+      'allow-manual-add': true,
+    },
+    implementations: [
+      {
+        id: 'lit',
+        label: 'Lit',
+        tag: 'fzl-contact-picker',
+        packageName: '@fzl/webcomponents-lit',
+        manifest: litManifest,
+        load: () => import('@fzl/webcomponents-lit/contact-picker'),
+      },
+    ],
+  },
+  {
+    id: 'camera-capture',
+    name: 'Câmera, Foto & Vídeo',
+    icon: 'photo_camera',
+    summary:
+      'Captura mobile de fotos em alta resolução e gravação de vídeos via MediaRecorder com troca de câmera (frontal/traseira), lanterna (torch), overlays de enquadramento e revisão.',
+    doc: cameraCaptureDoc,
+    slotText: '',
+    initialValues: {
+      mode: 'both',
+      'facing-mode': 'environment',
+      overlay: 'document',
+      'max-video-duration': 30,
+      'allow-torch': true,
+      'allow-flip': true,
+      countdown: 0,
+    },
+    implementations: [
+      {
+        id: 'lit',
+        label: 'Lit',
+        tag: 'fzl-camera-capture',
+        packageName: '@fzl/webcomponents-lit',
+        manifest: litManifest,
+        load: () => import('@fzl/webcomponents-lit/camera-capture'),
       },
     ],
   },

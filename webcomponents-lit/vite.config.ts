@@ -22,7 +22,9 @@ export default defineConfig({
         'data-grid': resolve(__dirname, 'src/components/grid/data-grid.component.ts'),
         'reader-mark-bar': resolve(__dirname, 'src/components/reader/reader-mark-bar.component.ts'),
         'reader-content': resolve(__dirname, 'src/components/reader/reader-content.component.ts'),
-        'interview-transcriber': resolve(__dirname, 'src/components/interview-transcriber/interview-transcriber.component.ts')
+        'interview-transcriber': resolve(__dirname, 'src/components/interview-transcriber/interview-transcriber.component.ts'),
+        'contact-picker': resolve(__dirname, 'src/components/contact-picker/contact-picker.component.ts'),
+        'camera-capture': resolve(__dirname, 'src/components/camera-capture/camera-capture.component.ts')
       },
       formats: ['es']
     },

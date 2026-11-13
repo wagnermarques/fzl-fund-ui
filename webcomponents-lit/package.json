@@ -71,6 +71,14 @@
       "types": "./dist/interview-transcriber.d.ts",
       "import": "./dist/interview-transcriber.js"
     },
+    "./contact-picker": {
+      "types": "./dist/contact-picker.d.ts",
+      "import": "./dist/contact-picker.js"
+    },
+    "./camera-capture": {
+      "types": "./dist/camera-capture.d.ts",
+      "import": "./dist/camera-capture.js"
+    },
     "./custom-elements.json": "./custom-elements.json"
   },
   "scripts": {

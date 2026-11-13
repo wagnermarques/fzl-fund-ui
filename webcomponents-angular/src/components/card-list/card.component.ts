@@ -334,14 +334,6 @@ export class FzlNgCardComponent {
     return Boolean(this.bodyMaxHeight && this.bodyMaxHeight !== 'none');
   }
 
-  onTitleClick(event: MouseEvent | KeyboardEvent): void {
-    event.stopPropagation();
-    this.fzlCardTitleClick.emit({
-      title: this.title,
-      originalEvent: event as MouseEvent,
-    });
-  }
-
   toggle(force?: boolean): boolean {
     if (!this.isCollapsible) return true;
     const next = typeof force === 'boolean' ? force : !this.isExpanded;

@@ -302,4 +302,84 @@ describe('FzlDocumentPicker Web Component (<fzl-document-picker>)', () => {
     expect(highlighted).not.toBeNull();
     expect(highlighted.textContent).toBe('FIDC Alpha');
   });
+
+  it('extrai conteúdo .docx envolto em controles de conteúdo (w:sdt), caixas de texto (w:txbxContent) e campos (w:fldSimple)', async () => {
+    const templateXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:document
+  xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"
+  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006">
+  <w:body>
+    <w:p>
+      <mc:AlternateContent>
+        <mc:Choice Requires="wps">
+          <w:drawing>
+            <w:txbxContent>
+              <w:p><w:r><w:t>DESPACHO</w:t></w:r></w:p>
+            </w:txbxContent>
+          </w:drawing>
+        </mc:Choice>
+        <mc:Fallback>
+          <w:pict>
+            <w:txbxContent>
+              <w:p><w:r><w:t>DESPACHO (fallback duplicado)</w:t></w:r></w:p>
+            </w:txbxContent>
+          </w:pict>
+        </mc:Fallback>
+      </mc:AlternateContent>
+    </w:p>
+    <w:sdt>
+      <w:sdtContent>
+        <w:p>
+          <w:r><w:t>O (A) Diretor (a) da Etec </w:t></w:r>
+          <w:sdt><w:sdtContent><w:r><w:t>ZONA LESTE</w:t></w:r></w:sdtContent></w:sdt>
+          <w:r><w:t>, requerido pelo aluno (a) </w:t></w:r>
+          <w:fldSimple w:instr="MERGEFIELD ALUNO"><w:r><w:t>Fábio Assato Rossi</w:t></w:r></w:fldSimple>
+          <w:r><w:t>, decide:</w:t></w:r>
+        </w:p>
+        <w:tbl>
+          <w:sdt>
+            <w:sdtContent>
+              <w:tr>
+                <w:tc><w:p><w:r><w:t>Componente (s) Curricular(es)</w:t></w:r></w:p></w:tc>
+                <w:tc><w:p><w:r><w:t>Resultado</w:t></w:r></w:p></w:tc>
+              </w:tr>
+              <w:tr>
+                <w:tc><w:p><w:r><w:t>Inglês Instrumental</w:t></w:r></w:p></w:tc>
+                <w:tc><w:p><w:r><w:t>deferido o aproveitamento de estudos</w:t></w:r></w:p></w:tc>
+              </w:tr>
+            </w:sdtContent>
+          </w:sdt>
+        </w:tbl>
+      </w:sdtContent>
+    </w:sdt>
+  </w:body>
+</w:document>`;
+
+    const docxBytes = createMinimalDocxBytes(templateXml);
+    const docxFile = new File(
+      [docxBytes],
+      'DESPACHO.docx',
+      { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' }
+    );
+
+    const added = await el.addFiles([docxFile]);
+    await el.updateComplete;
+
+    expect(added.length).toBe(1);
+    const parsedText = added[0].textContent || '';
+    expect(parsedText).toContain('DESPACHO');
+    expect(parsedText).not.toContain('fallback duplicado');
+    expect(parsedText).toContain('ZONA LESTE');
+    expect(parsedText).toContain('Fábio Assato Rossi');
+    expect(parsedText).toContain('Inglês Instrumental');
+    expect(parsedText).toContain('deferido o aproveitamento de estudos');
+
+    el.openReader(added[0].id);
+    await el.updateComplete;
+    const docxView = el.shadowRoot.querySelector('.docx-view');
+    expect(docxView).not.toBeNull();
+    expect(docxView.textContent).toContain('DESPACHO');
+    expect(docxView.textContent).toContain('Fábio Assato Rossi');
+    expect(docxView.querySelectorAll('.docx-table tr').length).toBe(2);
+  });
 });

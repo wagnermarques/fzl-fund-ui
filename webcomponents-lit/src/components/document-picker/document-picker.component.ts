@@ -1,4 +1,4 @@
-import { LitElement, html, css, unsafeCSS, nothing } from 'lit';
+import { LitElement, html, css, unsafeCSS, nothing, type PropertyValues } from 'lit';
 import { property, state, query } from 'lit/decorators.js';
 import { fzlDesignTokensCss } from '@fzl/design-tokens';
 import { FzlWidgetMixin } from '@fzl/core';
@@ -253,6 +253,14 @@ export class FzlDocumentPicker extends FzlWidgetMixin(LitElement) {
         color: var(--_fzl-color-primary, #0369a1);
         border-color: var(--_fzl-color-primary, #0284c7);
         font-weight: 600;
+      }
+
+      .fs-api-hint {
+        margin: 2px 0 0;
+        font-size: 0.72rem;
+        line-height: 1.4;
+        color: var(--_fzl-color-text-muted, #64748b);
+        max-width: 540px;
       }
 
       .btn {
@@ -539,9 +547,27 @@ export class FzlDocumentPicker extends FzlWidgetMixin(LitElement) {
     super.connectedCallback();
     this._loadBookmarksFromStorage();
     if (this.preloadSamples && this._documents.length === 0) {
-      this._documents = SAMPLE_DOCUMENTS.map((doc) => ({ ...doc, tags: [...doc.tags] }));
-      this._persistBookmarksToStorage();
+      this.loadSampleDocuments();
     }
+  }
+
+  protected override willUpdate(changedProperties: PropertyValues<this>): void {
+    super.willUpdate(changedProperties);
+    if (changedProperties.has('preloadSamples') && this.preloadSamples && this._documents.length === 0) {
+      this.loadSampleDocuments();
+    }
+  }
+
+  /** Loads built-in sample documents into the list if missing. */
+  loadSampleDocuments(): void {
+    const existingIds = new Set(this._documents.map((d) => d.id));
+    const additions = SAMPLE_DOCUMENTS.filter((d) => !existingIds.has(d.id)).map((doc) => ({
+      ...doc,
+      tags: [...doc.tags],
+    }));
+    if (additions.length === 0) return;
+    this._documents = [...this._documents, ...additions];
+    this._persistBookmarksToStorage();
   }
 
   override disconnectedCallback(): void {
@@ -1135,6 +1161,7 @@ export class FzlDocumentPicker extends FzlWidgetMixin(LitElement) {
     const visibleDocs = this._getVisibleDocuments();
     const bookmarkCount = this._documents.filter((d) => d.bookmarked).length;
     const activeDoc = this._documents.find((d) => d.id === this._activeDocId) || null;
+    const fsAccessSupported = isFileSystemAccessSupported();
     const folderSupported = this.allowFolderScan && isDirectoryPickerSupported();
 
     return html`
@@ -1236,9 +1263,19 @@ export class FzlDocumentPicker extends FzlWidgetMixin(LitElement) {
                   </button>
                 `
               : nothing}
+            <button
+              type="button"
+              class="btn btn-load-samples"
+              ?disabled=${this.disabled}
+              @click=${() => this.loadSampleDocuments()}
+            >
+              Carregar Exemplos
+            </button>
           </div>
           <div class="start-dir-row" role="group" aria-label="Pasta inicial padrão">
-            <span class="start-dir-label">Pasta inicial:</span>
+            <span class="start-dir-label">
+              ${fsAccessSupported ? 'Pasta inicial (File System API):' : 'Pasta inicial padrão:'}
+            </span>
             ${WELL_KNOWN_DIRECTORIES.map(
               (dir) => html`
                 <button
@@ -1255,6 +1292,13 @@ export class FzlDocumentPicker extends FzlWidgetMixin(LitElement) {
               `
             )}
           </div>
+          ${!fsAccessSupported
+            ? html`
+                <p class="fs-api-hint">
+                  Este navegador está usando <code>&lt;input type="file"&gt;</code> padrão (sem <code>showOpenFilePicker</code>): o SO abre na última pasta salva pelo navegador; escolha um arquivo em <strong>Pasta pessoal / Documentos</strong> para atualizar o histórico do navegador.
+                </p>
+              `
+            : nothing}
           <input
             type="file"
             hidden

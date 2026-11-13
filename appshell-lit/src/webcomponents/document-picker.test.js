@@ -215,4 +215,23 @@ describe('FzlDocumentPicker Web Component (<fzl-document-picker>)', () => {
       window.showDirectoryPicker = origDir;
     }
   });
+
+  it('popula exemplos reativamente ao definir preload-samples e via loadSampleDocuments()', async () => {
+    expect(el.getDocuments().length).toBe(0);
+
+    el.setAttribute('preload-samples', '');
+    await el.updateComplete;
+    expect(el.getDocuments().length).toBe(3);
+
+    // Remover um documento e recarregar exemplos
+    const firstId = el.getDocuments()[0].id;
+    el.removeDocument(firstId);
+    expect(el.getDocuments().length).toBe(2);
+
+    const loadBtn = el.shadowRoot.querySelector('.btn-load-samples');
+    expect(loadBtn).not.toBeNull();
+    loadBtn.click();
+    await el.updateComplete;
+    expect(el.getDocuments().length).toBe(3);
+  });
 });

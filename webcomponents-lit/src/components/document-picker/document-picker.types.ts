@@ -1,3 +1,5 @@
+import type { FzlDocxBlock } from './docx-parser';
+
 export type FzlDocumentCategory =
   | 'text'
   | 'pdf'
@@ -75,6 +77,7 @@ export interface FzlDocumentItem {
   category: FzlDocumentCategory;
   lastModified: number;
   textContent?: string;
+  docxBlocks?: FzlDocxBlock[];
   objectUrl?: string;
   file?: File;
   tags: string[];
@@ -94,6 +97,7 @@ export interface FzlDocumentBookmark {
   category: FzlDocumentCategory;
   lastModified: number;
   textContent?: string;
+  docxBlocks?: FzlDocxBlock[];
   tags: string[];
   notes?: string;
   bookmarkedAt: number;
@@ -103,6 +107,7 @@ export interface FzlDocumentUploadPayload {
   document: FzlDocumentItem;
   file?: File;
   textContent?: string;
+  docxBlocks?: FzlDocxBlock[];
   tags: string[];
   notes?: string;
   timestamp: string;
@@ -142,6 +147,12 @@ export function detectDocumentCategory(
     return { extension: extension || '.png', category: 'image' };
   }
   if (
+    extension === '.docx' ||
+    mime === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+  ) {
+    return { extension: extension || '.docx', category: 'text' };
+  }
+  if (
     ['.txt', '.md', '.markdown', '.log', '.rtf', '.html'].includes(extension) ||
     mime.startsWith('text/')
   ) {
@@ -152,11 +163,25 @@ export function detectDocumentCategory(
 }
 
 /**
- * Checks whether a document's contents can be decoded as UTF-8 text.
+ * Checks whether a document represents a Word OOXML (.docx) package.
+ */
+export function isDocxDocument(nameOrExt: string, mimeType = ''): boolean {
+  const lower = (nameOrExt || '').trim().toLowerCase();
+  const mime = (mimeType || '').trim().toLowerCase();
+  return (
+    lower.endsWith('.docx') ||
+    mime === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+  );
+}
+
+/**
+ * Checks whether a document's contents can be decoded directly as UTF-8 text.
  */
 export function isTextReadable(category: FzlDocumentCategory, ext: string): boolean {
+  const lowerExt = ext.toLowerCase();
+  if (lowerExt === '.docx') return false;
   if (category === 'text' || category === 'data') return true;
-  if (category === 'spreadsheet' && ['.csv', '.tsv'].includes(ext.toLowerCase())) {
+  if (category === 'spreadsheet' && ['.csv', '.tsv'].includes(lowerExt)) {
     return true;
   }
   return false;

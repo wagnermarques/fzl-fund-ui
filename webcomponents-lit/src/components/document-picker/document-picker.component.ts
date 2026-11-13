@@ -16,12 +16,20 @@ import {
   estimateReadingStats,
   formatDocumentSize,
   isDirectoryPickerSupported,
+  isDocxDocument,
   isFileSystemAccessSupported,
   isTextReadable,
   normalizeWellKnownDirectory,
 } from './document-picker.types';
+import {
+  type FzlDocxBlock,
+  type FzlDocxRun,
+  parseDocxArrayBuffer,
+  readBlobAsArrayBuffer,
+} from './docx-parser';
 
 export * from './document-picker.types';
+export * from './docx-parser';
 
 interface FileSystemHandleLike {
   kind: 'file' | 'directory';
@@ -490,6 +498,64 @@ export class FzlDocumentPicker extends FzlWidgetMixin(LitElement) {
         border-radius: 3px;
       }
 
+      .docx-view {
+        white-space: normal;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .docx-heading {
+        margin: 8px 0 2px;
+        line-height: 1.3;
+        color: var(--_fzl-color-text, #0f172a);
+      }
+
+      .docx-h1 {
+        font-size: 1.35em;
+        border-bottom: 1px solid var(--_fzl-color-border, #e2e8f0);
+        padding-bottom: 4px;
+      }
+
+      .docx-h2 {
+        font-size: 1.18em;
+      }
+
+      .docx-h3 {
+        font-size: 1.05em;
+      }
+
+      .docx-p {
+        margin: 0;
+      }
+
+      .docx-list-item {
+        margin: 0 0 0 18px;
+        list-style: disc;
+        display: list-item;
+      }
+
+      .docx-table-wrap {
+        overflow-x: auto;
+      }
+
+      .docx-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.9em;
+      }
+
+      .docx-table td {
+        border: 1px solid var(--_fzl-color-border, #cbd5e1);
+        padding: 6px 10px;
+        vertical-align: top;
+      }
+
+      .docx-table tr:first-child td {
+        background: var(--_fzl-color-surface-hover, #f8fafc);
+        font-weight: 600;
+      }
+
       .reader-frame {
         width: 100%;
         height: 420px;
@@ -616,7 +682,23 @@ export class FzlDocumentPicker extends FzlWidgetMixin(LitElement) {
 
       const { extension, category } = detectDocumentCategory(file.name, file.type);
       let textContent: string | undefined;
-      if (isTextReadable(category, extension)) {
+      let docxBlocks: FzlDocxBlock[] | undefined;
+
+      if (isDocxDocument(file.name, file.type)) {
+        try {
+          const buffer = await readBlobAsArrayBuffer(file);
+          const parsedDocx = await parseDocxArrayBuffer(buffer);
+          textContent = parsedDocx.textContent;
+          docxBlocks = parsedDocx.blocks;
+        } catch (err) {
+          const msg =
+            err instanceof Error
+              ? err.message
+              : `Não foi possível ler o arquivo .docx "${file.name}".`;
+          this._errorMessage = msg;
+          this.emit('fzl-document-error', { error: msg, fileName: file.name });
+        }
+      } else if (isTextReadable(category, extension)) {
         try {
           textContent = await file.text();
         } catch {
@@ -649,6 +731,7 @@ export class FzlDocumentPicker extends FzlWidgetMixin(LitElement) {
         category,
         lastModified: file.lastModified || Date.now(),
         textContent,
+        docxBlocks,
         objectUrl,
         file,
         tags: existingIdx >= 0 ? [...this._documents[existingIdx].tags] : [],
@@ -1008,6 +1091,10 @@ export class FzlDocumentPicker extends FzlWidgetMixin(LitElement) {
           lastModified: d.lastModified,
           textContent:
             d.textContent && d.textContent.length <= 250_000 ? d.textContent : undefined,
+          docxBlocks:
+            d.docxBlocks && (!d.textContent || d.textContent.length <= 250_000)
+              ? d.docxBlocks
+              : undefined,
           tags: [...d.tags],
           notes: d.notes,
           bookmarkedAt: d.bookmarkedAt || Date.now(),
@@ -1075,6 +1162,57 @@ export class FzlDocumentPicker extends FzlWidgetMixin(LitElement) {
     return parts.map((part, idx) =>
       idx % 2 === 1 ? html`<mark>${part}</mark>` : part
     );
+  }
+
+  private _renderDocxRuns(runs: FzlDocxRun[], query: string) {
+    return runs.map((run) => {
+      let content: unknown = this._renderHighlightedText(run.text, query);
+      if (run.underline) content = html`<u>${content}</u>`;
+      if (run.italic) content = html`<em>${content}</em>`;
+      if (run.bold) content = html`<strong>${content}</strong>`;
+      return content;
+    });
+  }
+
+  private _renderDocxBlocks(blocks: FzlDocxBlock[], query: string) {
+    return html`
+      <div class="docx-view">
+        ${blocks.map((block) => {
+          if (block.type === 'heading') {
+            if (block.level === 1) {
+              return html`<h2 class="docx-heading docx-h1">${this._renderDocxRuns(block.runs, query)}</h2>`;
+            }
+            if (block.level === 2) {
+              return html`<h3 class="docx-heading docx-h2">${this._renderDocxRuns(block.runs, query)}</h3>`;
+            }
+            return html`<h4 class="docx-heading docx-h3">${this._renderDocxRuns(block.runs, query)}</h4>`;
+          }
+          if (block.type === 'list-item') {
+            return html`<div class="docx-list-item">${this._renderDocxRuns(block.runs, query)}</div>`;
+          }
+          if (block.type === 'table') {
+            return html`
+              <div class="docx-table-wrap">
+                <table class="docx-table">
+                  <tbody>
+                    ${block.rows.map(
+                      (row) => html`
+                        <tr>
+                          ${row.map(
+                            (cell) => html`<td>${this._renderHighlightedText(cell, query)}</td>`
+                          )}
+                        </tr>
+                      `
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            `;
+          }
+          return html`<p class="docx-p">${this._renderDocxRuns(block.runs, query)}</p>`;
+        })}
+      </div>
+    `;
   }
 
   private _renderReader(doc: FzlDocumentItem) {
@@ -1145,13 +1283,15 @@ export class FzlDocumentPicker extends FzlWidgetMixin(LitElement) {
         </header>
 
         <div class="reader-body" style="font-size: ${this._readerFontSize}px">
-          ${isText
-            ? this._renderHighlightedText(doc.textContent || '', this._readerSearchQuery)
-            : doc.category === 'pdf' && doc.objectUrl
-              ? html`<iframe class="reader-frame" src=${doc.objectUrl} title=${doc.name}></iframe>`
-              : doc.category === 'image' && doc.objectUrl
-                ? html`<img class="reader-img" src=${doc.objectUrl} alt=${doc.name} />`
-                : html`<p>Pré-visualização textual indisponível para o formato <code>${doc.extension || doc.type}</code>. Você pode salvá-lo nos bookmarks ou enviá-lo ao servidor.</p>`}
+          ${doc.docxBlocks && doc.docxBlocks.length > 0
+            ? this._renderDocxBlocks(doc.docxBlocks, this._readerSearchQuery)
+            : isText
+              ? this._renderHighlightedText(doc.textContent || '', this._readerSearchQuery)
+              : doc.category === 'pdf' && doc.objectUrl
+                ? html`<iframe class="reader-frame" src=${doc.objectUrl} title=${doc.name}></iframe>`
+                : doc.category === 'image' && doc.objectUrl
+                  ? html`<img class="reader-img" src=${doc.objectUrl} alt=${doc.name} />`
+                  : html`<p>Pré-visualização textual indisponível para o formato <code>${doc.extension || doc.type}</code>. Você pode salvá-lo nos bookmarks ou enviá-lo ao servidor.</p>`}
         </div>
       </section>
     `;
@@ -1207,7 +1347,7 @@ export class FzlDocumentPicker extends FzlWidgetMixin(LitElement) {
             ${(
               [
                 ['all', 'Todos os formatos'],
-                ['text', 'Texto / MD'],
+                ['text', 'Texto / MD / DOCX'],
                 ['pdf', 'PDF'],
                 ['spreadsheet', 'Planilhas / CSV'],
                 ['data', 'JSON / Dados'],

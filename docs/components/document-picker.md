@@ -10,6 +10,7 @@ O `<fzl-document-picker>` atende três fluxos complementares em aplicações cor
 
 1. **Abrir para Leitura Imediata (`read`)**:
    - Decodifica arquivos de texto (`.txt`, `.md`, `.csv`, `.json`, `.log`) e exibe estatísticas de palavras/tempo estimado de leitura, controle de fonte (`A-` / `A+`) e busca com realce dentro do texto.
+   - **Leitura Nativa de Microsoft Word (`.docx`) sem Dependências Externas**: leitor OOXML embutido (ZIP + `DecompressionStream('deflate-raw')` + `DOMParser` em `word/document.xml`) que preserva títulos, negrito, itálico, sublinhado, listas e tabelas com ajuste fluido para celular e pesquisa interna.
    - Renderiza PDFs e imagens via `ObjectURL` seguro sem precisar fazer upload prévio.
    - Permite enviar parágrafos do documento aberto para o componente `<fzl-reader-content>` através do evento `fzl-document-open-study`.
 2. **Salvar nos Bookmarks de Documentos (`bookmark`)**:

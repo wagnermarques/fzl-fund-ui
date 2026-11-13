@@ -1,6 +1,6 @@
 // @vitest-environment happy-dom
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import '@fzl/webcomponents-lit/document-picker';
+import { createMinimalDocxBytes } from '@fzl/webcomponents-lit/document-picker';
 
 function createTextFile(name, content, type = 'text/plain') {
   return new File([content], name, { type, lastModified: 1700000000000 });
@@ -233,5 +233,73 @@ describe('FzlDocumentPicker Web Component (<fzl-document-picker>)', () => {
     loadBtn.click();
     await el.updateComplete;
     expect(el.getDocuments().length).toBe(3);
+  });
+
+  it('decodifica arquivo .docx nativamente sem dependências externas e renderiza títulos, formatação e tabela', async () => {
+    const sampleXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+  <w:body>
+    <w:p>
+      <w:pPr><w:pStyle w:val="Heading1"/></w:pPr>
+      <w:r><w:t>Relatório de Governança</w:t></w:r>
+    </w:p>
+    <w:p>
+      <w:r><w:rPr><w:b/></w:rPr><w:t>Atenção: </w:t></w:r>
+      <w:r><w:rPr><w:i/></w:rPr><w:t>item regulatório.</w:t></w:r>
+    </w:p>
+    <w:p>
+      <w:pPr><w:numPr><w:ilvl w:val="0"/><w:numId w:val="1"/></w:numPr></w:pPr>
+      <w:r><w:t>Checklist mensal</w:t></w:r>
+    </w:p>
+    <w:tbl>
+      <w:tr>
+        <w:tc><w:p><w:r><w:t>Fundo</w:t></w:r></w:p></w:tc>
+        <w:tc><w:p><w:r><w:t>Status</w:t></w:r></w:p></w:tc>
+      </w:tr>
+      <w:tr>
+        <w:tc><w:p><w:r><w:t>FIDC Alpha</w:t></w:r></w:p></w:tc>
+        <w:tc><w:p><w:r><w:t>Conforme</w:t></w:r></w:p></w:tc>
+      </w:tr>
+    </w:tbl>
+  </w:body>
+</w:document>`;
+
+    const docxBytes = createMinimalDocxBytes(sampleXml);
+    const docxFile = new File(
+      [docxBytes],
+      'parecer-oficial.docx',
+      { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' }
+    );
+
+    const added = await el.addFiles([docxFile]);
+    await el.updateComplete;
+
+    expect(added.length).toBe(1);
+    expect(added[0].extension).toBe('.docx');
+    expect(added[0].category).toBe('text');
+    expect(added[0].textContent).toContain('Relatório de Governança');
+    expect(added[0].textContent).toContain('FIDC Alpha');
+    expect(added[0].docxBlocks?.length).toBe(4);
+
+    el.openReader(added[0].id);
+    await el.updateComplete;
+
+    const docxView = el.shadowRoot.querySelector('.docx-view');
+    expect(docxView).not.toBeNull();
+    expect(docxView.querySelector('.docx-h1')?.textContent).toContain('Relatório de Governança');
+    expect(docxView.querySelector('strong')?.textContent).toContain('Atenção:');
+    expect(docxView.querySelector('em')?.textContent).toContain('item regulatório.');
+    expect(docxView.querySelector('.docx-list-item')?.textContent).toContain('Checklist mensal');
+    expect(docxView.querySelectorAll('.docx-table tr').length).toBe(2);
+
+    // Verifica busca realçada dentro da visualização DOCX
+    const searchInput = el.shadowRoot.querySelector('.reader-search-input');
+    searchInput.value = 'FIDC Alpha';
+    searchInput.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
+    await el.updateComplete;
+
+    const highlighted = docxView.querySelector('mark');
+    expect(highlighted).not.toBeNull();
+    expect(highlighted.textContent).toBe('FIDC Alpha');
   });
 });

@@ -25,6 +25,7 @@ import interviewTranscriberDoc from '../../../docs/components/interview-transcri
 import contactPickerDoc from '../../../docs/components/contact-picker.md?raw'
 import cameraCaptureDoc from '../../../docs/components/camera-capture.md?raw'
 import documentPickerDoc from '../../../docs/components/document-picker.md?raw'
+import fileManagerDoc from '../../../docs/components/file-manager.md?raw'
 
 /** Categorias taxonômicas para classificação dos Web Components do ecossistema FZL. */
 export const componentCategories = [
@@ -858,6 +859,33 @@ export const catalog = [
         packageName: '@fzl/webcomponents-lit',
         manifest: litManifest,
         load: () => import('@fzl/webcomponents-lit/document-picker'),
+      },
+    ],
+  },
+  {
+    id: 'file-manager',
+    category: 'reader',
+    categories: ['reader', 'mobile', 'data'],
+    name: 'Gerenciador de Arquivos & Leitura',
+    icon: 'folder_managed',
+    summary:
+      'Explorador de arquivos estilo filesystem que lista documentos locais e no servidor, indicando status (favoritado, uploaded, sincronizado) e permitindo retomar a leitura imediatamente.',
+    doc: fileManagerDoc,
+    slotText: '',
+    initialValues: {
+      'view-mode': 'table',
+      'current-folder': '/',
+      'preload-samples': true,
+      'include-local-bookmarks': true,
+    },
+    implementations: [
+      {
+        id: 'lit',
+        label: 'Lit',
+        tag: 'fzl-file-manager',
+        packageName: '@fzl/webcomponents-lit',
+        manifest: litManifest,
+        load: () => import('@fzl/webcomponents-lit/file-manager'),
       },
     ],
   },

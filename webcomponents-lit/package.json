@@ -83,6 +83,10 @@
       "types": "./dist/document-picker.d.ts",
       "import": "./dist/document-picker.js"
     },
+    "./file-manager": {
+      "types": "./dist/file-manager.d.ts",
+      "import": "./dist/file-manager.js"
+    },
     "./custom-elements.json": "./custom-elements.json"
   },
   "scripts": {

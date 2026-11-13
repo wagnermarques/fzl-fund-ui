@@ -32,3 +32,5 @@ export * from './components/camera-capture/camera-capture.types';
 export * from './components/camera-capture/camera-capture.component';
 export * from './components/document-picker/document-picker.types';
 export * from './components/document-picker/document-picker.component';
+export * from './components/file-manager/file-manager.types';
+export * from './components/file-manager/file-manager.component';

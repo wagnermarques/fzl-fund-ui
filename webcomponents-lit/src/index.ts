@@ -30,3 +30,5 @@ export * from './components/contact-picker/contact-picker.types';
 export * from './components/contact-picker/contact-picker.component';
 export * from './components/camera-capture/camera-capture.types';
 export * from './components/camera-capture/camera-capture.component';
+export * from './components/document-picker/document-picker.types';
+export * from './components/document-picker/document-picker.component';

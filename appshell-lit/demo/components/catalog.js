@@ -24,6 +24,7 @@ import readerMarkBarDoc from '../../../docs/components/reader-mark-bar.md?raw'
 import interviewTranscriberDoc from '../../../docs/components/interview-transcriber.md?raw'
 import contactPickerDoc from '../../../docs/components/contact-picker.md?raw'
 import cameraCaptureDoc from '../../../docs/components/camera-capture.md?raw'
+import documentPickerDoc from '../../../docs/components/document-picker.md?raw'
 
 /** Categorias taxonômicas para classificação dos Web Components do ecossistema FZL. */
 export const componentCategories = [
@@ -830,6 +831,34 @@ export const catalog = [
       },
     ],
   },
+  {
+    id: 'document-picker',
+    category: 'reader',
+    categories: ['reader', 'mobile'],
+    name: 'Seletor, Leitor & Bookmark de Documentos',
+    icon: 'folder_open',
+    summary:
+      'Pesquisa e abre documentos do sistema de arquivos (mobile ou desktop) para leitura imediata offline, organização em Bookmarks com tags ou upload para o backend.',
+    doc: documentPickerDoc,
+    slotText: '',
+    initialValues: {
+      mode: 'all',
+      accept: '.txt,.md,.pdf,.csv,.json,.doc,.docx',
+      multiple: true,
+      'allow-folder-scan': true,
+      'preload-samples': true,
+    },
+    implementations: [
+      {
+        id: 'lit',
+        label: 'Lit',
+        tag: 'fzl-document-picker',
+        packageName: '@fzl/webcomponents-lit',
+        manifest: litManifest,
+        load: () => import('@fzl/webcomponents-lit/document-picker'),
+      },
+    ],
+  },
 ]
 
 export function findComponent(id) {
@@ -838,4 +867,23 @@ export function findComponent(id) {
 
 export function findCategory(categoryId) {
   return componentCategories.find((category) => category.id === categoryId)
+}
+
+export function getComponentCategories(component) {
+  if (!component) return []
+  const ids =
+    Array.isArray(component.categories) && component.categories.length > 0
+      ? component.categories
+      : component.category
+        ? [component.category]
+        : []
+  return ids.map((id) => findCategory(id)).filter(Boolean)
+}
+
+export function hasCategory(component, categoryId) {
+  if (!component) return false
+  if (Array.isArray(component.categories) && component.categories.length > 0) {
+    return component.categories.includes(categoryId)
+  }
+  return component.category === categoryId
 }

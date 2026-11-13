@@ -4,6 +4,7 @@ import {
   catalog,
   componentCategories,
   findCategory,
+  hasCategory,
 } from '../../demo/components/catalog.js';
 import { ComponentsView } from '../../demo/components/components-view.js';
 
@@ -44,6 +45,8 @@ describe('Taxonomia e catálogo de Web Components', () => {
     expect(byId.get('geo-explorer')?.category).toBe('geo');
     expect(byId.get('reader-content')?.category).toBe('reader');
     expect(byId.get('consent-banner')?.category).toBe('system');
+    expect(hasCategory(byId.get('document-picker'), 'reader')).toBe(true);
+    expect(hasCategory(byId.get('document-picker'), 'mobile')).toBe(true);
   });
 });
 
@@ -80,7 +83,7 @@ describe('ComponentsView filtros e busca', () => {
     const sections = el.shadowRoot.querySelectorAll('section.category-section');
     expect(sections.length).toBe(1);
 
-    const mobileCount = catalog.filter((c) => c.category === 'mobile').length;
+    const mobileCount = catalog.filter((c) => hasCategory(c, 'mobile')).length;
     const cards = el.shadowRoot.querySelectorAll('a.card');
     expect(cards.length).toBe(mobileCount);
   });
@@ -117,6 +120,8 @@ describe('ComponentsView filtros e busca', () => {
     await el.updateComplete;
 
     expect(el.shadowRoot.querySelector('.empty-catalog')).toBeNull();
-    expect(el.shadowRoot.querySelectorAll('a.card').length).toBe(catalog.length);
+    const cards = Array.from(el.shadowRoot.querySelectorAll('a.card'));
+    const uniqueHrefs = new Set(cards.map((c) => c.getAttribute('href')));
+    expect(uniqueHrefs.size).toBe(catalog.length);
   });
 });

@@ -5,7 +5,7 @@ import { fzlTokens } from '@fzl/design-tokens'
 import { fzlRegistry, fzlFocus } from '@fzl/webcomponents-lit'
 import '@fzl/webcomponents-lit/button'
 import '@fzl/webcomponents-lit/crumb'
-import { catalog, componentCategories, findCategory } from './catalog.js'
+import { catalog, componentCategories, getComponentCategories, hasCategory } from './catalog.js'
 import { controlsFor, findDeclaration } from './manifest.js'
 
 const DEFAULT_PRIMARY = fzlTokens['color-primary']
@@ -481,7 +481,7 @@ export class ComponentsView extends LitElement {
   }
 
   _renderCard(component, showCategoryBadge = false) {
-    const category = findCategory(component.category)
+    const cats = getComponentCategories(component)
     return html`
       <a class="card" href="#/componentes/${component.id}">
         <div>
@@ -490,8 +490,14 @@ export class ComponentsView extends LitElement {
         </div>
         <div class="card-badges">
           <div class="impls">${component.implementations.map((impl) => impl.label).join(' · ')}</div>
-          ${showCategoryBadge && category
-            ? html`<span class="cat-badge">${category.emoji} ${category.shortLabel}</span>`
+          ${showCategoryBadge && cats.length
+            ? html`
+                <div style="display:flex;gap:4px;flex-wrap:wrap;">
+                  ${cats.map(
+                    (category) => html`<span class="cat-badge">${category.emoji} ${category.shortLabel}</span>`,
+                  )}
+                </div>
+              `
             : nothing}
         </div>
       </a>
@@ -510,7 +516,7 @@ export class ComponentsView extends LitElement {
     const sections = visibleCategories
       .map((category) => ({
         category,
-        items: searchMatching.filter((c) => c.category === category.id),
+        items: searchMatching.filter((c) => hasCategory(c, category.id)),
       }))
       .filter((section) => section.items.length > 0)
 
@@ -561,7 +567,7 @@ export class ComponentsView extends LitElement {
             <span class="pill-count">${searchMatching.length}</span>
           </button>
           ${componentCategories.map((cat) => {
-            const count = searchMatching.filter((c) => c.category === cat.id).length
+            const count = searchMatching.filter((c) => hasCategory(c, cat.id)).length
             const isActive = this._selectedCategory === cat.id
             return html`
               <button
@@ -1190,18 +1196,18 @@ export class ComponentDocsView extends LitElement {
     const impl = this._implementation
     if (!component || !impl) return html`<p>Componente não encontrado. <a href="#/componentes">Ver todos</a></p>`
     const declaration = findDeclaration(impl.manifest, impl.tag)
-    const category = findCategory(component.category)
+    const cats = getComponentCategories(component)
     return html`
       <div class="docs-title-row">
         <h1>${component.name}</h1>
-        ${category
-          ? html`
-              <a class="docs-category-badge" href="#/componentes" title="${category.description}">
-                <span aria-hidden="true">${category.emoji}</span>
-                <span>${category.name}</span>
-              </a>
-            `
-          : nothing}
+        ${cats.map(
+          (category) => html`
+            <a class="docs-category-badge" href="#/componentes" title="${category.description}">
+              <span aria-hidden="true">${category.emoji}</span>
+              <span>${category.name}</span>
+            </a>
+          `,
+        )}
       </div>
       <p class="subtitle">${declaration?.description ?? component.summary}</p>
 

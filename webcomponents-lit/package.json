@@ -79,6 +79,10 @@
       "types": "./dist/camera-capture.d.ts",
       "import": "./dist/camera-capture.js"
     },
+    "./document-picker": {
+      "types": "./dist/document-picker.d.ts",
+      "import": "./dist/document-picker.js"
+    },
     "./custom-elements.json": "./custom-elements.json"
   },
   "scripts": {

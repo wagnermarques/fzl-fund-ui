@@ -24,7 +24,8 @@ export default defineConfig({
         'reader-content': resolve(__dirname, 'src/components/reader/reader-content.component.ts'),
         'interview-transcriber': resolve(__dirname, 'src/components/interview-transcriber/interview-transcriber.component.ts'),
         'contact-picker': resolve(__dirname, 'src/components/contact-picker/contact-picker.component.ts'),
-        'camera-capture': resolve(__dirname, 'src/components/camera-capture/camera-capture.component.ts')
+        'camera-capture': resolve(__dirname, 'src/components/camera-capture/camera-capture.component.ts'),
+        'document-picker': resolve(__dirname, 'src/components/document-picker/document-picker.component.ts')
       },
       formats: ['es']
     },

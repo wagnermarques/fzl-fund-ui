@@ -8,13 +8,17 @@ import {
   FzlDocumentItem,
   FzlDocumentPickerMode,
   FzlDocumentUploadPayload,
+  FzlWellKnownDirectory,
   SAMPLE_DOCUMENTS,
+  WELL_KNOWN_DIRECTORIES,
+  createPickerStartOptions,
   detectDocumentCategory,
   estimateReadingStats,
   formatDocumentSize,
   isDirectoryPickerSupported,
   isFileSystemAccessSupported,
   isTextReadable,
+  normalizeWellKnownDirectory,
 } from './document-picker.types';
 
 export * from './document-picker.types';
@@ -44,6 +48,8 @@ interface FileSystemHandleLike {
  * @attr {string} [endpoint=''] - Backend URL for multipart/JSON document upload
  * @attr {string} [storage-key='fzl-document-bookmarks'] - LocalStorage key for persisting bookmarked documents
  * @attr {boolean} [allow-folder-scan=true] - Enables local directory scanning on supported browsers
+ * @attr {'documents' | 'downloads' | 'desktop' | 'pictures' | 'music' | 'videos'} [start-in='documents'] - Default always-existent OS folder where file/folder pickers open
+ * @attr {boolean} [enforce-start-in=true] - Always opens in `start-in` using a fresh picker ID instead of recalling broken/unmounted paths
  * @attr {boolean} [preload-samples=false] - Preloads sample documents for demo and evaluation
  * @attr {boolean} [disabled=false] - Disables user interactions
  *
@@ -215,6 +221,38 @@ export class FzlDocumentPicker extends FzlWidgetMixin(LitElement) {
         flex-wrap: wrap;
         gap: 8px;
         justify-content: center;
+      }
+
+      .start-dir-row {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        margin-top: 2px;
+      }
+
+      .start-dir-label {
+        font-size: 0.74rem;
+        color: var(--_fzl-color-text-muted, #64748b);
+      }
+
+      .start-dir-chip {
+        padding: 3px 9px;
+        border-radius: 999px;
+        border: 1px solid var(--_fzl-color-border, #cbd5e1);
+        background: var(--_fzl-color-surface, #ffffff);
+        color: var(--_fzl-color-text-muted, #475569);
+        font-size: 0.73rem;
+        cursor: pointer;
+        font-family: inherit;
+      }
+
+      .start-dir-chip.active {
+        background: var(--_fzl-color-surface-hover, #e0f2fe);
+        color: var(--_fzl-color-primary, #0369a1);
+        border-color: var(--_fzl-color-primary, #0284c7);
+        font-weight: 600;
       }
 
       .btn {
@@ -477,6 +515,8 @@ export class FzlDocumentPicker extends FzlWidgetMixin(LitElement) {
   @property({ type: String }) endpoint = '';
   @property({ type: String, attribute: 'storage-key' }) storageKey = 'fzl-document-bookmarks';
   @property({ type: Boolean, attribute: 'allow-folder-scan' }) allowFolderScan = true;
+  @property({ type: String, attribute: 'start-in' }) startIn: FzlWellKnownDirectory = 'documents';
+  @property({ type: Boolean, attribute: 'enforce-start-in' }) enforceStartIn = true;
   @property({ type: Boolean, attribute: 'preload-samples' }) preloadSamples = false;
   @property({ type: Boolean }) disabled = false;
 
@@ -807,11 +847,27 @@ export class FzlDocumentPicker extends FzlWidgetMixin(LitElement) {
   async openNativeFilePicker(): Promise<void> {
     if (this.disabled) return;
     if (isFileSystemAccessSupported()) {
+      const startOpts = createPickerStartOptions(this.startIn, this.enforceStartIn);
+      const win = window as unknown as {
+        showOpenFilePicker: (opts: {
+          multiple?: boolean;
+          startIn?: FzlWellKnownDirectory;
+          id?: string;
+        }) => Promise<FileSystemHandleLike[]>;
+      };
       try {
-        const win = window as unknown as {
-          showOpenFilePicker: (opts: { multiple?: boolean }) => Promise<FileSystemHandleLike[]>;
-        };
-        const handles = await win.showOpenFilePicker({ multiple: this.multiple });
+        let handles: FileSystemHandleLike[];
+        try {
+          handles = await win.showOpenFilePicker({
+            multiple: this.multiple,
+            startIn: startOpts.startIn,
+            id: startOpts.id,
+          });
+        } catch (innerErr) {
+          if ((innerErr as { name?: string })?.name === 'AbortError') return;
+          // Retry without startIn/id only if browser rejects options
+          handles = await win.showOpenFilePicker({ multiple: this.multiple });
+        }
         const files: File[] = [];
         for (const handle of handles) {
           if (handle.getFile) {
@@ -830,11 +886,26 @@ export class FzlDocumentPicker extends FzlWidgetMixin(LitElement) {
   /** Scans a local directory for matching documents on desktop Chromium browsers. */
   async openDirectoryScanner(): Promise<void> {
     if (this.disabled || !isDirectoryPickerSupported()) return;
+    const startOpts = createPickerStartOptions(this.startIn, this.enforceStartIn);
     try {
       const win = window as unknown as {
-        showDirectoryPicker: () => Promise<FileSystemHandleLike>;
+        showDirectoryPicker: (opts?: {
+          mode?: 'read' | 'readwrite';
+          startIn?: FzlWellKnownDirectory;
+          id?: string;
+        }) => Promise<FileSystemHandleLike>;
       };
-      const dirHandle = await win.showDirectoryPicker();
+      let dirHandle: FileSystemHandleLike;
+      try {
+        dirHandle = await win.showDirectoryPicker({
+          mode: 'read',
+          startIn: startOpts.startIn,
+          id: startOpts.id,
+        });
+      } catch (innerErr) {
+        if ((innerErr as { name?: string })?.name === 'AbortError') return;
+        dirHandle = await win.showDirectoryPicker({ mode: 'read' });
+      }
       if (!dirHandle.values) return;
       const files: File[] = [];
       for await (const entry of dirHandle.values()) {
@@ -1165,6 +1236,24 @@ export class FzlDocumentPicker extends FzlWidgetMixin(LitElement) {
                   </button>
                 `
               : nothing}
+          </div>
+          <div class="start-dir-row" role="group" aria-label="Pasta inicial padrão">
+            <span class="start-dir-label">Pasta inicial:</span>
+            ${WELL_KNOWN_DIRECTORIES.map(
+              (dir) => html`
+                <button
+                  type="button"
+                  class="start-dir-chip ${normalizeWellKnownDirectory(this.startIn) === dir.id ? 'active' : ''}"
+                  aria-pressed=${normalizeWellKnownDirectory(this.startIn) === dir.id ? 'true' : 'false'}
+                  ?disabled=${this.disabled}
+                  @click=${() => {
+                    this.startIn = dir.id;
+                  }}
+                >
+                  ${dir.label}
+                </button>
+              `
+            )}
           </div>
           <input
             type="file"

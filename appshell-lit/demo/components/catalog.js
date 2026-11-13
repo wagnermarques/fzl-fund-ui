@@ -846,6 +846,8 @@ export const catalog = [
       accept: '.txt,.md,.pdf,.csv,.json,.doc,.docx',
       multiple: true,
       'allow-folder-scan': true,
+      'start-in': 'documents',
+      'enforce-start-in': true,
       'preload-samples': true,
     },
     implementations: [

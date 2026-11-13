@@ -23,6 +23,7 @@ O `<fzl-document-picker>` atende três fluxos complementares em aplicações cor
 
 - **Celular (Android / iOS)**: aciona o seletor nativo do sistema operacional (`<input type="file">`), permitindo buscar no armazenamento local, Google Drive ou iCloud Files.
 - **Desktop Moderno (Chromium)**: utiliza a *File System Access API* (`showOpenFilePicker`) e disponibiliza o botão **Explorar Pasta Local** (`showDirectoryPicker`) quando `allow-folder-scan` está habilitado.
+- **Pasta Inicial Garantida (`start-in` & `enforce-start-in`)**: abre o seletor sempre em uma pasta padrão existente do sistema operacional (`documents`, `downloads`, `desktop`, `pictures`, `music` ou `videos`, padrão `'documents'`), evitando que o navegador tente reabrir discos removíveis desmontados ou caminhos antigos inválidos.
 - **Drag & Drop Universal**: aceita arrastar e soltar um ou múltiplos arquivos diretamente sobre o componente.
 
 ---

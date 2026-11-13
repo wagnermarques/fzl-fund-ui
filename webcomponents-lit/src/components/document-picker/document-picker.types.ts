@@ -10,6 +10,62 @@ export type FzlDocumentUploadStatus = 'idle' | 'uploading' | 'uploaded' | 'error
 
 export type FzlDocumentPickerMode = 'all' | 'read' | 'bookmark' | 'upload';
 
+export type FzlWellKnownDirectory =
+  | 'documents'
+  | 'downloads'
+  | 'desktop'
+  | 'pictures'
+  | 'music'
+  | 'videos';
+
+export const WELL_KNOWN_DIRECTORIES: ReadonlyArray<{
+  id: FzlWellKnownDirectory;
+  label: string;
+}> = [
+  { id: 'documents', label: 'Documentos' },
+  { id: 'downloads', label: 'Downloads' },
+  { id: 'desktop', label: 'Área de Trabalho' },
+  { id: 'pictures', label: 'Imagens' },
+];
+
+const VALID_WELL_KNOWN_DIRS: ReadonlySet<string> = new Set([
+  'documents',
+  'downloads',
+  'desktop',
+  'pictures',
+  'music',
+  'videos',
+]);
+
+/**
+ * Normalizes a well-known OS starting directory, defaulting to `'documents'`.
+ */
+export function normalizeWellKnownDirectory(value?: string): FzlWellKnownDirectory {
+  const clean = (value || '').trim().toLowerCase();
+  if (VALID_WELL_KNOWN_DIRS.has(clean)) {
+    return clean as FzlWellKnownDirectory;
+  }
+  return 'documents';
+}
+
+/**
+ * Builds File System Access API `startIn` and `id` options (matching `/^[A-Za-z0-9_-]{1,32}$/`).
+ * When `enforceStartIn` is true, appends a fresh suffix so browsers do not reopen stale unmounted paths.
+ */
+export function createPickerStartOptions(
+  startIn?: string,
+  enforceStartIn = true
+): { startIn: FzlWellKnownDirectory; id: string } {
+  const normalized = normalizeWellKnownDirectory(startIn);
+  const id = enforceStartIn
+    ? `fzl_${normalized.slice(0, 8)}_${Date.now().toString(36)}`
+    : `fzl_${normalized}`;
+  return {
+    startIn: normalized,
+    id: id.slice(0, 32),
+  };
+}
+
 export interface FzlDocumentItem {
   id: string;
   name: string;

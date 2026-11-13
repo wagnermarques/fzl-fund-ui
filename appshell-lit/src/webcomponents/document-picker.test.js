@@ -159,4 +159,60 @@ describe('FzlDocumentPicker Web Component (<fzl-document-picker>)', () => {
       { num: 2, text: 'Parágrafo 2.' },
     ]);
   });
+
+  it('usa pasta padrão existente (start-in="documents") na File System Access API e permite alternar na UI', async () => {
+    expect(el.startIn).toBe('documents');
+
+    const chips = Array.from(el.shadowRoot.querySelectorAll('.start-dir-chip'));
+    expect(chips.length).toBe(4);
+    expect(chips[0].classList.contains('active')).toBe(true);
+
+    const downloadsChip = chips.find((c) => c.textContent.includes('Downloads'));
+    downloadsChip.click();
+    await el.updateComplete;
+    expect(el.startIn).toBe('downloads');
+
+    const mockFile = createTextFile('na-downloads.txt', 'Conteúdo da pasta Downloads.');
+    const showOpenFilePicker = vi.fn().mockResolvedValue([
+      { kind: 'file', name: 'na-downloads.txt', getFile: async () => mockFile },
+    ]);
+    const origOpen = window.showOpenFilePicker;
+    window.showOpenFilePicker = showOpenFilePicker;
+
+    try {
+      await el.openNativeFilePicker();
+      expect(showOpenFilePicker).toHaveBeenCalledTimes(1);
+      const callOpts = showOpenFilePicker.mock.calls[0][0];
+      expect(callOpts.startIn).toBe('downloads');
+      expect(callOpts.id).toMatch(/^[A-Za-z0-9_-]{1,32}$/);
+    } finally {
+      window.showOpenFilePicker = origOpen;
+    }
+  });
+
+  it('passa startIn e mode="read" ao acionar openDirectoryScanner', async () => {
+    const mockFile = createTextFile('pasta.md', '# Documento da pasta');
+    const showDirectoryPicker = vi.fn().mockResolvedValue({
+      kind: 'directory',
+      name: 'Documentos',
+      async *values() {
+        yield { kind: 'file', name: 'pasta.md', getFile: async () => mockFile };
+      },
+    });
+    const origDir = window.showDirectoryPicker;
+    window.showDirectoryPicker = showDirectoryPicker;
+
+    try {
+      el.startIn = 'documents';
+      await el.openDirectoryScanner();
+      expect(showDirectoryPicker).toHaveBeenCalledTimes(1);
+      const callOpts = showDirectoryPicker.mock.calls[0][0];
+      expect(callOpts.startIn).toBe('documents');
+      expect(callOpts.mode).toBe('read');
+      expect(callOpts.id).toMatch(/^[A-Za-z0-9_-]{1,32}$/);
+      expect(el.getDocuments()[0].name).toBe('pasta.md');
+    } finally {
+      window.showDirectoryPicker = origDir;
+    }
+  });
 });

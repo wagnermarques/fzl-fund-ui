@@ -382,4 +382,117 @@ describe('FzlDocumentPicker Web Component (<fzl-document-picker>)', () => {
     expect(docxView.textContent).toContain('Fábio Assato Rossi');
     expect(docxView.querySelectorAll('.docx-table tr').length).toBe(2);
   });
+
+  it('faz upload direto para o Google Drive e renderiza link "Abrir no Google Docs ↗"', async () => {
+    const file = createTextFile('Oficio_Teste.docx', 'Conteúdo do ofício.');
+    const [doc] = await el.addFiles([file]);
+
+    el.storageProvider = 'google-drive';
+    el.googleDriveFolderId = '1google_folder_123';
+    el.googleDriveConvertToDocs = true;
+    el.googleAuthToken = 'mock-google-token-xyz';
+
+    const origFetch = window.fetch;
+    const mockFetch = vi.fn().mockImplementation(async (url, init) => {
+      expect(url).toContain('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart');
+      expect(init.headers.Authorization).toBe('Bearer mock-google-token-xyz');
+      expect(init.headers['Content-Type']).toContain('multipart/related; boundary=');
+
+      // Lê o multipart body blob
+      const bodyBlob = init.body;
+      expect(bodyBlob).toBeDefined();
+      const bodyText = await bodyBlob.text();
+      expect(bodyText).toContain('1google_folder_123');
+      expect(bodyText).toContain('application/vnd.google-apps.document');
+      expect(bodyText).toContain('Oficio_Teste.docx');
+
+      return {
+        ok: true,
+        status: 200,
+        headers: new Headers({ 'Content-Type': 'application/json' }),
+        json: async () => ({
+          id: 'gdrive-file-999',
+          name: 'Oficio_Teste.docx',
+          mimeType: 'application/vnd.google-apps.document',
+          webViewLink: 'https://docs.google.com/document/d/gdrive-file-999/edit',
+        }),
+      };
+    });
+    window.fetch = mockFetch;
+
+    try {
+      const success = await el.uploadDocument(doc.id);
+      expect(success).toBe(true);
+
+      const updated = el.getDocuments().find((d) => d.id === doc.id);
+      expect(updated.uploadStatus).toBe('uploaded');
+      expect(updated.storageProvider).toBe('google-drive');
+      expect(updated.googleDriveFileId).toBe('gdrive-file-999');
+      expect(updated.googleDocsUrl).toBe('https://docs.google.com/document/d/gdrive-file-999/edit');
+      expect(updated.externalViewerLabel).toBe('Abrir no Google Docs ↗');
+
+      await el.updateComplete;
+      const externalLink = el.shadowRoot.querySelector('.btn-external');
+      expect(externalLink).not.toBeNull();
+      expect(externalLink.getAttribute('href')).toBe(
+        'https://docs.google.com/document/d/gdrive-file-999/edit'
+      );
+      expect(externalLink.textContent).toContain('Abrir no Google Docs ↗');
+    } finally {
+      window.fetch = origFetch;
+    }
+  });
+
+  it('faz upload para Amazon S3 via URL pré-assinada', async () => {
+    const file = createTextFile('planilha.csv', 'nome,valor\nItem,100');
+    const [doc] = await el.addFiles([file]);
+
+    el.storageProvider = 's3';
+    el.s3UploadUrl = 'https://meu-bucket.s3.sa-east-1.amazonaws.com/planilha.csv?signature=abc';
+
+    const origFetch = window.fetch;
+    const mockFetch = vi.fn().mockImplementation(async (url, init) => {
+      expect(url).toBe(el.s3UploadUrl);
+      expect(init.method).toBe('PUT');
+      return {
+        ok: true,
+        status: 200,
+        text: async () => '',
+      };
+    });
+    window.fetch = mockFetch;
+
+    try {
+      const success = await el.uploadDocument(doc.id);
+      expect(success).toBe(true);
+      const updated = el.getDocuments().find((d) => d.id === doc.id);
+      expect(updated.uploadStatus).toBe('uploaded');
+      expect(updated.storageProvider).toBe('s3');
+      expect(updated.externalViewerUrl).toBe('https://meu-bucket.s3.sa-east-1.amazonaws.com/planilha.csv');
+      expect(updated.externalViewerLabel).toBe('Ver no S3 ↗');
+    } finally {
+      window.fetch = origFetch;
+    }
+  });
+
+  it('suporta customUploader personalizado', async () => {
+    const file = createTextFile('relatorio.txt', 'Relatório interno.');
+    const [doc] = await el.addFiles([file]);
+
+    el.storageProvider = 'custom';
+    el.customUploader = vi.fn().mockResolvedValue({
+      success: true,
+      provider: 'custom',
+      fileId: 'custom-file-123',
+      externalViewerUrl: 'https://storage.meufundo.com.br/view/custom-file-123',
+      externalViewerLabel: 'Abrir no Fundo Storage ↗',
+    });
+
+    const success = await el.uploadDocument(doc.id);
+    expect(success).toBe(true);
+    expect(el.customUploader).toHaveBeenCalledTimes(1);
+
+    const updated = el.getDocuments().find((d) => d.id === doc.id);
+    expect(updated.externalViewerLabel).toBe('Abrir no Fundo Storage ↗');
+  });
 });

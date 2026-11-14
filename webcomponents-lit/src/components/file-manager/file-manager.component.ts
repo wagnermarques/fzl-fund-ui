@@ -5,6 +5,12 @@ import { FzlWidgetMixin } from '@fzl/core';
 import { formatDocumentSize } from '../document-picker/document-picker.types';
 import type { FzlDocxBlock, FzlDocxRun } from '../document-picker/docx-parser';
 import {
+  uploadToCloudStorage,
+  type FzlStorageProvider,
+  type FzlCloudStorageConfig,
+  type FzlUploadResult,
+} from '../common/cloud-storage';
+import {
   type FzlFileManagerViewMode,
   type FzlFileSourceStatus,
   type FzlManagedFile,
@@ -247,6 +253,24 @@ export class FzlFileManager extends FzlWidgetMixin(LitElement) {
         color: #92400e;
       }
 
+      .btn-external {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        background: rgba(14, 165, 233, 0.12);
+        color: #0284c7;
+        border: 1px solid rgba(14, 165, 233, 0.35);
+        font-weight: 600;
+        text-decoration: none;
+        border-radius: var(--fzl-radius-sm, 6px);
+      }
+
+      .btn-external:hover {
+        background: rgba(14, 165, 233, 0.22);
+        border-color: #0284c7;
+        text-decoration: none;
+      }
+
       /* Table View */
       .fm-table-wrap {
         width: 100%;
@@ -464,6 +488,68 @@ export class FzlFileManager extends FzlWidgetMixin(LitElement) {
   @property({ type: Boolean, attribute: 'preload-samples' }) preloadSamples = false;
   @property({ type: Boolean }) disabled = false;
 
+  /** Target cloud storage provider: 'rest' | 'google-drive' | 's3' | 'onedrive' | 'custom' */
+  @property({ type: String, attribute: 'storage-provider' })
+  storageProvider: FzlStorageProvider = 'rest';
+
+  /** Google Drive destination folder ID (optional). */
+  @property({ type: String, attribute: 'google-drive-folder-id' })
+  googleDriveFolderId = '';
+
+  /** When true and file is .docx, automatically converts it into native Google Docs. */
+  @property({ type: Boolean, attribute: 'google-drive-convert-to-docs' })
+  googleDriveConvertToDocs = false;
+
+  /** OAuth2 Bearer token for Google Drive API v3 direct upload. */
+  @property({ type: String, attribute: 'google-auth-token' })
+  googleAuthToken = '';
+
+  /** Dynamic Google OAuth2 token provider (e.g. from Google Identity Services). */
+  @property({ attribute: false })
+  googleTokenProvider?: () => Promise<string> | string;
+
+  /** Amazon S3 Presigned PUT upload URL or endpoint. */
+  @property({ type: String, attribute: 's3-upload-url' })
+  s3UploadUrl = '';
+
+  /** Amazon S3 target bucket name. */
+  @property({ type: String, attribute: 's3-bucket' })
+  s3Bucket = '';
+
+  /** Amazon S3 target region. */
+  @property({ type: String, attribute: 's3-region' })
+  s3Region = '';
+
+  /** S3 Presigned URL resolver callback. */
+  @property({ attribute: false })
+  s3PresignedUrlProvider?: (
+    file: File,
+    metadata?: Record<string, unknown>
+  ) => Promise<{ uploadUrl: string; fileUrl?: string; headers?: Record<string, string> }>;
+
+  /** Microsoft OneDrive / SharePoint parent folder ID. */
+  @property({ type: String, attribute: 'one-drive-folder-id' })
+  oneDriveFolderId = '';
+
+  /** Microsoft OneDrive drive ID (optional). */
+  @property({ type: String, attribute: 'one-drive-drive-id' })
+  oneDriveDriveId = '';
+
+  /** OAuth2 Bearer token for Microsoft Graph API. */
+  @property({ type: String, attribute: 'one-drive-auth-token' })
+  oneDriveAuthToken = '';
+
+  /** Dynamic token provider callback for Microsoft Graph API. */
+  @property({ attribute: false })
+  oneDriveTokenProvider?: () => Promise<string> | string;
+
+  /** Custom client-side uploader function. */
+  @property({ attribute: false })
+  customUploader?: (
+    file: File,
+    context?: Record<string, unknown>
+  ) => Promise<FzlUploadResult>;
+
   @property({ attribute: false })
   fetchHandler?: (query: { folder?: string; search?: string }) => Promise<FzlManagedFile[]>;
 
@@ -572,6 +658,27 @@ export class FzlFileManager extends FzlWidgetMixin(LitElement) {
     return !isBookmarked;
   }
 
+  /** Resolves cloud storage configuration from properties and attributes. */
+  private _getCloudStorageConfig(): FzlCloudStorageConfig {
+    return {
+      provider: this.storageProvider,
+      endpoint: this.endpoint,
+      googleDriveFolderId: this.googleDriveFolderId,
+      googleDriveConvertToDocs: this.googleDriveConvertToDocs,
+      googleAuthToken: this.googleAuthToken,
+      googleTokenProvider: this.googleTokenProvider,
+      s3UploadUrl: this.s3UploadUrl,
+      s3Bucket: this.s3Bucket,
+      s3Region: this.s3Region,
+      s3PresignedUrlProvider: this.s3PresignedUrlProvider,
+      oneDriveFolderId: this.oneDriveFolderId,
+      oneDriveDriveId: this.oneDriveDriveId,
+      oneDriveAuthToken: this.oneDriveAuthToken,
+      oneDriveTokenProvider: this.oneDriveTokenProvider,
+      customUploader: this.customUploader,
+    };
+  }
+
   async uploadFile(fileId: string): Promise<boolean> {
     const file = this._files.find((f) => f.id === fileId);
     if (!file) return false;
@@ -590,7 +697,73 @@ export class FzlFileManager extends FzlWidgetMixin(LitElement) {
       }
     }
 
-    // Default optimistic toggle if no custom handler
+    const config = this._getCloudStorageConfig();
+    const hasCloudUploader =
+      Boolean(this.customUploader) ||
+      Boolean(this.endpoint) ||
+      Boolean(
+        this.storageProvider === 'google-drive' &&
+          (this.googleAuthToken || this.googleTokenProvider)
+      ) ||
+      Boolean(
+        this.storageProvider === 's3' &&
+          (this.s3UploadUrl || this.s3PresignedUrlProvider)
+      ) ||
+      Boolean(
+        this.storageProvider === 'onedrive' &&
+          (this.oneDriveAuthToken || this.oneDriveTokenProvider)
+      );
+
+    if (hasCloudUploader) {
+      try {
+        let fileObj = file.file;
+        if (!fileObj) {
+          const content = file.textContent || file.name;
+          const mime =
+            file.extension === '.docx'
+              ? 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+              : 'text/plain';
+          fileObj = new File([content], file.name, { type: mime });
+        }
+
+        const result = await uploadToCloudStorage(fileObj, config, {
+          fileId: file.id,
+          folder: file.folder,
+          tags: file.tags,
+          notes: file.notes,
+        });
+
+        const nextStatus: FzlFileSourceStatus =
+          file.status === 'bookmarked-only' || file.bookmarkedAt ? 'synced' : 'uploaded-only';
+
+        this._updateFile(fileId, {
+          status: nextStatus,
+          uploadedAt: Date.now(),
+          storageProvider: result.provider,
+          externalFileId: result.fileId,
+          externalViewerUrl: result.externalViewerUrl,
+          externalViewerLabel: result.externalViewerLabel,
+          googleDocsUrl:
+            result.provider === 'google-drive'
+              ? result.externalViewerUrl
+              : undefined,
+          googleDriveFileId:
+            result.provider === 'google-drive' ? result.fileId : undefined,
+        });
+
+        this.emit('fzl-file-upload-success', {
+          file: this._files.find((f) => f.id === fileId),
+          result,
+        });
+        return true;
+      } catch (err) {
+        const errorMsg = err instanceof Error ? err.message : String(err);
+        this.emit('fzl-file-upload-error', { file, error: errorMsg });
+        return false;
+      }
+    }
+
+    // Default optimistic toggle if no cloud provider or custom handler
     const nextStatus: FzlFileSourceStatus =
       file.status === 'bookmarked-only' || file.bookmarkedAt ? 'synced' : 'uploaded-only';
     this._updateFile(fileId, { status: nextStatus, uploadedAt: Date.now() });
@@ -877,6 +1050,19 @@ export class FzlFileManager extends FzlWidgetMixin(LitElement) {
                   </button>
                 `
               : nothing}
+            ${file.externalViewerUrl || file.googleDocsUrl
+              ? html`
+                  <a
+                    class="btn btn-external"
+                    href="${file.externalViewerUrl || file.googleDocsUrl}"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    title="${file.externalViewerLabel || 'Abrir na Nuvem'}"
+                  >
+                    ${file.externalViewerLabel || 'Abrir no Google Docs ↗'}
+                  </a>
+                `
+              : nothing}
             <button
               type="button"
               class="btn btn-close-reader"
@@ -1066,6 +1252,19 @@ export class FzlFileManager extends FzlWidgetMixin(LitElement) {
                                       </button>
                                     `
                                   : nothing}
+                                ${file.externalViewerUrl || file.googleDocsUrl
+                                  ? html`
+                                      <a
+                                        class="btn btn-external"
+                                        href="${file.externalViewerUrl || file.googleDocsUrl}"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        title="${file.externalViewerLabel || 'Abrir na Nuvem'}"
+                                      >
+                                        ${file.externalViewerLabel || 'Abrir no Google Docs ↗'}
+                                      </a>
+                                    `
+                                  : nothing}
                                 <button
                                   type="button"
                                   class="btn"
@@ -1147,6 +1346,19 @@ export class FzlFileManager extends FzlWidgetMixin(LitElement) {
                                 >
                                   Upload
                                 </button>
+                              `
+                            : nothing}
+                          ${file.externalViewerUrl || file.googleDocsUrl
+                            ? html`
+                                <a
+                                  class="btn btn-external"
+                                  href="${file.externalViewerUrl || file.googleDocsUrl}"
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  title="${file.externalViewerLabel || 'Abrir na Nuvem'}"
+                                >
+                                  ${file.externalViewerLabel || 'Abrir no Google Docs ↗'}
+                                </a>
                               `
                             : nothing}
                           <button

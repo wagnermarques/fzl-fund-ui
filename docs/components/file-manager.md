@@ -28,7 +28,18 @@ O `<fzl-file-manager>` oferece:
 
 ---
 
-## 2. Exemplo de Uso
+## 2. Provedores de Armazenamento e Abertura na Nuvem
+
+Arquivos sincronizados ou enviados podem disponibilizar links de visualização e edição direta na nuvem através das propriedades `externalViewerUrl` ou `googleDocsUrl`:
+
+- **Google Docs / Google Drive**: exibe o botão estilizado **`Abrir no Google Docs ↗`** tanto na tabela quanto na grade e no cabeçalho do leitor.
+- **Microsoft OneDrive / SharePoint**: exibe **`Abrir no OneDrive ↗`** para documentos no Office 365.
+- **Amazon S3**: exibe **`Ver no S3 ↗`** para links diretos ou pré-assinados do bucket.
+- **Upload Direto de Arquivos Pendentes**: arquivos com status `pending-upload` ou `bookmarked-only` podem ser enviados diretamente para Google Drive, S3, OneDrive ou REST configurando `storage-provider`, `google-drive-folder-id`, tokens e callbacks.
+
+---
+
+## 3. Exemplo de Uso
 
 ```html
 <script type="module" src="@fzl/webcomponents-lit/file-manager"></script>

@@ -850,6 +850,9 @@ export const catalog = [
       'start-in': 'documents',
       'enforce-start-in': true,
       'preload-samples': true,
+      'storage-provider': 'google-drive',
+      'google-drive-folder-id': '1fzl_pasta_processos_exemplo',
+      'google-drive-convert-to-docs': true,
     },
     implementations: [
       {
@@ -877,6 +880,9 @@ export const catalog = [
       'current-folder': '/',
       'preload-samples': true,
       'include-local-bookmarks': true,
+      'storage-provider': 'google-drive',
+      'google-drive-folder-id': '1fzl_pasta_processos_exemplo',
+      'google-drive-convert-to-docs': true,
     },
     implementations: [
       {

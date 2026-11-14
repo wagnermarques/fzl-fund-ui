@@ -1,5 +1,12 @@
 import type { FzlDocxBlock } from '../document-picker/docx-parser';
 import type { FzlDocumentCategory } from '../document-picker/document-picker.types';
+import type { FzlStorageProvider } from '../common/cloud-storage';
+
+export type {
+  FzlStorageProvider,
+  FzlCloudStorageConfig,
+  FzlUploadResult,
+} from '../common/cloud-storage';
 
 export type FzlFileSourceStatus =
   | 'bookmarked-only'
@@ -28,6 +35,13 @@ export interface FzlManagedFile {
   textContent?: string;
   docxBlocks?: FzlDocxBlock[];
   objectUrl?: string;
+  file?: File;
+  storageProvider?: FzlStorageProvider;
+  externalFileId?: string;
+  externalViewerUrl?: string;
+  externalViewerLabel?: string;
+  googleDocsUrl?: string;
+  googleDriveFileId?: string;
 }
 
 export interface FzlFileManagerFolder {
@@ -50,6 +64,12 @@ export const SAMPLE_MANAGED_FILES: FzlManagedFile[] = [
     bookmarkedAt: Date.UTC(2026, 10, 12, 15, 0),
     lastReadAt: Date.UTC(2026, 10, 13, 9, 15),
     readProgress: 65,
+    storageProvider: 'google-drive',
+    externalFileId: '1demo-despacho-etec',
+    externalViewerUrl: 'https://docs.google.com/document/d/1demo-despacho-etec/edit',
+    externalViewerLabel: 'Abrir no Google Docs ↗',
+    googleDocsUrl: 'https://docs.google.com/document/d/1demo-despacho-etec/edit',
+    googleDriveFileId: '1demo-despacho-etec',
     tags: ['etec', 'aproveitamento', 'despacho'],
     notes: 'Despacho homologado de aproveitamento de estudos.',
     textContent:

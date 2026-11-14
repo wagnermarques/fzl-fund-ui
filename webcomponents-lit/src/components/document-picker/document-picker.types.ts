@@ -68,6 +68,21 @@ export function createPickerStartOptions(
   };
 }
 
+export type {
+  FzlStorageProvider,
+  FzlCloudStorageConfig,
+  FzlUploadResult,
+} from '../common/cloud-storage';
+export {
+  getExternalViewerLabel,
+  uploadToCloudStorage,
+  uploadToGoogleDrive,
+  uploadToS3Presigned,
+  uploadToOneDrive,
+  uploadToRestBackend,
+} from '../common/cloud-storage';
+import type { FzlStorageProvider, FzlCloudStorageConfig } from '../common/cloud-storage';
+
 export interface FzlDocumentItem {
   id: string;
   name: string;
@@ -86,6 +101,12 @@ export interface FzlDocumentItem {
   bookmarkedAt?: number;
   uploadStatus: FzlDocumentUploadStatus;
   uploadError?: string;
+  storageProvider?: FzlStorageProvider;
+  externalFileId?: string;
+  externalViewerUrl?: string;
+  externalViewerLabel?: string;
+  googleDocsUrl?: string;
+  googleDriveFileId?: string;
 }
 
 export interface FzlDocumentBookmark {
@@ -111,6 +132,8 @@ export interface FzlDocumentUploadPayload {
   tags: string[];
   notes?: string;
   timestamp: string;
+  storageProvider?: FzlStorageProvider;
+  config?: FzlCloudStorageConfig;
 }
 
 /**

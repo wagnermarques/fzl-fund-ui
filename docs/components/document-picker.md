@@ -29,7 +29,38 @@ O `<fzl-document-picker>` atende três fluxos complementares em aplicações cor
 
 ---
 
-## 3. Exemplo de Uso
+## 3. Integração com Provedores de Nuvem (`storage-provider`)
+
+O componente possui arquitetura aberta e desacoplada para envio de arquivos diretamente a múltiplos provedores de nuvem ou através de backend proxy:
+
+| Provedor | Valor `storage-provider` | Propriedades Principais | Ação após Upload |
+| :--- | :--- | :--- | :--- |
+| **Google Drive / Google Docs** | `'google-drive'` | `google-drive-folder-id`, `google-drive-convert-to-docs`, `google-auth-token`, `googleTokenProvider` | Converte `.docx` para nativo Google Docs e exibe botão **"Abrir no Google Docs ↗"**. |
+| **Amazon S3 / R2 / MinIO** | `'s3'` | `s3-upload-url`, `s3-bucket`, `s3-region`, `s3PresignedUrlProvider` | Upload via Presigned PUT URL com link **"Ver no S3 ↗"**. |
+| **Microsoft OneDrive / MS Graph** | `'onedrive'` | `one-drive-folder-id`, `one-drive-drive-id`, `one-drive-auth-token`, `oneDriveTokenProvider` | Envia via Graph API com link **"Abrir no OneDrive ↗"**. |
+| **REST Backend Proxy** | `'rest'` (padrão) | `endpoint` | Envia `file` e metadados (`storageProvider`, `googleDriveFolderId`, etc.) via `FormData` para o backend. |
+| **Uploader Customizado** | `'custom'` | `customUploader` | Função JS assíncrona com controle total do ciclo de vida. |
+
+### Exemplo com Google Drive e Conversão para Google Docs:
+```html
+<fzl-document-picker
+  storage-provider="google-drive"
+  google-drive-folder-id="1fzl_pasta_processos_2026"
+  google-drive-convert-to-docs
+></fzl-document-picker>
+
+<script>
+  const picker = document.querySelector('fzl-document-picker');
+  // Fornece token OAuth2 dinâmico gerado pelo Google Identity Services (GIS)
+  picker.googleTokenProvider = async () => {
+    return await obterGoogleAccessToken();
+  };
+</script>
+```
+
+---
+
+## 4. Exemplo de Uso Geral
 
 ```html
 <script type="module" src="@fzl/webcomponents-lit/document-picker"></script>

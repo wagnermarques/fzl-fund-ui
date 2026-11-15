@@ -20,6 +20,7 @@ describe('AuthView Web Component (<auth-view>) com Social Login', () => {
   beforeEach(async () => {
     vi.stubGlobal('localStorage', memoryStorage());
     authService.use(localProvider);
+    authService.configureSocialAuth(null);
     await authService.signOut();
 
     el = document.createElement('auth-view');
@@ -29,12 +30,32 @@ describe('AuthView Web Component (<auth-view>) com Social Login', () => {
   });
 
   afterEach(() => {
+    authService.configureSocialAuth(null);
     el?.remove();
   });
 
   it('renderiza o componente fzl-social-login na tela de login', () => {
     const socialWidget = el.shadowRoot.querySelector('fzl-social-login');
     expect(socialWidget).not.toBeNull();
+  });
+
+  it('propaga googleClientId, microsoftClientId, microsoftTenantId e providers do authService para <fzl-social-login>', async () => {
+    authService.configureSocialAuth({
+      googleClientId: 'appshell-google-cid.apps.googleusercontent.com',
+      microsoftTenantId: 'organizations',
+    });
+    await el.updateComplete;
+
+    const socialWidget = el.shadowRoot.querySelector('fzl-social-login');
+    expect(socialWidget).not.toBeNull();
+    expect(socialWidget.googleClientId).toBe('appshell-google-cid.apps.googleusercontent.com');
+    expect(socialWidget.microsoftClientId).toBe('');
+    expect(socialWidget.microsoftTenantId).toBe('organizations');
+    expect(socialWidget.providers).toBe('google');
+
+    authService.configureSocialAuth(false);
+    await el.updateComplete;
+    expect(el.shadowRoot.querySelector('fzl-social-login')).toBeNull();
   });
 
   it('efetua login social com conta Google e autentica o usuário no authService', async () => {

@@ -26,6 +26,16 @@ describe('validateConfig', () => {
         url: '',
       },
       organization: null,
+      socialAuth: {
+        enabled: true,
+        googleClientId: '',
+        microsoftClientId: '',
+        microsoftTenantId: 'common',
+        googleScopes: '',
+        microsoftScopes: '',
+        requestDriveScope: true,
+        providers: 'all',
+      },
       on: {},
       debug: false,
     })
@@ -370,6 +380,30 @@ describe('validateConfig — organization', () => {
   it('recusa tipo inválido de organization', () => {
     expect(() => validateConfig({ ...base, organization: 'sim' })).toThrow(/"organization" deve ser um objeto ou boolean/)
     expect(() => validateConfig({ ...base, organization: { invalidProp: 123 } })).toThrow(/organization: "invalidProp"/)
+  })
+})
+
+describe('validateConfig — socialAuth', () => {
+  it('aceita padrão e filtra providers automaticamente quando só um client ID é informado', () => {
+    const def = validateConfig(base).socialAuth
+    expect(def).toMatchObject({ enabled: true, providers: 'all', microsoftTenantId: 'common' })
+
+    const onlyGoogle = validateConfig({
+      ...base,
+      socialAuth: { googleClientId: 'google-cid.apps.googleusercontent.com' },
+    }).socialAuth
+    expect(onlyGoogle).toMatchObject({
+      enabled: true,
+      googleClientId: 'google-cid.apps.googleusercontent.com',
+      providers: 'google',
+    })
+  })
+
+  it('desliga quando socialAuth é false', () => {
+    expect(validateConfig({ ...base, socialAuth: false }).socialAuth).toMatchObject({
+      enabled: false,
+      providers: 'none',
+    })
   })
 })
 

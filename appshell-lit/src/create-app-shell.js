@@ -4,7 +4,13 @@
  * DOM) e assim ser testável em Node puro.
  */
 
-import { appConfig, mergeAppConfig, validateAnalytics, validateOrganization } from './app-config.js'
+import {
+  appConfig,
+  mergeAppConfig,
+  validateAnalytics,
+  validateOrganization,
+  validateSocialAuth,
+} from './app-config.js'
 import { accessibilityService } from './services/accessibility-service.js'
 import { authService, validateAuthProvider } from './services/auth-service.js'
 import { backend, backendService } from './services/backend-service.js'
@@ -207,6 +213,7 @@ export function validateConfig(config) {
     push = null,
     share = undefined,
     organization = null,
+    socialAuth = undefined,
     on = {},
     debug = false,
   } = config
@@ -248,6 +255,7 @@ export function validateConfig(config) {
     push: validatePushConfig(push),
     share: validateShareConfig(share),
     organization: validateOrganization(organization, 'createAppShell'),
+    socialAuth: validateSocialAuth(socialAuth, 'createAppShell'),
     on: validateListeners(on),
     debug,
   }
@@ -329,6 +337,7 @@ export function createAppShell(config) {
     push,
     share,
     organization,
+    socialAuth,
     on,
     debug,
   } = validateConfig({ ...merged, push: withPushBackend(merged?.push) })
@@ -340,6 +349,7 @@ export function createAppShell(config) {
 
   // Configura a identidade institucional (ou mantém desabilitada se null/false)
   organizationService.use(organization)
+  authService.configureSocialAuth(socialAuth)
 
   // Antes de criar o <app-shell>: ele e o header já leem o usuário atual
   // ao conectar, e esse usuário tem de vir do provedor do app.

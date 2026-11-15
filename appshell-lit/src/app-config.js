@@ -48,6 +48,7 @@ const KNOWN_KEYS = [
   'debug',
   'i18n',
   'organization',
+  'socialAuth',
   'base',
   'manifest',
   'includeAssets',
@@ -84,6 +85,15 @@ export const ORGANIZATION_KEYS = [
   'footerText',
   'backendUrl',
   'allowRuntimeEdit',
+]
+export const SOCIAL_AUTH_KEYS = [
+  'enabled',
+  'googleClientId',
+  'microsoftClientId',
+  'microsoftTenantId',
+  'googleScopes',
+  'microsoftScopes',
+  'requestDriveScope',
 ]
 
 export const DEFAULT_MOCK_ORGANIZATION = {
@@ -133,6 +143,11 @@ export const OVERRIDABLE_PATHS = [
   'i18n.defaultLocale',
   'organization.name',
   'organization.primaryColor',
+  'socialAuth.googleClientId',
+  'socialAuth.microsoftClientId',
+  'socialAuth.microsoftTenantId',
+  'socialAuth.googleScopes',
+  'socialAuth.microsoftScopes',
 ]
 
 /** Nomes antigos, aceitos abaixo dos VITE_APPSHELL_*. */
@@ -143,6 +158,9 @@ export const LEGACY_ENV = {
   // Também cria o backend "api" quando o arquivo não o declara: era o
   // único backend que o appshell conhecia antes de `backends` existir.
   'backends.api.url': 'VITE_REST_API_BASE_URL',
+  'socialAuth.googleClientId': 'VITE_GOOGLE_CLIENT_ID',
+  'socialAuth.microsoftClientId': 'VITE_MICROSOFT_CLIENT_ID',
+  'socialAuth.microsoftTenantId': 'VITE_MICROSOFT_TENANT_ID',
 }
 
 /** Os caminhos sobrescrevíveis desta config: os fixos, a URL de cada
@@ -353,6 +371,82 @@ export function validateOrganization(org, where = CONFIG_FILE) {
   }
 }
 
+export function validateSocialAuth(socialAuth, where = CONFIG_FILE) {
+  const err = (message) => {
+    throw new Error(`${where}: ${message}`)
+  }
+  const checkOptionalString = (value, field) => {
+    if (value !== undefined && typeof value !== 'string') err(`"${field}" deve ser texto`)
+  }
+
+  if (socialAuth === false) {
+    return {
+      enabled: false,
+      googleClientId: '',
+      microsoftClientId: '',
+      microsoftTenantId: 'common',
+      googleScopes: '',
+      microsoftScopes: '',
+      requestDriveScope: true,
+      providers: 'none',
+    }
+  }
+  if (socialAuth === undefined || socialAuth === null || socialAuth === true) {
+    return {
+      enabled: true,
+      googleClientId: '',
+      microsoftClientId: '',
+      microsoftTenantId: 'common',
+      googleScopes: '',
+      microsoftScopes: '',
+      requestDriveScope: true,
+      providers: 'all',
+    }
+  }
+  if (!isPlainObject(socialAuth)) err('"socialAuth" deve ser um objeto ou boolean')
+  for (const key of Object.keys(socialAuth)) {
+    if (!SOCIAL_AUTH_KEYS.includes(key)) {
+      err(`socialAuth: "${key}" não é uma opção conhecida (use ${SOCIAL_AUTH_KEYS.map((k) => `"${k}"`).join(', ')})`)
+    }
+  }
+
+  const {
+    enabled = true,
+    googleClientId = '',
+    microsoftClientId = '',
+    microsoftTenantId = 'common',
+    googleScopes = '',
+    microsoftScopes = '',
+    requestDriveScope = true,
+  } = socialAuth
+
+  if (typeof enabled !== 'boolean') err('"socialAuth.enabled" deve ser true ou false')
+  checkOptionalString(googleClientId, 'socialAuth.googleClientId')
+  checkOptionalString(microsoftClientId, 'socialAuth.microsoftClientId')
+  checkOptionalString(microsoftTenantId, 'socialAuth.microsoftTenantId')
+  checkOptionalString(googleScopes, 'socialAuth.googleScopes')
+  checkOptionalString(microsoftScopes, 'socialAuth.microsoftScopes')
+  if (typeof requestDriveScope !== 'boolean') err('"socialAuth.requestDriveScope" deve ser true ou false')
+
+  const gId = googleClientId.trim()
+  const msId = microsoftClientId.trim()
+  let providers = 'all'
+  if (enabled === false) providers = 'none'
+  else if (gId && !msId) providers = 'google'
+  else if (!gId && msId) providers = 'microsoft'
+
+  return {
+    enabled,
+    googleClientId: gId,
+    microsoftClientId: msId,
+    microsoftTenantId: microsoftTenantId.trim() || 'common',
+    googleScopes: googleScopes.trim(),
+    microsoftScopes: microsoftScopes.trim(),
+    requestDriveScope,
+    providers,
+  }
+}
+
 /** Valida o appshell.config.js (as opções de acessibilidade ficam com
  *  resolveAccessibility, no defineAppShellConfig). Devolve a própria config. */
 export function validateAppConfig(config) {
@@ -392,6 +486,7 @@ export function validateAppConfig(config) {
   if (backends !== undefined) validateBackends(backends)
   if (config.i18n !== undefined) validateI18n(config.i18n)
   if (config.organization !== undefined) validateOrganization(config.organization, CONFIG_FILE)
+  if (config.socialAuth !== undefined) validateSocialAuth(config.socialAuth, CONFIG_FILE)
 
   if (share !== undefined) {
     if (typeof share !== 'boolean') {
@@ -546,6 +641,17 @@ export function mergeAppConfig(config, file = appConfig.config) {
     }
   } else if (config.organization === null) {
     merged.organization = null
+  }
+  if (config.socialAuth !== null && (file.socialAuth !== undefined || config.socialAuth !== undefined)) {
+    if (config.socialAuth === false || (config.socialAuth === undefined && file.socialAuth === false)) {
+      merged.socialAuth = false
+    } else {
+      const fileSocial = isPlainObject(file.socialAuth) ? file.socialAuth : {}
+      const configSocial = isPlainObject(config.socialAuth) ? config.socialAuth : {}
+      merged.socialAuth = { ...fileSocial, ...configSocial }
+    }
+  } else if (config.socialAuth === null) {
+    merged.socialAuth = null
   }
   return merged
 }

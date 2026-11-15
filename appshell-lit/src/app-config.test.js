@@ -9,6 +9,7 @@ import {
   resolveAppConfig,
   validateAppConfig,
   validateOrganization,
+  validateSocialAuth,
 } from './app-config.js'
 
 describe('validateAppConfig', () => {
@@ -322,4 +323,73 @@ describe('validateAppConfig — analytics CMP & Consent Mode', () => {
     expect(sources['analytics.consentMode']).toBe('VITE_APPSHELL_ANALYTICS_CONSENT_MODE')
   })
 })
+
+describe('validateAppConfig — socialAuth', () => {
+  it('aceita socialAuth válido e deduz provedores ativos pelos clientIds', () => {
+    expect(validateSocialAuth(undefined)).toEqual({
+      enabled: true,
+      googleClientId: '',
+      microsoftClientId: '',
+      microsoftTenantId: 'common',
+      googleScopes: '',
+      microsoftScopes: '',
+      requestDriveScope: true,
+      providers: 'all',
+    })
+    expect(validateSocialAuth({ googleClientId: 'g-123.apps.googleusercontent.com' }).providers).toBe('google')
+    expect(validateSocialAuth({ microsoftClientId: 'ms-456' }).providers).toBe('microsoft')
+    expect(validateSocialAuth({ googleClientId: 'g-1', microsoftClientId: 'ms-2' }).providers).toBe('all')
+    expect(validateSocialAuth(false).providers).toBe('none')
+    expect(() =>
+      validateAppConfig({
+        socialAuth: {
+          enabled: true,
+          googleClientId: 'g-1',
+          microsoftClientId: 'ms-2',
+          microsoftTenantId: 'consumers',
+        },
+      }),
+    ).not.toThrow()
+  })
+
+  it('recusa chave desconhecida ou tipo inválido em socialAuth', () => {
+    expect(() => validateAppConfig({ socialAuth: 'sim' })).toThrow(/"socialAuth" deve ser um objeto ou boolean/)
+    expect(() => validateAppConfig({ socialAuth: { clientSecret: 'x' } })).toThrow(/parece um segredo/)
+    expect(() => validateAppConfig({ socialAuth: { invalidKey: 'x' } })).toThrow(/socialAuth: "invalidKey"/)
+    expect(() => validateAppConfig({ socialAuth: { googleClientId: 123 } })).toThrow(
+      /"socialAuth\.googleClientId" deve ser texto/,
+    )
+    expect(() => validateAppConfig({ socialAuth: { requestDriveScope: 'nao' } })).toThrow(
+      /"socialAuth\.requestDriveScope" deve ser true ou false/,
+    )
+  })
+
+  it('mergeAppConfig mescla socialAuth e permite desligar com false/null', () => {
+    const file = { socialAuth: { googleClientId: 'g-file', microsoftTenantId: 'common' } }
+    expect(mergeAppConfig({ socialAuth: { microsoftClientId: 'ms-app' } }, file).socialAuth).toEqual({
+      googleClientId: 'g-file',
+      microsoftTenantId: 'common',
+      microsoftClientId: 'ms-app',
+    })
+    expect(mergeAppConfig({ socialAuth: false }, file).socialAuth).toBe(false)
+    expect(mergeAppConfig({ socialAuth: null }, file).socialAuth).toBeNull()
+  })
+
+  it('sobrescreve client IDs por VITE_APPSHELL_SOCIAL_AUTH_* e VITE_GOOGLE_CLIENT_ID/VITE_MICROSOFT_CLIENT_ID', () => {
+    const { config, sources } = applyEnvOverrides({}, {
+      VITE_APPSHELL_SOCIAL_AUTH_GOOGLE_CLIENT_ID: 'g-appshell-env',
+      VITE_MICROSOFT_CLIENT_ID: 'ms-short-env',
+      VITE_APPSHELL_SOCIAL_AUTH_MICROSOFT_TENANT_ID: 'organizations',
+    })
+    expect(config.socialAuth).toEqual({
+      googleClientId: 'g-appshell-env',
+      microsoftClientId: 'ms-short-env',
+      microsoftTenantId: 'organizations',
+    })
+    expect(sources['socialAuth.googleClientId']).toBe('VITE_APPSHELL_SOCIAL_AUTH_GOOGLE_CLIENT_ID')
+    expect(sources['socialAuth.microsoftClientId']).toBe('VITE_MICROSOFT_CLIENT_ID')
+    expect(sources['socialAuth.microsoftTenantId']).toBe('VITE_APPSHELL_SOCIAL_AUTH_MICROSOFT_TENANT_ID')
+  })
+})
+
 

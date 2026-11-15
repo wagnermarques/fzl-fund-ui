@@ -280,4 +280,37 @@ describe('authService com provedor do app', () => {
       'Dados do usuário social inválidos: e-mail é obrigatório.'
     )
   })
+
+  it('retorna token social em getAccessToken() e gerencia configureSocialAuth()', async () => {
+    await authService.signInWithGoogle({
+      accessToken: 'ya29.social-bearer',
+      credential: 'jwt.cred.token',
+      user: { id: 'g-1', name: 'Lucas', email: 'lucas@gmail.com' },
+    })
+    expect(await authService.getAccessToken()).toBe('ya29.social-bearer')
+
+    await authService.signOut()
+    expect(await authService.getAccessToken()).toBe(null)
+
+    await authService.signInWithMicrosoft({
+      credential: 'ms.id.jwt',
+      user: { id: 'ms-1', name: 'Maria', email: 'maria@outlook.com' },
+    })
+    expect(await authService.getAccessToken()).toBe('ms.id.jwt')
+
+    const configured = authService.configureSocialAuth({
+      googleClientId: 'cid-google',
+      microsoftClientId: 'cid-ms',
+      microsoftTenantId: 'consumers',
+    })
+    expect(configured).toMatchObject({
+      enabled: true,
+      googleClientId: 'cid-google',
+      microsoftClientId: 'cid-ms',
+      microsoftTenantId: 'consumers',
+      providers: 'all',
+    })
+    expect(authService.getSocialAuthConfig()).toEqual(configured)
+    authService.configureSocialAuth(null)
+  })
 })

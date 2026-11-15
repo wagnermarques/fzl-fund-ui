@@ -25,7 +25,7 @@ export { analyticsService, track } from './services/analytics-service.js'
 export { consentService } from './services/consent-service.js'
 export { accessibilityService }
 export { organizationService }
-export { DEFAULT_MOCK_ORGANIZATION } from './app-config.js'
+export { DEFAULT_MOCK_ORGANIZATION, validateSocialAuth } from './app-config.js'
 export { i18nService } from './services/i18n-service.js'
 export { authService, localProvider } from './services/auth-service.js'
 export { BackendError, backend, backendService } from './services/backend-service.js'

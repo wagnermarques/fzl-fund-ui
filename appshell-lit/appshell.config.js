@@ -41,6 +41,14 @@ export default defineAppShellConfig({
   push: {
     vapidPublicKey: '',
   },
+  // Client IDs públicos OAuth2 (Google / Microsoft Entra), sobrescritos por ambiente via
+  // VITE_APPSHELL_SOCIAL_AUTH_GOOGLE_CLIENT_ID e VITE_APPSHELL_SOCIAL_AUTH_MICROSOFT_CLIENT_ID.
+  socialAuth: {
+    enabled: true,
+    googleClientId: '',
+    microsoftClientId: '',
+    microsoftTenantId: 'common',
+  },
   // Os servidores do app. A url de cada um é sobrescrita por ambiente com
   // VITE_APPSHELL_BACKENDS_<NOME>_URL; vazia = ainda não configurado (a
   // demo não tem backend). Uso: backend('api').get('/pedidos').

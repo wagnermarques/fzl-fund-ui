@@ -52,6 +52,7 @@
 // hash SHA-256 e salt, mas ainda assim no cliente) e o "e-mail" de
 // redefinição de senha não é enviado — o link aparece na própria tela.
 
+import { validateSocialAuth } from '../app-config.js'
 import { href } from '../router.js'
 import { storageKey } from '../storage-keys.js'
 
@@ -104,6 +105,7 @@ function toPublicUser(record) {
         role: record.role ?? '',
         ...(record.provider ? { provider: record.provider } : {}),
         ...(record.socialAccessToken ? { socialAccessToken: record.socialAccessToken } : {}),
+        ...(record.socialCredential ? { socialCredential: record.socialCredential } : {}),
       }
     : null
 }
@@ -205,6 +207,7 @@ export const localProvider = {
         avatarUrl,
         provider: socialProvider,
         ...(accessToken ? { socialAccessToken: accessToken } : {}),
+        ...(credential ? { socialCredential: credential } : {}),
         createdAt: new Date().toISOString(),
       }
       writeJSON(USERS_KEY, [...users, record])
@@ -226,10 +229,20 @@ export const localProvider = {
         record.socialAccessToken = accessToken
         changed = true
       }
+      if (credential && record.socialCredential !== credential) {
+        record.socialCredential = credential
+        changed = true
+      }
       if (changed) saveUser(record)
     }
     writeJSON(SESSION_KEY, { userId: record.id })
     return toPublicUser(record)
+  },
+
+  async getAccessToken() {
+    const user = loadSessionUser()
+    if (!user) return null
+    return user.socialAccessToken || user.socialCredential || null
   },
 
   async signOut() {
@@ -298,6 +311,7 @@ const signUpListeners = new Set()
 let provider = null
 let teardown = null
 let currentUser = null
+let socialAuthConfig = validateSocialAuth(null)
 
 /** reason diz o porquê da mudança (signIn, signOut, restored...) e chega
  *  aos inscritos como segundo argumento — ver bridgeAuth em
@@ -371,9 +385,19 @@ export const authService = {
     return typeof provider?.[operation] === 'function'
   },
 
-  /** true com o provedor local de demonstração (a UI avisa o usuário). */
+  /** true com o provedor local (a UI avisa o usuário). */
   isLocal() {
     return provider === localProvider
+  },
+
+  configureSocialAuth(config) {
+    socialAuthConfig = validateSocialAuth(config, 'authService')
+    listeners.forEach((fn) => fn(currentUser, 'socialAuthConfig'))
+    return { ...socialAuthConfig }
+  },
+
+  getSocialAuthConfig() {
+    return { ...socialAuthConfig }
   },
 
   /** true quando o login acontece na página do provedor (auth.redirect). */

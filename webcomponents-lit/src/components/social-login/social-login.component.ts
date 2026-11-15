@@ -217,6 +217,18 @@ export class FzlSocialLogin extends FzlWidgetMixin(LitElement) {
   @property({ type: String, attribute: 'divider-text' })
   dividerText = 'ou continue com e-mail';
 
+  /** Whether to request cloud drive write scopes by default. */
+  @property({ type: Boolean, attribute: 'request-drive-scope' })
+  requestDriveScope = true;
+
+  /** OAuth2 scopes requested for Google login/tokens. */
+  @property({ type: String, attribute: 'google-scopes' })
+  googleScopes = 'https://www.googleapis.com/auth/drive.file openid profile email';
+
+  /** OAuth2 scopes requested for Microsoft login/tokens. */
+  @property({ type: String, attribute: 'microsoft-scopes' })
+  microsoftScopes = 'openid profile email User.Read Files.ReadWrite';
+
   @property({ type: Boolean })
   disabled = false;
 
@@ -229,6 +241,9 @@ export class FzlSocialLogin extends FzlWidgetMixin(LitElement) {
         googleClientId: this.googleClientId,
         microsoftClientId: this.microsoftClientId,
         microsoftTenantId: this.microsoftTenantId,
+        requestDriveScope: this.requestDriveScope,
+        googleScopes: this.googleScopes,
+        microsoftScopes: this.microsoftScopes,
       },
       false
     );
@@ -239,7 +254,10 @@ export class FzlSocialLogin extends FzlWidgetMixin(LitElement) {
     if (
       changedProperties.has('googleClientId') ||
       changedProperties.has('microsoftClientId') ||
-      changedProperties.has('microsoftTenantId')
+      changedProperties.has('microsoftTenantId') ||
+      changedProperties.has('requestDriveScope') ||
+      changedProperties.has('googleScopes') ||
+      changedProperties.has('microsoftScopes')
     ) {
       this._syncAuthController();
     }

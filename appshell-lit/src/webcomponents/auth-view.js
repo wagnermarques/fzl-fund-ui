@@ -119,7 +119,10 @@ export class AuthView extends LitElement {
 
   connectedCallback() {
     super.connectedCallback()
-    this._unsubscribe = authService.subscribe((user) => (this._user = user))
+    this._unsubscribe = authService.subscribe((user) => {
+      this._user = user
+      this.requestUpdate()
+    })
   }
 
   disconnectedCallback() {
@@ -363,18 +366,30 @@ export class AuthView extends LitElement {
       return this._renderRedirect(screen)
     }
     const signup = screen === 'signup' && authService.supports('signUp')
+    const socialAuth = authService.getSocialAuthConfig()
     return html`
       <h1>${signup ? 'Criar conta' : 'Entrar'}</h1>
       <p class="subtitle">
         ${signup ? 'Preencha os dados abaixo para criar sua conta.' : 'Acesse com seu e-mail e senha.'}
       </p>
 
-      <fzl-social-login
-        ?disabled=${this._busy}
-        divider-text="ou continue com e-mail"
-        @fzl-social-login-success=${this._handleSocialSuccess}
-        @fzl-social-login-error=${this._handleSocialError}
-      ></fzl-social-login>
+      ${authService.supports('signInWithSocial') && socialAuth.enabled !== false
+        ? html`<fzl-social-login
+            ?disabled=${this._busy}
+            google-client-id=${socialAuth.googleClientId || ''}
+            microsoft-client-id=${socialAuth.microsoftClientId || ''}
+            microsoft-tenant-id=${socialAuth.microsoftTenantId || 'common'}
+            providers=${socialAuth.providers || 'all'}
+            ?request-drive-scope=${socialAuth.requestDriveScope !== false}
+            google-scopes=${socialAuth.googleScopes ||
+            'https://www.googleapis.com/auth/drive.file openid profile email'}
+            microsoft-scopes=${socialAuth.microsoftScopes ||
+            'openid profile email User.Read Files.ReadWrite'}
+            divider-text="ou continue com e-mail"
+            @fzl-social-login-success=${this._handleSocialSuccess}
+            @fzl-social-login-error=${this._handleSocialError}
+          ></fzl-social-login>`
+        : ''}
 
       <form @submit=${this._submit} novalidate>
         ${signup

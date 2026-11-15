@@ -31,6 +31,9 @@ O `<fzl-social-login>` viabiliza o fluxo de autenticação social em aplicaçõe
 | `layout` | `layout` | `'buttons' \| 'chips' \| 'compact'` | `'buttons'` | Disposição visual dos botões. |
 | `showDivider` | `show-divider` | `boolean` | `true` | Exibe a linha divisória inferior "ou continue com e-mail". |
 | `dividerText` | `divider-text` | `string` | `'ou continue com e-mail'` | Texto exibido na divisória. |
+| `requestDriveScope` | `request-drive-scope` | `boolean` | `true` | Solicita escopos de leitura/escrita em Google Drive (`drive.file`) e OneDrive (`Files.ReadWrite`). |
+| `googleScopes` | `google-scopes` | `string` | `'https://www.googleapis.com/auth/drive.file openid profile email'` | Escopos OAuth2 solicitados ao Google. |
+| `microsoftScopes` | `microsoft-scopes` | `string` | `'openid profile email User.Read Files.ReadWrite'` | Escopos OAuth2 solicitados à Microsoft. |
 | `disabled` | `disabled` | `boolean` | `false` | Desabilita a interação com os botões. |
 
 ---
@@ -70,3 +73,34 @@ O `<fzl-social-login>` viabiliza o fluxo de autenticação social em aplicaçõe
   });
 </script>
 ```
+
+---
+
+## 5. Uso Plug-and-Play no AppShell (`fzl-fund-appshell--lit`)
+
+Aplicações que usam `fzl-fund-appshell--lit` **não precisam escrever código extra de OAuth2**: basta declarar os Client IDs públicos em `appshell.config.js` ou pelas variáveis de ambiente `.env`:
+
+```js
+// appshell.config.js
+import { defineAppShellConfig } from 'fzl-fund-appshell--lit/config'
+
+export default defineAppShellConfig({
+  title: 'Meu App',
+  socialAuth: {
+    enabled: true,
+    googleClientId: '',
+    microsoftClientId: '',
+    microsoftTenantId: 'common',
+  },
+})
+```
+
+Ou via variáveis de ambiente no build (`.env` / CI):
+
+```env
+VITE_APPSHELL_SOCIAL_AUTH_GOOGLE_CLIENT_ID=seu-id.apps.googleusercontent.com
+VITE_APPSHELL_SOCIAL_AUTH_MICROSOFT_CLIENT_ID=seu-client-id-azure
+VITE_APPSHELL_SOCIAL_AUTH_MICROSOFT_TENANT_ID=common
+```
+
+Quando apenas um dos dois Client IDs é preenchido, o `<auth-view>` exibe automaticamente apenas o botão correspondente. Para ocultar os botões sociais por completo, use `socialAuth: false`. Além disso, `authService.getAccessToken()` entrega automaticamente o token OAuth2 retornado após o login social para backends com `auth: 'bearer'`.

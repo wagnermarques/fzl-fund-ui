@@ -1,14 +1,9 @@
-import { LitElement, html, css, unsafeCSS, nothing } from 'lit';
-import { property, state } from 'lit/decorators.js';
+import { LitElement, html, css, unsafeCSS, nothing, type PropertyValues } from 'lit';
+import { property } from 'lit/decorators.js';
 import { fzlDesignTokensCss } from '@fzl/design-tokens';
 import { FzlWidgetMixin } from '@fzl/core';
-import {
-  type FzlSocialAuthProvider,
-  type FzlSocialUser,
-  type FzlSocialLoginResult,
-  parseJwtPayload,
-  loadGoogleGsiScript,
-} from './social-login.types';
+import { FzlSocialAuthController } from '../../controllers/social-auth.controller';
+import { type FzlSocialLoginResult } from './social-login.types';
 
 export * from './social-login.types';
 
@@ -241,204 +236,54 @@ export class FzlSocialLogin extends FzlWidgetMixin(LitElement) {
   @property({ type: Boolean })
   disabled = false;
 
-  @state() private _busyProvider: FzlSocialAuthProvider | null = null;
-  @state() private _errorMessage = '';
+  /** Controller reativo reutilizável para autenticação Google e Microsoft. */
+  public readonly authController = new FzlSocialAuthController(this);
+
+  private _syncAuthController(): void {
+    this.authController.configure(
+      {
+        googleClientId: this.googleClientId,
+        microsoftClientId: this.microsoftClientId,
+        microsoftTenantId: this.microsoftTenantId,
+        allowDemoFallback: this.allowDemoFallback,
+      },
+      false
+    );
+  }
+
+  protected override willUpdate(changedProperties: PropertyValues<this>): void {
+    super.willUpdate(changedProperties);
+    if (
+      changedProperties.has('googleClientId') ||
+      changedProperties.has('microsoftClientId') ||
+      changedProperties.has('microsoftTenantId') ||
+      changedProperties.has('allowDemoFallback')
+    ) {
+      this._syncAuthController();
+    }
+  }
 
   /** Performs Google login using Google Identity Services (GIS) or demo fallback. */
   async loginWithGoogle(): Promise<FzlSocialLoginResult | null> {
-    if (this.disabled || this._busyProvider) return null;
-    this._busyProvider = 'google';
-    this._errorMessage = '';
-    this.emit('fzl-social-login-start', { provider: 'google' });
-
-    try {
-      if (this.googleClientId) {
-        await loadGoogleGsiScript();
-        const win = window as unknown as {
-          google?: {
-            accounts?: {
-              id?: {
-                initialize: (opts: Record<string, unknown>) => void;
-                prompt: () => void;
-              };
-              oauth2?: {
-                initTokenClient: (opts: Record<string, unknown>) => {
-                  requestAccessToken: () => void;
-                };
-              };
-            };
-          };
-        };
-
-        if (win.google?.accounts?.id) {
-          const result = await new Promise<FzlSocialLoginResult>((resolve, reject) => {
-            win.google!.accounts!.id!.initialize({
-              client_id: this.googleClientId,
-              callback: (response: { credential?: string }) => {
-                if (!response.credential) {
-                  reject(new Error('Nenhuma credencial retornada pelo Google.'));
-                  return;
-                }
-                const payload = parseJwtPayload(response.credential);
-                if (!payload) {
-                  reject(new Error('Não foi possível decodificar o token do Google.'));
-                  return;
-                }
-                const user: FzlSocialUser = {
-                  id: String(payload.sub || `google-${Date.now()}`),
-                  name: String(payload.name || payload.email || 'Usuário Google'),
-                  email: String(payload.email || ''),
-                  avatarUrl: typeof payload.picture === 'string' ? payload.picture : null,
-                  provider: 'google',
-                  raw: payload,
-                };
-                resolve({ provider: 'google', user, credential: response.credential });
-              },
-            });
-            win.google!.accounts!.id!.prompt();
-          });
-
-          this._busyProvider = null;
-          this.emit('fzl-social-login-success', result);
-          return result;
-        }
-      }
-
-      // Demo fallback when client ID is not configured
-      if (!this.allowDemoFallback) {
-        throw new Error('Google Client ID não configurado no componente.');
-      }
-
-      // Small async delay for realistic UX feedback
-      await new Promise((r) => setTimeout(r, 400));
-      const demoResult: FzlSocialLoginResult = {
-        provider: 'google',
-        user: {
-          id: 'google-public-user-123',
-          name: 'Usuário Google (Demonstração)',
-          email: 'usuario.google@gmail.com',
-          avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=128&q=80',
-          provider: 'google',
-        },
-      };
-
-      this._busyProvider = null;
-      this.emit('fzl-social-login-success', demoResult);
-      return demoResult;
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : String(err);
-      this._errorMessage = msg;
-      this._busyProvider = null;
-      this.emit('fzl-social-login-error', { provider: 'google', error: msg });
-      return null;
-    }
+    if (this.disabled || this.authController.isBusy) return null;
+    this._syncAuthController();
+    return this.authController.loginWithGoogle();
   }
 
   /** Performs Microsoft login using OAuth2 PKCE or demo fallback. */
   async loginWithMicrosoft(): Promise<FzlSocialLoginResult | null> {
-    if (this.disabled || this._busyProvider) return null;
-    this._busyProvider = 'microsoft';
-    this._errorMessage = '';
-    this.emit('fzl-social-login-start', { provider: 'microsoft' });
-
-    try {
-      if (this.microsoftClientId) {
-        // Build Microsoft OAuth2 PKCE / Authorization URL
-        const redirectUri = window.location.origin;
-        const tenant = this.microsoftTenantId || 'common';
-        const authUrl = `https://login.microsoftonline.com/${tenant}/oauth2/v2.0/authorize?client_id=${encodeURIComponent(
-          this.microsoftClientId
-        )}&response_type=token&redirect_uri=${encodeURIComponent(
-          redirectUri
-        )}&scope=openid%20profile%20email%20User.Read&response_mode=fragment`;
-
-        // Open popup window
-        const width = 500;
-        const height = 650;
-        const left = window.screenX + (window.outerWidth - width) / 2;
-        const top = window.screenY + (window.outerHeight - height) / 2;
-        const popup = window.open(
-          authUrl,
-          'fzl_ms_auth',
-          `width=${width},height=${height},left=${left},top=${top},status=no,toolbar=no,menubar=no`
-        );
-
-        if (!popup) {
-          throw new Error('O navegador bloqueou o popup de autenticação da Microsoft.');
-        }
-
-        // Wait for redirect fragment or postMessage
-        const result = await new Promise<FzlSocialLoginResult>((resolve, reject) => {
-          const timer = setInterval(() => {
-            try {
-              if (popup.closed) {
-                clearInterval(timer);
-                reject(new Error('Autenticação da Microsoft cancelada pelo usuário.'));
-                return;
-              }
-              const hash = popup.location?.hash;
-              if (hash && hash.includes('access_token')) {
-                clearInterval(timer);
-                popup.close();
-                const params = new URLSearchParams(hash.substring(1));
-                const accessToken = params.get('access_token') || undefined;
-                const idToken = params.get('id_token') || undefined;
-                const payload = idToken ? parseJwtPayload(idToken) : null;
-                const user: FzlSocialUser = {
-                  id: String(payload?.sub || `ms-${Date.now()}`),
-                  name: String(payload?.name || 'Usuário Microsoft'),
-                  email: String(payload?.email || payload?.preferred_username || ''),
-                  avatarUrl: null,
-                  provider: 'microsoft',
-                  raw: payload || {},
-                };
-                resolve({ provider: 'microsoft', user, credential: idToken, accessToken });
-              }
-            } catch {
-              // Cross-origin before redirect is expected, continue polling
-            }
-          }, 300);
-        });
-
-        this._busyProvider = null;
-        this.emit('fzl-social-login-success', result);
-        return result;
-      }
-
-      // Demo fallback when client ID is not configured
-      if (!this.allowDemoFallback) {
-        throw new Error('Microsoft Client ID não configurado no componente.');
-      }
-
-      await new Promise((r) => setTimeout(r, 400));
-      const demoResult: FzlSocialLoginResult = {
-        provider: 'microsoft',
-        user: {
-          id: 'ms-public-user-456',
-          name: 'Usuário Microsoft (Demonstração)',
-          email: 'usuario.ms@outlook.com',
-          avatarUrl: null,
-          provider: 'microsoft',
-        },
-      };
-
-      this._busyProvider = null;
-      this.emit('fzl-social-login-success', demoResult);
-      return demoResult;
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : String(err);
-      this._errorMessage = msg;
-      this._busyProvider = null;
-      this.emit('fzl-social-login-error', { provider: 'microsoft', error: msg });
-      return null;
-    }
+    if (this.disabled || this.authController.isBusy) return null;
+    this._syncAuthController();
+    return this.authController.loginWithMicrosoft();
   }
 
   override render() {
     const showGoogle = this.providers === 'all' || this.providers === 'google';
     const showMs = this.providers === 'all' || this.providers === 'microsoft';
-    const isGoogleBusy = this._busyProvider === 'google';
-    const isMsBusy = this._busyProvider === 'microsoft';
+    const busyProvider = this.authController.busyProvider;
+    const errorMessage = this.authController.errorMessage;
+    const isGoogleBusy = busyProvider === 'google';
+    const isMsBusy = busyProvider === 'microsoft';
     const isCompact = this.layout === 'compact';
 
     return html`
@@ -450,7 +295,7 @@ export class FzlSocialLogin extends FzlWidgetMixin(LitElement) {
                   type="button"
                   class="btn-social btn-google"
                   aria-label="Continuar com conta pública do Google"
-                  ?disabled=${this.disabled || this._busyProvider !== null}
+                  ?disabled=${this.disabled || busyProvider !== null}
                   @click=${() => this.loginWithGoogle()}
                 >
                   ${isGoogleBusy ? html`<span class="spinner"></span>` : GOOGLE_ICON}
@@ -469,7 +314,7 @@ export class FzlSocialLogin extends FzlWidgetMixin(LitElement) {
                   type="button"
                   class="btn-social btn-microsoft"
                   aria-label="Continuar com conta pública da Microsoft"
-                  ?disabled=${this.disabled || this._busyProvider !== null}
+                  ?disabled=${this.disabled || busyProvider !== null}
                   @click=${() => this.loginWithMicrosoft()}
                 >
                   ${isMsBusy ? html`<span class="spinner"></span>` : MICROSOFT_ICON}
@@ -484,7 +329,7 @@ export class FzlSocialLogin extends FzlWidgetMixin(LitElement) {
             : nothing}
         </div>
 
-        ${this._errorMessage ? html`<p class="error-msg" role="alert">${this._errorMessage}</p>` : nothing}
+        ${errorMessage ? html`<p class="error-msg" role="alert">${errorMessage}</p>` : nothing}
 
         ${this.showDivider
           ? html`

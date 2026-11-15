@@ -1,15 +1,16 @@
-import { LitElement, html, css, unsafeCSS, nothing } from 'lit';
+import { LitElement, html, css, unsafeCSS, nothing, type PropertyValues } from 'lit';
 import { property, state } from 'lit/decorators.js';
 import { fzlDesignTokensCss } from '@fzl/design-tokens';
 import { FzlWidgetMixin } from '@fzl/core';
 import { formatDocumentSize } from '../document-picker/document-picker.types';
 import type { FzlDocxBlock, FzlDocxRun } from '../document-picker/docx-parser';
 import {
-  uploadToCloudStorage,
   type FzlStorageProvider,
   type FzlCloudStorageConfig,
   type FzlUploadResult,
 } from '../common/cloud-storage';
+import { FzlCloudUploadController } from '../../controllers/cloud-upload.controller';
+import { FzlDocxReaderController } from '../../controllers/docx-reader.controller';
 import {
   type FzlFileManagerViewMode,
   type FzlFileSourceStatus,
@@ -563,9 +564,39 @@ export class FzlFileManager extends FzlWidgetMixin(LitElement) {
   @state() private _readerFontSize = 15;
   @state() private _readerSearchQuery = '';
 
+  /** Controller reativo de upload em nuvem integrado ao file manager. */
+  public readonly uploadController = new FzlCloudUploadController(this);
+
+  /** Controller reativo de leitura estruturada DOCX/texto integrado ao file manager. */
+  public readonly readerController = new FzlDocxReaderController(this);
+
   override connectedCallback(): void {
     super.connectedCallback();
+    this.uploadController.setConfig(this._getCloudStorageConfig(), false);
     this.refresh();
+  }
+
+  protected override willUpdate(changedProperties: PropertyValues<this>): void {
+    super.willUpdate(changedProperties);
+    if (
+      changedProperties.has('storageProvider') ||
+      changedProperties.has('endpoint') ||
+      changedProperties.has('googleDriveFolderId') ||
+      changedProperties.has('googleDriveConvertToDocs') ||
+      changedProperties.has('googleAuthToken') ||
+      changedProperties.has('googleTokenProvider') ||
+      changedProperties.has('s3UploadUrl') ||
+      changedProperties.has('s3Bucket') ||
+      changedProperties.has('s3Region') ||
+      changedProperties.has('s3PresignedUrlProvider') ||
+      changedProperties.has('oneDriveFolderId') ||
+      changedProperties.has('oneDriveDriveId') ||
+      changedProperties.has('oneDriveAuthToken') ||
+      changedProperties.has('oneDriveTokenProvider') ||
+      changedProperties.has('customUploader')
+    ) {
+      this.uploadController.setConfig(this._getCloudStorageConfig(), false);
+    }
   }
 
   /**
@@ -618,6 +649,17 @@ export class FzlFileManager extends FzlWidgetMixin(LitElement) {
     this._activeFileId = file.id;
     this._readerSearchQuery = '';
 
+    void this.readerController.openDocument({
+      id: file.id,
+      name: file.name,
+      size: file.size,
+      category: file.category,
+      extension: file.extension,
+      textContent: file.textContent,
+      blocks: file.docxBlocks,
+      objectUrl: file.objectUrl,
+    });
+
     // Update last read timestamp and progress
     const updated = this._updateFile(fileId, {
       lastReadAt: Date.now(),
@@ -633,6 +675,7 @@ export class FzlFileManager extends FzlWidgetMixin(LitElement) {
 
   closeReader(): void {
     this._activeFileId = null;
+    this.readerController.close();
   }
 
   toggleBookmark(fileId: string): boolean {
@@ -726,12 +769,15 @@ export class FzlFileManager extends FzlWidgetMixin(LitElement) {
           fileObj = new File([content], file.name, { type: mime });
         }
 
-        const result = await uploadToCloudStorage(fileObj, config, {
+        const result = await this.uploadController.uploadFile(fileObj, config, {
           fileId: file.id,
           folder: file.folder,
           tags: file.tags,
           notes: file.notes,
         });
+        if (!result.success) {
+          throw new Error(result.error || 'Falha ao enviar arquivo.');
+        }
 
         const nextStatus: FzlFileSourceStatus =
           file.status === 'bookmarked-only' || file.bookmarkedAt ? 'synced' : 'uploaded-only';

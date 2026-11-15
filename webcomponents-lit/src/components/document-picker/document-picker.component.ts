@@ -23,8 +23,9 @@ import {
   isFileSystemAccessSupported,
   isTextReadable,
   normalizeWellKnownDirectory,
-  uploadToCloudStorage,
 } from './document-picker.types';
+import { FzlCloudUploadController } from '../../controllers/cloud-upload.controller';
+import { FzlDocxReaderController } from '../../controllers/docx-reader.controller';
 import {
   type FzlDocxBlock,
   type FzlDocxRun,
@@ -693,6 +694,12 @@ export class FzlDocumentPicker extends FzlWidgetMixin(LitElement) {
 
   @query('input[type="file"]') private _fileInput?: HTMLInputElement;
 
+  /** Controller reativo de upload em nuvem integrado ao picker. */
+  public readonly uploadController = new FzlCloudUploadController(this);
+
+  /** Controller reativo de leitura estruturada DOCX/texto integrado ao picker. */
+  public readonly readerController = new FzlDocxReaderController(this);
+
   override connectedCallback(): void {
     super.connectedCallback();
     this._loadBookmarksFromStorage();
@@ -705,6 +712,25 @@ export class FzlDocumentPicker extends FzlWidgetMixin(LitElement) {
     super.willUpdate(changedProperties);
     if (changedProperties.has('preloadSamples') && this.preloadSamples && this._documents.length === 0) {
       this.loadSampleDocuments();
+    }
+    if (
+      changedProperties.has('storageProvider') ||
+      changedProperties.has('endpoint') ||
+      changedProperties.has('googleDriveFolderId') ||
+      changedProperties.has('googleDriveConvertToDocs') ||
+      changedProperties.has('googleAuthToken') ||
+      changedProperties.has('googleTokenProvider') ||
+      changedProperties.has('s3UploadUrl') ||
+      changedProperties.has('s3Bucket') ||
+      changedProperties.has('s3Region') ||
+      changedProperties.has('s3PresignedUrlProvider') ||
+      changedProperties.has('oneDriveFolderId') ||
+      changedProperties.has('oneDriveDriveId') ||
+      changedProperties.has('oneDriveAuthToken') ||
+      changedProperties.has('oneDriveTokenProvider') ||
+      changedProperties.has('customUploader')
+    ) {
+      this.uploadController.setConfig(this._getCloudStorageConfig(), false);
     }
   }
 
@@ -857,6 +883,17 @@ export class FzlDocumentPicker extends FzlWidgetMixin(LitElement) {
     if (!doc) return;
     this._activeDocId = doc.id;
     this._readerSearchQuery = '';
+    void this.readerController.openDocument({
+      id: doc.id,
+      name: doc.name,
+      size: doc.size,
+      mimeType: doc.type,
+      category: doc.category,
+      extension: doc.extension,
+      textContent: doc.textContent,
+      blocks: doc.docxBlocks,
+      objectUrl: doc.objectUrl,
+    });
     this.emit('fzl-document-read', {
       document: doc,
       textContent: doc.textContent,
@@ -867,6 +904,7 @@ export class FzlDocumentPicker extends FzlWidgetMixin(LitElement) {
   /** Closes the built-in reader panel. */
   closeReader(): void {
     this._activeDocId = null;
+    this.readerController.close();
   }
 
   /** Adds or removes a document from bookmarks, optionally merging tags and notes. */
@@ -1048,12 +1086,15 @@ export class FzlDocumentPicker extends FzlWidgetMixin(LitElement) {
           fileToUpload = new File([content], target.name, { type: mime });
         }
 
-        uploadResult = await uploadToCloudStorage(fileToUpload, config, {
+        uploadResult = await this.uploadController.uploadFile(fileToUpload, config, {
           id: target.id,
           name: target.name,
           tags: target.tags,
           notes: target.notes,
         });
+        if (!uploadResult.success) {
+          throw new Error(uploadResult.error || 'Falha ao enviar arquivo.');
+        }
         response = uploadResult.response;
       }
 

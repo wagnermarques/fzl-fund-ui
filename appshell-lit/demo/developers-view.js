@@ -891,6 +891,60 @@ store.put({ id: '1', ticker: 'FZL11', name: 'FZL Fund', price: 108.0 });
           <li><strong>Isolamento Multi-Tenant:</strong> As preferências de acessibilidade e voz devem usar chaves de <code>localStorage</code> com prefixo da aplicação (<code>&lt;app&gt;:a11y:preferences</code>).</li>
         </ul>
       </div>
+
+      <!-- 4. HEADLESS & REACTIVE CONTROLLERS -->
+      <div class="section-header" style="margin-top: 40px;">
+        <h2>4. Headless & Reactive Controllers (Extensibilidade)</h2>
+        <p>Controllers de negócio reutilizáveis e extensíveis via herança (<code>@fzl/webcomponents-lit/controllers</code>) para composição em componentes ou execução headless com <code>subscribe()</code>.</p>
+      </div>
+
+      <div class="cards-grid">
+        <div class="card" style="grid-column: 1 / -1;">
+          <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;">
+            <span class="card-badge">@fzl/webcomponents-lit/controllers</span>
+            <span style="font-size: 0.78rem; font-weight: 600; color: var(--md-sys-color-primary, #0284c7);">Zero Dependências Externas • Composição &amp; Herança (extends)</span>
+          </div>
+          <h3>Catálogo de Controllers Reativos Predefinidos</h3>
+          <p>Todos estendem <code>FzlBaseController</code>, suportam <code>host.requestUpdate()</code> em elementos Lit e modo headless com <code>subscribe()</code>:</p>
+
+          <ul style="font-size: 0.85rem; line-height: 1.65; margin: 0 0 16px; padding-left: 20px; color: var(--md-sys-color-on-surface-variant, #475569);">
+            <li><code>FzlCloudUploadController</code>: Upload multi-provedor (<code>rest</code>, <code>google-drive</code>, <code>s3</code>, <code>onedrive</code>, <code>custom</code>) com hooks <code>beforeUpload</code>, <code>performUpload</code>, <code>afterUpload</code> e <code>onError</code>.</li>
+            <li><code>FzlDocxReaderController</code>: Parsing OOXML <code>.docx</code> e texto com <code>transformBlocks</code>, zoom tipográfico, busca em blocos e <code>toStudyVerses()</code>.</li>
+            <li><code>FzlBookmarksController</code>: Favoritos persistidos com tags/notas, validação extensível via <code>validateTag</code> e sincronização entre abas.</li>
+            <li><code>FzlDataGridController&lt;T&gt;</code>: Vinculação automática a <code>FzlStore</code> (<code>store.observe()</code>), ordenação, filtro, paginação e exportação CSV.</li>
+            <li><code>FzlSocialAuthController</code>: Fluxo OAuth2 / GIS (Google &amp; Microsoft) com hook <code>onAuthenticated</code> e fallback demo configurável.</li>
+          </ul>
+
+          <pre style="margin: 0; padding: 14px; border-radius: 10px; background: #0f172a; color: #e2e8f0; font-size: 0.78rem; overflow-x: auto; line-height: 1.5;"><code>import { LitElement, html } from 'lit';
+import {
+  FzlCloudUploadController,
+  FzlDataGridController,
+} from '@fzl/webcomponents-lit/controllers';
+
+// 1. Extensão por herança com regras da aplicação consumidora
+class RegulatedFundUploadController extends FzlCloudUploadController {
+  protected override async beforeUpload(file) {
+    return file.name.endsWith('.exe') ? false : file;
+  }
+}
+
+// 2. Composição em um componente Lit ou view do AppShell
+class FundWorkspacePanel extends LitElement {
+  uploader = new RegulatedFundUploadController(this, {
+    config: { provider: 's3', s3Bucket: 'fidc-regulamentos' },
+  });
+  grid = new FzlDataGridController(this, { pageSize: 10 });
+
+  render() {
+    return html\`&lt;p&gt;Upload: \${this.uploader.status} • Itens: \${this.grid.totalItems}&lt;/p&gt;\`;
+  }
+}</code></pre>
+
+          <p style="margin: 12px 0 0; font-size: 0.82rem; color: var(--md-sys-color-on-surface-variant, #64748b);">
+            Os componentes <code>&lt;fzl-social-login&gt;</code>, <code>&lt;fzl-document-picker&gt;</code> e <code>&lt;fzl-file-manager&gt;</code> já expõem <code>.authController</code>, <code>.uploadController</code> e <code>.readerController</code> internamente.
+          </p>
+        </div>
+      </div>
     `;
   }
 }

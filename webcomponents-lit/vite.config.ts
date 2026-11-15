@@ -27,7 +27,8 @@ export default defineConfig({
         'camera-capture': resolve(__dirname, 'src/components/camera-capture/camera-capture.component.ts'),
         'document-picker': resolve(__dirname, 'src/components/document-picker/document-picker.component.ts'),
         'file-manager': resolve(__dirname, 'src/components/file-manager/file-manager.component.ts'),
-        'social-login': resolve(__dirname, 'src/components/social-login/social-login.component.ts')
+        'social-login': resolve(__dirname, 'src/components/social-login/social-login.component.ts'),
+        'controllers': resolve(__dirname, 'src/controllers/index.ts')
       },
       formats: ['es']
     },

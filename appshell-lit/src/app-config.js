@@ -94,6 +94,7 @@ export const SOCIAL_AUTH_KEYS = [
   'googleScopes',
   'microsoftScopes',
   'requestDriveScope',
+  'providers',
 ]
 
 export const DEFAULT_MOCK_ORGANIZATION = {
@@ -418,6 +419,7 @@ export function validateSocialAuth(socialAuth, where = CONFIG_FILE) {
     googleScopes = '',
     microsoftScopes = '',
     requestDriveScope = true,
+    providers: explicitProviders,
   } = socialAuth
 
   if (typeof enabled !== 'boolean') err('"socialAuth.enabled" deve ser true ou false')
@@ -427,13 +429,18 @@ export function validateSocialAuth(socialAuth, where = CONFIG_FILE) {
   checkOptionalString(googleScopes, 'socialAuth.googleScopes')
   checkOptionalString(microsoftScopes, 'socialAuth.microsoftScopes')
   if (typeof requestDriveScope !== 'boolean') err('"socialAuth.requestDriveScope" deve ser true ou false')
+  if (explicitProviders !== undefined && !['all', 'google', 'microsoft', 'none'].includes(explicitProviders)) {
+    err('"socialAuth.providers" deve ser "all", "google", "microsoft" ou "none"')
+  }
 
   const gId = googleClientId.trim()
   const msId = microsoftClientId.trim()
-  let providers = 'all'
+  let providers = explicitProviders || 'all'
   if (enabled === false) providers = 'none'
-  else if (gId && !msId) providers = 'google'
-  else if (!gId && msId) providers = 'microsoft'
+  else if (!explicitProviders) {
+    if (gId && !msId) providers = 'google'
+    else if (!gId && msId) providers = 'microsoft'
+  }
 
   return {
     enabled,

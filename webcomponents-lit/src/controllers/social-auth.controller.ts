@@ -15,8 +15,6 @@ export interface FzlSocialAuthConfig {
   googleClientId?: string;
   microsoftClientId?: string;
   microsoftTenantId?: string;
-  allowDemoFallback?: boolean;
-  demoDelayMs?: number;
   requestDriveScope?: boolean;
   googleScopes?: string;
   microsoftScopes?: string;
@@ -24,10 +22,10 @@ export interface FzlSocialAuthConfig {
 
 /**
  * Controller reativo e headless para autenticação federada com Google Identity Services (GIS)
- * e Microsoft Entra / OAuth2, com suporte a escopos de Drive/OneDrive e fallback de demonstração.
+ * e Microsoft Entra / OAuth2, com suporte a escopos de Drive/OneDrive.
  *
  * Extensível via herança (`extends FzlSocialAuthController`) pelos hooks protegidos
- * `onAuthenticated`, `createDemoResult` e `onAuthError`.
+ * `onAuthenticated` e `onAuthError`.
  */
 export class FzlSocialAuthController extends FzlBaseController {
   private _config: FzlSocialAuthConfig;
@@ -41,8 +39,6 @@ export class FzlSocialAuthController extends FzlBaseController {
     super(host);
     this._config = {
       microsoftTenantId: 'common',
-      allowDemoFallback: true,
-      demoDelayMs: 400,
       requestDriveScope: true,
       googleScopes: 'https://www.googleapis.com/auth/drive.file openid profile email',
       microsoftScopes: 'openid profile email User.Read Files.ReadWrite',
@@ -89,7 +85,7 @@ export class FzlSocialAuthController extends FzlBaseController {
   }
 
   /**
-   * Atualiza configurações de provedores OAuth2 e fallback de demonstração.
+   * Atualiza configurações de provedores OAuth2.
    */
   configure(partial: Partial<FzlSocialAuthConfig>, notify = true): this {
     this._config = { ...this._config, ...partial };
@@ -112,7 +108,7 @@ export class FzlSocialAuthController extends FzlBaseController {
   }
 
   /**
-   * Executa autenticação via Google Identity Services (GIS) ou modo demonstração.
+   * Executa autenticação via Google Identity Services (GIS).
    */
   async loginWithGoogle(): Promise<FzlSocialLoginResult | null> {
     if (this._busyProvider) return null;
@@ -122,60 +118,55 @@ export class FzlSocialAuthController extends FzlBaseController {
     this.notifyChange();
 
     try {
+      if (!this._config.googleClientId) {
+        throw new Error('Google Client ID não configurado.');
+      }
+
       let result: FzlSocialLoginResult | null = null;
 
-      if (this._config.googleClientId) {
-        await loadGoogleGsiScript();
-        const win = window as unknown as {
-          google?: {
-            accounts?: {
-              id?: {
-                initialize: (opts: Record<string, unknown>) => void;
-                prompt: () => void;
-              };
+      await loadGoogleGsiScript();
+      const win = window as unknown as {
+        google?: {
+          accounts?: {
+            id?: {
+              initialize: (opts: Record<string, unknown>) => void;
+              prompt: () => void;
             };
           };
         };
+      };
 
-        if (win.google?.accounts?.id) {
-          result = await new Promise<FzlSocialLoginResult>((resolve, reject) => {
-            win.google!.accounts!.id!.initialize({
-              client_id: this._config.googleClientId,
-              callback: (response: { credential?: string }) => {
-                if (!response.credential) {
-                  reject(new Error('Nenhuma credencial retornada pelo Google.'));
-                  return;
-                }
-                const payload = parseJwtPayload(response.credential);
-                if (!payload) {
-                  reject(new Error('Não foi possível decodificar o token do Google.'));
-                  return;
-                }
-                const user: FzlSocialUser = {
-                  id: String(payload.sub || `google-${Date.now()}`),
-                  name: String(payload.name || payload.email || 'Usuário Google'),
-                  email: String(payload.email || ''),
-                  avatarUrl: typeof payload.picture === 'string' ? payload.picture : null,
-                  provider: 'google',
-                  raw: payload
-                };
-                resolve({ provider: 'google', user, credential: response.credential });
+      if (win.google?.accounts?.id) {
+        result = await new Promise<FzlSocialLoginResult>((resolve, reject) => {
+          win.google!.accounts!.id!.initialize({
+            client_id: this._config.googleClientId,
+            callback: (response: { credential?: string }) => {
+              if (!response.credential) {
+                reject(new Error('Nenhuma credencial retornada pelo Google.'));
+                return;
               }
-            });
-            win.google!.accounts!.id!.prompt();
+              const payload = parseJwtPayload(response.credential);
+              if (!payload) {
+                reject(new Error('Não foi possível decodificar o token do Google.'));
+                return;
+              }
+              const user: FzlSocialUser = {
+                id: String(payload.sub || `google-${Date.now()}`),
+                name: String(payload.name || payload.email || 'Usuário Google'),
+                email: String(payload.email || ''),
+                avatarUrl: typeof payload.picture === 'string' ? payload.picture : null,
+                provider: 'google',
+                raw: payload
+              };
+              resolve({ provider: 'google', user, credential: response.credential });
+            }
           });
-        }
+          win.google!.accounts!.id!.prompt();
+        });
       }
 
       if (!result) {
-        if (this._config.allowDemoFallback === false) {
-          throw new Error('Google Client ID não configurado no componente.');
-        }
-        const delay = this._config.demoDelayMs ?? 400;
-        if (delay > 0) {
-          await new Promise((resolve) => setTimeout(resolve, delay));
-        }
-        result = await this.createDemoResult('google');
+        throw new Error('Google Identity Services indisponível.');
       }
 
       const finalResult = (await this.onAuthenticated(result)) ?? result;
@@ -200,7 +191,7 @@ export class FzlSocialAuthController extends FzlBaseController {
   }
 
   /**
-   * Executa autenticação via Microsoft Entra OAuth2 ou modo demonstração.
+   * Executa autenticação via Microsoft Entra OAuth2.
    */
   async loginWithMicrosoft(): Promise<FzlSocialLoginResult | null> {
     if (this._busyProvider) return null;
@@ -210,79 +201,68 @@ export class FzlSocialAuthController extends FzlBaseController {
     this.notifyChange();
 
     try {
-      let result: FzlSocialLoginResult | null = null;
+      if (!this._config.microsoftClientId) {
+        throw new Error('Microsoft Client ID não configurado.');
+      }
 
-      if (this._config.microsoftClientId) {
-        const redirectUri = window.location.origin;
-        const tenant = this._config.microsoftTenantId || 'common';
-        const scopes =
-          this._config.requestDriveScope !== false
-            ? this._config.microsoftScopes || 'openid profile email User.Read Files.ReadWrite'
-            : 'openid profile email User.Read';
-        const authUrl = `https://login.microsoftonline.com/${tenant}/oauth2/v2.0/authorize?client_id=${encodeURIComponent(
-          this._config.microsoftClientId
-        )}&response_type=token&redirect_uri=${encodeURIComponent(
-          redirectUri
-        )}&scope=${encodeURIComponent(scopes)}&response_mode=fragment`;
+      const redirectUri = window.location.origin;
+      const tenant = this._config.microsoftTenantId || 'common';
+      const scopes =
+        this._config.requestDriveScope !== false
+          ? this._config.microsoftScopes || 'openid profile email User.Read Files.ReadWrite'
+          : 'openid profile email User.Read';
+      const authUrl = `https://login.microsoftonline.com/${tenant}/oauth2/v2.0/authorize?client_id=${encodeURIComponent(
+        this._config.microsoftClientId
+      )}&response_type=token&redirect_uri=${encodeURIComponent(
+        redirectUri
+      )}&scope=${encodeURIComponent(scopes)}&response_mode=fragment`;
 
-        const width = 500;
-        const height = 650;
-        const left = window.screenX + (window.outerWidth - width) / 2;
-        const top = window.screenY + (window.outerHeight - height) / 2;
-        const popup = window.open(
-          authUrl,
-          'fzl_ms_auth',
-          `width=${width},height=${height},left=${left},top=${top},status=no,toolbar=no,menubar=no`
-        );
+      const width = 500;
+      const height = 650;
+      const left = window.screenX + (window.outerWidth - width) / 2;
+      const top = window.screenY + (window.outerHeight - height) / 2;
+      const popup = window.open(
+        authUrl,
+        'fzl_ms_auth',
+        `width=${width},height=${height},left=${left},top=${top},status=no,toolbar=no,menubar=no`
+      );
 
-        if (!popup) {
-          throw new Error('O navegador bloqueou o popup de autenticação da Microsoft.');
-        }
+      if (!popup) {
+        throw new Error('O navegador bloqueou o popup de autenticação da Microsoft.');
+      }
 
-        result = await new Promise<FzlSocialLoginResult>((resolve, reject) => {
-          this.clearPollTimer();
-          this._pollTimer = setInterval(() => {
-            try {
-              if (popup.closed) {
-                this.clearPollTimer();
-                reject(new Error('Autenticação da Microsoft cancelada pelo usuário.'));
-                return;
-              }
-              const hash = popup.location?.hash;
-              if (hash && hash.includes('access_token')) {
-                this.clearPollTimer();
-                popup.close();
-                const params = new URLSearchParams(hash.substring(1));
-                const accessToken = params.get('access_token') || undefined;
-                const idToken = params.get('id_token') || undefined;
-                const payload = idToken ? parseJwtPayload(idToken) : null;
-                const user: FzlSocialUser = {
-                  id: String(payload?.sub || `ms-${Date.now()}`),
-                  name: String(payload?.name || 'Usuário Microsoft'),
-                  email: String(payload?.email || payload?.preferred_username || ''),
-                  avatarUrl: null,
-                  provider: 'microsoft',
-                  raw: payload || {}
-                };
-                resolve({ provider: 'microsoft', user, credential: idToken, accessToken });
-              }
-            } catch {
-              // Cross-origin antes do redirect é esperado durante o fluxo OAuth2
+      const result = await new Promise<FzlSocialLoginResult>((resolve, reject) => {
+        this.clearPollTimer();
+        this._pollTimer = setInterval(() => {
+          try {
+            if (popup.closed) {
+              this.clearPollTimer();
+              reject(new Error('Autenticação da Microsoft cancelada pelo usuário.'));
+              return;
             }
-          }, 300);
-        });
-      }
-
-      if (!result) {
-        if (this._config.allowDemoFallback === false) {
-          throw new Error('Microsoft Client ID não configurado no componente.');
-        }
-        const delay = this._config.demoDelayMs ?? 400;
-        if (delay > 0) {
-          await new Promise((resolve) => setTimeout(resolve, delay));
-        }
-        result = await this.createDemoResult('microsoft');
-      }
+            const hash = popup.location?.hash;
+            if (hash && hash.includes('access_token')) {
+              this.clearPollTimer();
+              popup.close();
+              const params = new URLSearchParams(hash.substring(1));
+              const accessToken = params.get('access_token') || undefined;
+              const idToken = params.get('id_token') || undefined;
+              const payload = idToken ? parseJwtPayload(idToken) : null;
+              const user: FzlSocialUser = {
+                id: String(payload?.sub || `ms-${Date.now()}`),
+                name: String(payload?.name || 'Usuário Microsoft'),
+                email: String(payload?.email || payload?.preferred_username || ''),
+                avatarUrl: null,
+                provider: 'microsoft',
+                raw: payload || {}
+              };
+              resolve({ provider: 'microsoft', user, credential: idToken, accessToken });
+            }
+          } catch {
+            // Cross-origin antes do redirect é esperado durante o fluxo OAuth2
+          }
+        }, 300);
+      });
 
       const finalResult = (await this.onAuthenticated(result)) ?? result;
       this._busyProvider = null;
@@ -339,7 +319,11 @@ export class FzlSocialAuthController extends FzlBaseController {
       return this._lastResult.accessToken;
     }
 
-    if (targetProvider === 'google' && this._config.googleClientId) {
+    if (targetProvider === 'google') {
+      if (!this._config.googleClientId) {
+        throw new Error('Google Client ID não configurado.');
+      }
+
       await loadGoogleGsiScript();
       const win = window as unknown as {
         google?: {
@@ -385,55 +369,15 @@ export class FzlSocialAuthController extends FzlBaseController {
         this.notifyChange();
         return token;
       }
+
+      throw new Error('Google Identity Services OAuth2 indisponível.');
     }
 
-    if (this._config.allowDemoFallback !== false) {
-      const demoToken =
-        targetProvider === 'google'
-          ? 'demo-google-drive-oauth-token'
-          : 'demo-ms-onedrive-oauth-token';
-      if (this._lastResult && this._lastResult.provider === targetProvider) {
-        this._lastResult = { ...this._lastResult, accessToken: demoToken };
-      }
-      this.notifyChange();
-      return demoToken;
+    if (targetProvider === 'microsoft' && !this._config.microsoftClientId) {
+      throw new Error('Microsoft Client ID não configurado.');
     }
 
     return null;
-  }
-
-  /**
-   * Hook protegido que gera o usuário e resultado em modo demonstração.
-   */
-  protected async createDemoResult(
-    provider: FzlSocialAuthProvider
-  ): Promise<FzlSocialLoginResult> {
-    if (provider === 'google') {
-      return {
-        provider: 'google',
-        accessToken: 'demo-google-drive-oauth-token',
-        user: {
-          id: 'google-public-user-123',
-          name: 'Usuário Google (Demonstração)',
-          email: 'usuario.google@gmail.com',
-          avatarUrl:
-            'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=128&q=80',
-          provider: 'google'
-        }
-      };
-    }
-
-    return {
-      provider: 'microsoft',
-      accessToken: 'demo-ms-onedrive-oauth-token',
-      user: {
-        id: 'ms-public-user-456',
-        name: 'Usuário Microsoft (Demonstração)',
-        email: 'usuario.ms@outlook.com',
-        avatarUrl: null,
-        provider: 'microsoft'
-      }
-    };
   }
 
   /**

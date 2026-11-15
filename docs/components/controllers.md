@@ -28,7 +28,7 @@ Além da **composição**, todos os controllers foram desenhados para **extensã
 | `FzlDocxReaderController` | Leitura `.docx` OOXML e texto com filtro em blocos, zoom tipográfico e `toStudyVerses()` | `parseDocx()`, `transformBlocks()`, `onDocumentOpened()` |
 | `FzlBookmarksController` | Favoritos com persistência em `Storage`, tags, notas e sincronização cross-tab (`storage` event) | `validateTag()`, `serializeBookmark()`, `getStorage()` |
 | `FzlDataGridController<T>` | Vinculação reativa a `FzlStore` (`store.observe()`), ordenação, filtro, paginação, seleção e CSV | `filterItems()`, `sortItems()`, `getRowId()` |
-| `FzlSocialAuthController` | Fluxo OAuth2 / GIS (Google & Microsoft) com escopos de Drive/OneDrive, `requestCloudAccessToken()` e `logout()` | `onAuthenticated()`, `createDemoResult()`, `onAuthError()` |
+| `FzlSocialAuthController` | Fluxo OAuth2 / GIS (Google & Microsoft) com escopos de Drive/OneDrive, `requestCloudAccessToken()` e `logout()` | `onAuthenticated()`, `onAuthError()` |
 | `FzlPersonalCloudDocsController` | Base unificada (herda de `FzlCloudUploadController`): detecta conta pessoal logada (Google ou Microsoft) e envia para **Google Docs** ou **OneDrive** | `onUnauthenticatedUpload()`, `onPersonalDocUploaded()`, hooks de upload |
 
 ---
@@ -128,7 +128,10 @@ Os Web Components abaixo expõem instâncias públicas desses controllers para a
 import { FzlPersonalCloudDocsController } from '@fzl/webcomponents-lit/controllers';
 
 const personalDocs = new FzlPersonalCloudDocsController(null, {
-  convertToGoogleDocs: true
+  convertToGoogleDocs: true,
+  authConfig: {
+    googleClientId: 'SEU_GOOGLE_CLIENT_ID.apps.googleusercontent.com'
+  }
 });
 
 // 1. Usuário faz login com Google (ou loginWithMicrosoft())

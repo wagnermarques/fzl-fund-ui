@@ -903,7 +903,7 @@ export const catalog = [
     name: 'Login Social com Google & Microsoft',
     icon: 'account_circle',
     summary:
-      'Autenticação client-side com contas públicas do Google (Google Identity Services) e Microsoft (OAuth2/MSAL), com zero dependências externas de backend e modo demonstração.',
+      'Autenticação client-side com contas públicas do Google (Google Identity Services) e Microsoft (OAuth2/MSAL), com zero dependências externas de backend.',
     doc: socialLoginDoc,
     slotText: '',
     initialValues: {
@@ -911,7 +911,6 @@ export const catalog = [
       layout: 'buttons',
       'show-divider': true,
       'divider-text': 'ou continue com e-mail',
-      'allow-demo-fallback': true,
     },
     implementations: [
       {

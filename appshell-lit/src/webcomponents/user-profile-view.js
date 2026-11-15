@@ -201,7 +201,7 @@ export class UserProfileView extends LitElement {
       margin-bottom: 16px;
     }
 
-    .demo-btn-group {
+    .login-btn-group {
       display: flex;
       justify-content: center;
       gap: 12px;
@@ -315,32 +315,6 @@ export class UserProfileView extends LitElement {
     }
   }
 
-  /** Atalho para facilitar demonstração e testes quando o usuário ainda não logou */
-  async _loginDemoUser() {
-    this._busy = true
-    try {
-      // Tenta entrar com usuário demo ou cria
-      try {
-        await authService.signIn({ email: 'demo@fzl.com', password: 'demo12345' })
-      } catch {
-        await authService.signUp({
-          name: 'Wagner Marques',
-          email: 'demo@fzl.com',
-          password: 'demo12345',
-        })
-        await authService.updateProfile({
-          role: 'Arquiteto de Software',
-          bio: 'Especialista em Web Components e Arquitetura Frontend',
-          phone: '+55 (11) 98765-4321',
-        })
-      }
-    } catch (err) {
-      this._errorMessage = err.message
-    } finally {
-      this._busy = false
-    }
-  }
-
   render() {
     if (!this._user) {
       return html`
@@ -348,11 +322,8 @@ export class UserProfileView extends LitElement {
           <md-icon>account_circle</md-icon>
           <h1>Minha Conta</h1>
           <p class="subtitle">Você precisa estar conectado para visualizar e editar seu perfil.</p>
-          <div class="demo-btn-group">
+          <div class="login-btn-group">
             <md-filled-button @click=${navigateToLogin}>Entrar</md-filled-button>
-            <md-outlined-button @click=${this._loginDemoUser} ?disabled=${this._busy}>
-              Entrar como Usuário Demo
-            </md-outlined-button>
           </div>
         </div>
       `
@@ -468,7 +439,7 @@ export class UserProfileView extends LitElement {
             <dt>Membro desde:</dt>
             <dd>${sinceDate}</dd>
             <dt>Autenticação:</dt>
-            <dd>${authService.isLocal() ? 'Modo Local de Demonstração' : 'Provedor Integrado'}</dd>
+            <dd>${authService.isLocal() ? 'Provedor Local' : 'Provedor Integrado'}</dd>
             <dt>ID da Conta:</dt>
             <dd><code>${this._user.id}</code></dd>
           </dl>

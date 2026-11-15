@@ -3,6 +3,15 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import '@fzl/webcomponents-lit/social-login';
 import { parseJwtPayload } from '@fzl/webcomponents-lit/social-login';
 
+function createMockJwt(payloadObj) {
+  const encode = (obj) =>
+    btoa(unescape(encodeURIComponent(JSON.stringify(obj))))
+      .replace(/\+/g, '-')
+      .replace(/\//g, '_')
+      .replace(/=+$/, '');
+  return `${encode({ alg: 'RS256', typ: 'JWT' })}.${encode(payloadObj)}.mockSig`;
+}
+
 describe('FzlSocialLogin Web Component (<fzl-social-login>)', () => {
   /** @type {import('@fzl/webcomponents-lit/social-login').FzlSocialLogin} */
   let el;
@@ -15,6 +24,10 @@ describe('FzlSocialLogin Web Component (<fzl-social-login>)', () => {
 
   afterEach(() => {
     el?.remove();
+    vi.restoreAllMocks();
+    vi.unstubAllGlobals();
+    delete window.google;
+    delete window.__fzlGisCallback;
   });
 
   it('registra os custom elements fzl-social-login e fzl-lit-social-login', () => {
@@ -43,17 +56,65 @@ describe('FzlSocialLogin Web Component (<fzl-social-login>)', () => {
     expect(el.shadowRoot.querySelector('.btn-microsoft')).not.toBeNull();
   });
 
-  it('executa login com Google no modo demonstração com eventos disparados', async () => {
+  it('emite fzl-social-login-error quando Client ID não está configurado', async () => {
+    const errorSpy = vi.fn();
+    const successSpy = vi.fn();
+    el.addEventListener('fzl-social-login-error', errorSpy);
+    el.addEventListener('fzl-social-login-success', successSpy);
+
+    el.shadowRoot.querySelector('.btn-google').click();
+    await new Promise((r) => setTimeout(r, 20));
+    await el.updateComplete;
+
+    expect(successSpy).not.toHaveBeenCalled();
+    expect(errorSpy).toHaveBeenCalledTimes(1);
+    expect(errorSpy.mock.calls[0][0].detail).toEqual({
+      provider: 'google',
+      error: 'Google Client ID não configurado.',
+    });
+
+    el.shadowRoot.querySelector('.btn-microsoft').click();
+    await new Promise((r) => setTimeout(r, 20));
+    await el.updateComplete;
+
+    expect(errorSpy).toHaveBeenCalledTimes(2);
+    expect(errorSpy.mock.calls[1][0].detail).toEqual({
+      provider: 'microsoft',
+      error: 'Microsoft Client ID não configurado.',
+    });
+    expect(el.shadowRoot.querySelector('.demo-pill')).toBeNull();
+  });
+
+  it('executa login com Google via Google Identity Services (GIS) quando configurado', async () => {
+    const credential = createMockJwt({
+      sub: 'google-sub-ana',
+      name: 'Ana Silva',
+      email: 'ana.silva@gmail.com',
+      picture: 'https://lh3.googleusercontent.com/a/ana',
+    });
+    vi.stubGlobal('google', {
+      accounts: {
+        id: {
+          initialize: (opts) => {
+            window.__fzlGisCallback = opts.callback;
+          },
+          prompt: () => {
+            window.__fzlGisCallback?.({ credential });
+          },
+        },
+      },
+    });
+
+    el.googleClientId = 'test-google-client.apps.googleusercontent.com';
+    await el.updateComplete;
+
     const startSpy = vi.fn();
     const successSpy = vi.fn();
     el.addEventListener('fzl-social-login-start', startSpy);
     el.addEventListener('fzl-social-login-success', successSpy);
 
-    const googleBtn = el.shadowRoot.querySelector('.btn-google');
-    googleBtn.click();
-
-    // Espera conclusão do login simulado
-    await new Promise((r) => setTimeout(r, 450));
+    el.shadowRoot.querySelector('.btn-google').click();
+    await new Promise((r) => setTimeout(r, 20));
     await el.updateComplete;
 
     expect(startSpy).toHaveBeenCalledTimes(1);
@@ -62,28 +123,48 @@ describe('FzlSocialLogin Web Component (<fzl-social-login>)', () => {
     expect(successSpy).toHaveBeenCalledTimes(1);
     const result = successSpy.mock.calls[0][0].detail;
     expect(result.provider).toBe('google');
-    expect(result.user.email).toBe('usuario.google@gmail.com');
+    expect(result.user.email).toBe('ana.silva@gmail.com');
+    expect(result.user.name).toBe('Ana Silva');
+    expect(result.credential).toBe(credential);
   });
 
-  it('executa login com Microsoft no modo demonstração com eventos disparados', async () => {
+  it('executa login com Microsoft via popup OAuth2 quando configurado', async () => {
+    const idToken = createMockJwt({
+      sub: 'ms-sub-carlos',
+      name: 'Carlos Souza',
+      email: 'carlos.souza@outlook.com',
+    });
+    const popup = {
+      closed: false,
+      close: vi.fn(),
+      location: {
+        hash: `#access_token=EwB_mock_ms_token&id_token=${idToken}`,
+      },
+    };
+    const openSpy = vi.spyOn(window, 'open').mockReturnValue(popup);
+
+    el.microsoftClientId = 'test-ms-client-id';
+    await el.updateComplete;
+
     const startSpy = vi.fn();
     const successSpy = vi.fn();
     el.addEventListener('fzl-social-login-start', startSpy);
     el.addEventListener('fzl-social-login-success', successSpy);
 
-    const msBtn = el.shadowRoot.querySelector('.btn-microsoft');
-    msBtn.click();
-
-    await new Promise((r) => setTimeout(r, 450));
+    el.shadowRoot.querySelector('.btn-microsoft').click();
+    await new Promise((r) => setTimeout(r, 380));
     await el.updateComplete;
 
+    expect(openSpy).toHaveBeenCalledTimes(1);
+    expect(popup.close).toHaveBeenCalledTimes(1);
     expect(startSpy).toHaveBeenCalledTimes(1);
     expect(startSpy.mock.calls[0][0].detail.provider).toBe('microsoft');
 
     expect(successSpy).toHaveBeenCalledTimes(1);
     const result = successSpy.mock.calls[0][0].detail;
     expect(result.provider).toBe('microsoft');
-    expect(result.user.email).toBe('usuario.ms@outlook.com');
+    expect(result.user.email).toBe('carlos.souza@outlook.com');
+    expect(result.accessToken).toBe('EwB_mock_ms_token');
   });
 
   it('desabilita os botões quando a propriedade disabled está ativa', async () => {

@@ -274,9 +274,10 @@ describe('authService com provedor do app', () => {
     })
     expect(authService.getCurrentUser()?.email).toBe('mariana.ms@outlook.com')
 
-    // 3. Login social sem passar user pré-definido usa fallback realista
+    // 3. Login social sem e-mail válido deve falhar explicitamente
     await authService.signOut()
-    const demoGoogle = await authService.signInWithSocial({ provider: 'google' })
-    expect(demoGoogle.email).toBe('usuario.google@gmail.com')
+    await expect(authService.signInWithSocial({ provider: 'google' })).rejects.toThrow(
+      'Dados do usuário social inválidos: e-mail é obrigatório.'
+    )
   })
 })

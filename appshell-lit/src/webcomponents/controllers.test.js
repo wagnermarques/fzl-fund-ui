@@ -33,6 +33,60 @@ function createMockHost() {
   };
 }
 
+function createMockJwt(payloadObj) {
+  const encode = (obj) =>
+    btoa(unescape(encodeURIComponent(JSON.stringify(obj))))
+      .replace(/\+/g, '-')
+      .replace(/\//g, '_')
+      .replace(/=+$/, '');
+  return `${encode({ alg: 'RS256', typ: 'JWT' })}.${encode(payloadObj)}.sig`;
+}
+
+function stubGoogleGis(user = {}) {
+  const credential = createMockJwt({
+    sub: user.sub || 'google-sub-123',
+    name: user.name || 'Ana Google',
+    email: user.email || 'ana.silva@gmail.com',
+    picture: user.picture || 'https://lh3.googleusercontent.com/a/ana'
+  });
+  vi.stubGlobal('google', {
+    accounts: {
+      id: {
+        initialize: (opts) => {
+          window.__fzlGisCallback = opts.callback;
+        },
+        prompt: () => {
+          window.__fzlGisCallback?.({ credential });
+        }
+      },
+      oauth2: {
+        initTokenClient: (opts) => ({
+          requestAccessToken: () => {
+            opts.callback({ access_token: user.accessToken || 'ya29.mock-drive-token' });
+          }
+        })
+      }
+    }
+  });
+  return { credential };
+}
+
+function stubMicrosoftPopup(user = {}) {
+  const idToken = createMockJwt({
+    sub: user.sub || 'ms-sub-456',
+    name: user.name || 'Carlos Microsoft',
+    email: user.email || 'carlos.souza@outlook.com'
+  });
+  const popup = {
+    closed: false,
+    close: vi.fn(),
+    location: {
+      hash: `#access_token=${user.accessToken || 'EwB_mock_ms_token'}&id_token=${idToken}`
+    }
+  };
+  return vi.spyOn(window, 'open').mockReturnValue(popup);
+}
+
 describe('Headless & Reactive Controllers (@fzl/webcomponents-lit/controllers)', () => {
   beforeEach(() => {
     localStorage.clear();
@@ -40,6 +94,9 @@ describe('Headless & Reactive Controllers (@fzl/webcomponents-lit/controllers)',
 
   afterEach(() => {
     vi.restoreAllMocks();
+    vi.unstubAllGlobals();
+    delete window.google;
+    delete window.__fzlGisCallback;
     localStorage.clear();
   });
 
@@ -330,7 +387,40 @@ describe('Headless & Reactive Controllers (@fzl/webcomponents-lit/controllers)',
   });
 
   describe('FzlSocialAuthController & Integração com Web Components', () => {
-    it('realiza login/logout headless e permite sobrescrever onAuthenticated()', async () => {
+    it('falha com erro explícito e emite evento quando Client IDs não estão configurados', async () => {
+      const host = createMockHost();
+      const auth = new FzlSocialAuthController(host);
+
+      const gRes = await auth.loginWithGoogle();
+      expect(gRes).toBeNull();
+      expect(auth.isAuthenticated).toBe(false);
+      expect(auth.errorMessage).toBe('Google Client ID não configurado.');
+      expect(
+        host.dispatched.some(
+          (ev) => ev.type === 'fzl-social-login-error' && ev.detail?.provider === 'google'
+        )
+      ).toBe(true);
+
+      const msRes = await auth.loginWithMicrosoft();
+      expect(msRes).toBeNull();
+      expect(auth.errorMessage).toBe('Microsoft Client ID não configurado.');
+      expect(
+        host.dispatched.some(
+          (ev) => ev.type === 'fzl-social-login-error' && ev.detail?.provider === 'microsoft'
+        )
+      ).toBe(true);
+
+      await expect(auth.requestCloudAccessToken('google')).rejects.toThrow(
+        'Google Client ID não configurado.'
+      );
+      await expect(auth.requestCloudAccessToken('microsoft')).rejects.toThrow(
+        'Microsoft Client ID não configurado.'
+      );
+    });
+
+    it('realiza login/logout headless via GIS, requestCloudAccessToken e onAuthenticated()', async () => {
+      stubGoogleGis({ name: 'Joana Silva', email: 'joana@gmail.com' });
+
       class TenantSocialController extends FzlSocialAuthController {
         async onAuthenticated(result) {
           return {
@@ -343,11 +433,18 @@ describe('Headless & Reactive Controllers (@fzl/webcomponents-lit/controllers)',
         }
       }
 
-      const auth = new TenantSocialController(null, { demoDelayMs: 5 });
+      const auth = new TenantSocialController(null, {
+        googleClientId: 'google-client-id.apps.googleusercontent.com'
+      });
       const res = await auth.loginWithGoogle();
 
       expect(auth.isAuthenticated).toBe(true);
-      expect(res?.user.name).toContain('[Tenant FZL]');
+      expect(res?.user.name).toBe('Joana Silva [Tenant FZL]');
+      expect(res?.user.email).toBe('joana@gmail.com');
+
+      const token = await auth.requestCloudAccessToken('google');
+      expect(token).toBe('ya29.mock-drive-token');
+      expect(auth.accessToken).toBe('ya29.mock-drive-token');
 
       auth.logout();
       expect(auth.isAuthenticated).toBe(false);
@@ -376,10 +473,21 @@ describe('Headless & Reactive Controllers (@fzl/webcomponents-lit/controllers)',
 
   describe('FzlPersonalCloudDocsController & bindSocialAuth (Google Docs / OneDrive)', () => {
     it('loga com conta pessoal Google e envia .docx convertido para Google Docs', async () => {
+      stubGoogleGis({ email: 'investidor@gmail.com' });
+      const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue({
+        ok: true,
+        json: async () => ({
+          id: 'gdrive-123',
+          name: 'oficio-pessoal.docx',
+          mimeType: 'application/vnd.google-apps.document',
+          webViewLink: 'https://docs.google.com/document/d/gdrive-123/edit'
+        })
+      });
+
       const host = createMockHost();
       const personalDocs = new FzlPersonalCloudDocsController(host, {
         convertToGoogleDocs: true,
-        authConfig: { demoDelayMs: 5 }
+        authConfig: { googleClientId: 'google-client-id.apps.googleusercontent.com' }
       });
 
       const userRes = await personalDocs.loginWithGoogle();
@@ -392,9 +500,11 @@ describe('Headless & Reactive Controllers (@fzl/webcomponents-lit/controllers)',
       });
 
       const result = await personalDocs.uploadToPersonalCloud(docxFile);
+      expect(fetchSpy).toHaveBeenCalledTimes(1);
+      expect(fetchSpy.mock.calls[0][0]).toContain('https://www.googleapis.com/upload/drive/v3/files');
       expect(result.success).toBe(true);
       expect(result.provider).toBe('google-drive');
-      expect(result.externalViewerUrl).toContain('https://docs.google.com/document/d/');
+      expect(result.externalViewerUrl).toBe('https://docs.google.com/document/d/gdrive-123/edit');
       expect(result.externalViewerLabel).toBe('Abrir no Google Docs ↗');
       expect(personalDocs.lastViewerUrl).toBe(result.externalViewerUrl);
       expect(personalDocs.lastViewerLabel).toBe('Abrir no Google Docs ↗');
@@ -402,8 +512,18 @@ describe('Headless & Reactive Controllers (@fzl/webcomponents-lit/controllers)',
     });
 
     it('loga com conta pessoal Microsoft e envia documento para OneDrive', async () => {
+      stubMicrosoftPopup({ email: 'carlos.ms@outlook.com' });
+      const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue({
+        ok: true,
+        json: async () => ({
+          id: 'onedrive-456',
+          name: 'minuta-ms.docx',
+          webUrl: 'https://onedrive.live.com/edit?id=onedrive-456'
+        })
+      });
+
       const personalDocs = new FzlPersonalCloudDocsController(null, {
-        authConfig: { demoDelayMs: 5 }
+        authConfig: { microsoftClientId: 'ms-client-id' }
       });
 
       await personalDocs.loginWithMicrosoft();
@@ -414,16 +534,29 @@ describe('Headless & Reactive Controllers (@fzl/webcomponents-lit/controllers)',
       });
 
       const result = await personalDocs.uploadToPersonalCloud(docxFile);
+      expect(fetchSpy).toHaveBeenCalledTimes(1);
+      expect(fetchSpy.mock.calls[0][0]).toContain('https://graph.microsoft.com/v1.0/me/drive');
       expect(result.success).toBe(true);
       expect(result.provider).toBe('onedrive');
-      expect(result.externalViewerUrl).toContain('https://onedrive.live.com/edit?id=');
+      expect(result.externalViewerUrl).toBe('https://onedrive.live.com/edit?id=onedrive-456');
       expect(result.externalViewerLabel).toBe('Abrir no OneDrive ↗');
     });
 
     it('emite auth-required quando deslogado e suporta autoLoginProvider automático', async () => {
+      stubGoogleGis();
+      vi.spyOn(globalThis, 'fetch').mockResolvedValue({
+        ok: true,
+        json: async () => ({
+          id: 'gdrive-auto-1',
+          name: 'rascunho.docx',
+          mimeType: 'application/vnd.google-apps.document',
+          webViewLink: 'https://docs.google.com/document/d/gdrive-auto-1/edit'
+        })
+      });
+
       const host = createMockHost();
       const personalDocs = new FzlPersonalCloudDocsController(host, {
-        authConfig: { demoDelayMs: 5 }
+        authConfig: { googleClientId: 'google-client-id.apps.googleusercontent.com' }
       });
 
       const doc = new File(['texto simples'], 'rascunho.docx', {
@@ -445,6 +578,17 @@ describe('Headless & Reactive Controllers (@fzl/webcomponents-lit/controllers)',
     });
 
     it('permite extensão por herança sobrescrevendo onPersonalDocUploaded()', async () => {
+      stubGoogleGis({ email: 'auditor@fzl.com.br' });
+      vi.spyOn(globalThis, 'fetch').mockResolvedValue({
+        ok: true,
+        json: async () => ({
+          id: 'gdrive-audit-9',
+          name: 'termo.docx',
+          mimeType: 'application/vnd.google-apps.document',
+          webViewLink: 'https://docs.google.com/document/d/gdrive-audit-9/edit'
+        })
+      });
+
       const auditTrail = [];
 
       class AuditedPersonalDocsController extends FzlPersonalCloudDocsController {
@@ -458,7 +602,7 @@ describe('Headless & Reactive Controllers (@fzl/webcomponents-lit/controllers)',
       }
 
       const ctrl = new AuditedPersonalDocsController(null, {
-        authConfig: { demoDelayMs: 5 },
+        authConfig: { googleClientId: 'google-client-id.apps.googleusercontent.com' },
         autoLoginProvider: 'google'
       });
 
@@ -471,15 +615,26 @@ describe('Headless & Reactive Controllers (@fzl/webcomponents-lit/controllers)',
       expect(auditTrail).toHaveLength(1);
       expect(auditTrail[0]).toMatchObject({
         file: 'termo.docx',
-        user: 'usuario.google@gmail.com'
+        user: 'auditor@fzl.com.br'
       });
-      expect(auditTrail[0].viewerUrl).toContain('https://docs.google.com/document/d/');
+      expect(auditTrail[0].viewerUrl).toBe('https://docs.google.com/document/d/gdrive-audit-9/edit');
     });
 
     it('conecta <fzl-document-picker>.bindSocialAuth(socialLogin.authController) e envia para o Google Docs', async () => {
+      stubGoogleGis();
+      vi.spyOn(globalThis, 'fetch').mockResolvedValue({
+        ok: true,
+        json: async () => ({
+          id: 'gdrive-picker-77',
+          name: 'ata-comite.docx',
+          mimeType: 'application/vnd.google-apps.document',
+          webViewLink: 'https://docs.google.com/document/d/gdrive-picker-77/edit'
+        })
+      });
+
       const socialEl = document.createElement('fzl-social-login');
       const pickerEl = document.createElement('fzl-document-picker');
-      socialEl.authController.configure({ demoDelayMs: 5 });
+      socialEl.googleClientId = 'google-client-id.apps.googleusercontent.com';
 
       document.body.append(socialEl, pickerEl);
       await Promise.all([socialEl.updateComplete, pickerEl.updateComplete]);
@@ -504,7 +659,7 @@ describe('Headless & Reactive Controllers (@fzl/webcomponents-lit/controllers)',
       const uploaded = pickerEl.getDocuments().find((d) => d.id === item.id);
       expect(uploaded?.uploadStatus).toBe('uploaded');
       expect(uploaded?.storageProvider).toBe('google-drive');
-      expect(uploaded?.googleDocsUrl).toContain('https://docs.google.com/document/d/');
+      expect(uploaded?.googleDocsUrl).toBe('https://docs.google.com/document/d/gdrive-picker-77/edit');
       expect(uploaded?.externalViewerLabel).toBe('Abrir no Google Docs ↗');
 
       unbind();

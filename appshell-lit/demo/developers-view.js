@@ -912,7 +912,7 @@ store.put({ id: '1', ticker: 'FZL11', name: 'FZL Fund', price: 108.0 });
             <li><code>FzlDocxReaderController</code>: Parsing OOXML <code>.docx</code> e texto com <code>transformBlocks</code>, zoom tipográfico, busca em blocos e <code>toStudyVerses()</code>.</li>
             <li><code>FzlBookmarksController</code>: Favoritos persistidos com tags/notas, validação extensível via <code>validateTag</code> e sincronização entre abas.</li>
             <li><code>FzlDataGridController&lt;T&gt;</code>: Vinculação automática a <code>FzlStore</code> (<code>store.observe()</code>), ordenação, filtro, paginação e exportação CSV.</li>
-            <li><code>FzlSocialAuthController</code>: Fluxo OAuth2 / GIS (Google &amp; Microsoft) com escopos de arquivo (<code>drive.file</code> / <code>Files.ReadWrite</code>), <code>requestCloudAccessToken()</code> e fallback demo.</li>
+            <li><code>FzlSocialAuthController</code>: Fluxo OAuth2 / GIS (Google &amp; Microsoft) com escopos de arquivo (<code>drive.file</code> / <code>Files.ReadWrite</code>), <code>requestCloudAccessToken()</code> e <code>logout()</code>.</li>
             <li><code>FzlPersonalCloudDocsController</code>: Controller base para envio à nuvem pessoal do usuário autenticado (<strong>Google Docs</strong> para Google; <strong>OneDrive</strong> para Microsoft), além de <code>bindSocialAuth()</code> em uploaders e pickers.</li>
           </ul>
 
@@ -932,7 +932,10 @@ class FundPersonalDocsController extends FzlPersonalCloudDocsController {
 
 // 2. Composição em um componente Lit ou view do AppShell
 class FundWorkspacePanel extends LitElement {
-  personalDocs = new FundPersonalDocsController(this, { convertToGoogleDocs: true });
+  personalDocs = new FundPersonalDocsController(this, {
+    convertToGoogleDocs: true,
+    authConfig: { googleClientId: 'SEU_GOOGLE_CLIENT_ID.apps.googleusercontent.com' },
+  });
   uploader = new FzlCloudUploadController(this, {
     config: { provider: 's3', s3Bucket: 'fidc-regulamentos' },
   });

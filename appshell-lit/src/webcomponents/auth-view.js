@@ -269,7 +269,7 @@ export class AuthView extends LitElement {
         </p>
         ${previewUrl
           ? html`<p class="notice done">
-              Modo local de demonstração: nenhum e-mail é enviado. O link seria este:
+              Link de recuperação pronto:
               <a href=${previewUrl}>${previewUrl}</a>
             </p>`
           : ''}
@@ -420,12 +420,6 @@ export class AuthView extends LitElement {
               Não tem conta? <md-text-button @click=${navigateToSignup}>Criar conta</md-text-button>
             </p>`
           : ''}
-      ${authService.isLocal()
-        ? html`<p class="notice">
-            Modo local de demonstração: as contas ficam salvas apenas neste navegador até o backend
-            de autenticação ser ligado.
-          </p>`
-        : ''}
     `
   }
 }

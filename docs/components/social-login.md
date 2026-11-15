@@ -1,6 +1,6 @@
 # Login Social com Contas Públicas (`fzl-social-login`)
 
-> Web Component para autenticação client-side com contas públicas do **Google** e da **Microsoft**, com zero dependências externas obrigatórias no backend, fallback automático para modo demonstração e conformidade visual com as diretrizes oficiais de identidade de marca.
+> Web Component para autenticação client-side com contas públicas do **Google** e da **Microsoft**, com zero dependências externas obrigatórias no backend e conformidade visual com as diretrizes oficiais de identidade de marca.
 
 ---
 
@@ -12,12 +12,10 @@ O `<fzl-social-login>` viabiliza o fluxo de autenticação social em aplicaçõe
    - Carrega dinamicamente a biblioteca oficial do Google (`https://accounts.google.com/gsi/client`).
    - Apresenta o fluxo moderno de popup ou One Tap do Google.
    - Decodifica no front-end o JWT/ID Token assinado, extraindo nome completo, e-mail verificado, avatar e ID de usuário.
-2. **Microsoft Account / Entra ID (MSAL & PKCE)**:
+2. **Microsoft Account / Entra ID (OAuth2)**:
    - Realiza autenticação com contas públicas da Microsoft (`@outlook.com`, `@hotmail.com`, `@live.com`) e contas corporativas do Office 365.
-   - Utiliza OAuth2 Authorization Code com PKCE em popup sem recarregar a aplicação.
-3. **Modo Demonstração Instantâneo (`allow-demo-fallback`)**:
-   - Quando `google-client-id` ou `microsoft-client-id` não são configurados, o componente simula instantaneamente o login com uma conta pública realista (`usuario.google@gmail.com` ou `usuario.ms@outlook.com`), permitindo testar a experiência e o design system imediatamente.
-4. **Integração com o Appshell (`auth-view` & `authService`)**:
+   - Utiliza fluxo OAuth2 em popup sem recarregar a aplicação.
+3. **Integração com o Appshell (`auth-view` & `authService`)**:
    - O `<auth-view>` do Appshell já traz o `<fzl-social-login>` embutido nas telas de login (`#/conta/entrar`) e cadastro (`#/conta/cadastro`), logando o usuário no `authService` e disparando o evento `auth:login`.
 
 ---
@@ -26,14 +24,13 @@ O `<fzl-social-login>` viabiliza o fluxo de autenticação social em aplicaçõe
 
 | Propriedade | Atributo | Tipo | Padrão | Descrição |
 | :--- | :--- | :--- | :--- | :--- |
-| `googleClientId` | `google-client-id` | `string` | `''` | Client ID público do projeto no Google Cloud Console. |
-| `microsoftClientId` | `microsoft-client-id` | `string` | `''` | Client ID público registrado no portal Microsoft Azure. |
+| `googleClientId` | `google-client-id` | `string` | `''` | Client ID público do projeto no Google Cloud Console (obrigatório para login Google). |
+| `microsoftClientId` | `microsoft-client-id` | `string` | `''` | Client ID público registrado no portal Microsoft Azure (obrigatório para login Microsoft). |
 | `microsoftTenantId` | `microsoft-tenant-id` | `string` | `'common'` | Tenant Microsoft (`'common'`, `'consumers'`, `'organizations'` ou GUID). |
 | `providers` | `providers` | `'all' \| 'google' \| 'microsoft'` | `'all'` | Provedores habilitados para exibição. |
 | `layout` | `layout` | `'buttons' \| 'chips' \| 'compact'` | `'buttons'` | Disposição visual dos botões. |
 | `showDivider` | `show-divider` | `boolean` | `true` | Exibe a linha divisória inferior "ou continue com e-mail". |
 | `dividerText` | `divider-text` | `string` | `'ou continue com e-mail'` | Texto exibido na divisória. |
-| `allowDemoFallback` | `allow-demo-fallback` | `boolean` | `true` | Habilita fallback com conta simulada quando sem client ID. |
 | `disabled` | `disabled` | `boolean` | `false` | Desabilita a interação com os botões. |
 
 ---

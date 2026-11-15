@@ -181,18 +181,6 @@ export class FzlSocialLogin extends FzlWidgetMixin(LitElement) {
         text-align: center;
       }
 
-      .demo-pill {
-        display: inline-block;
-        font-size: 0.65rem;
-        padding: 1px 6px;
-        border-radius: 4px;
-        background: #f1f5f9;
-        color: #475569;
-        font-weight: 600;
-        margin-left: 6px;
-        text-transform: uppercase;
-      }
-
       /* High contrast */
       :host([data-fzl-hc]) .btn-social {
         border-width: 2px;
@@ -229,10 +217,6 @@ export class FzlSocialLogin extends FzlWidgetMixin(LitElement) {
   @property({ type: String, attribute: 'divider-text' })
   dividerText = 'ou continue com e-mail';
 
-  /** When true and no client ID is provided, simulates a realistic instant social login. */
-  @property({ type: Boolean, attribute: 'allow-demo-fallback' })
-  allowDemoFallback = true;
-
   @property({ type: Boolean })
   disabled = false;
 
@@ -245,7 +229,6 @@ export class FzlSocialLogin extends FzlWidgetMixin(LitElement) {
         googleClientId: this.googleClientId,
         microsoftClientId: this.microsoftClientId,
         microsoftTenantId: this.microsoftTenantId,
-        allowDemoFallback: this.allowDemoFallback,
       },
       false
     );
@@ -256,21 +239,20 @@ export class FzlSocialLogin extends FzlWidgetMixin(LitElement) {
     if (
       changedProperties.has('googleClientId') ||
       changedProperties.has('microsoftClientId') ||
-      changedProperties.has('microsoftTenantId') ||
-      changedProperties.has('allowDemoFallback')
+      changedProperties.has('microsoftTenantId')
     ) {
       this._syncAuthController();
     }
   }
 
-  /** Performs Google login using Google Identity Services (GIS) or demo fallback. */
+  /** Performs Google login using Google Identity Services (GIS). */
   async loginWithGoogle(): Promise<FzlSocialLoginResult | null> {
     if (this.disabled || this.authController.isBusy) return null;
     this._syncAuthController();
     return this.authController.loginWithGoogle();
   }
 
-  /** Performs Microsoft login using OAuth2 PKCE or demo fallback. */
+  /** Performs Microsoft login using Microsoft Entra OAuth2. */
   async loginWithMicrosoft(): Promise<FzlSocialLoginResult | null> {
     if (this.disabled || this.authController.isBusy) return null;
     this._syncAuthController();
@@ -301,9 +283,6 @@ export class FzlSocialLogin extends FzlWidgetMixin(LitElement) {
                   ${isGoogleBusy ? html`<span class="spinner"></span>` : GOOGLE_ICON}
                   <span class="btn-text">
                     ${isCompact ? 'Google' : 'Continuar com o Google'}
-                    ${!this.googleClientId && this.allowDemoFallback
-                      ? html`<span class="demo-pill">Demo</span>`
-                      : nothing}
                   </span>
                 </button>
               `
@@ -320,9 +299,6 @@ export class FzlSocialLogin extends FzlWidgetMixin(LitElement) {
                   ${isMsBusy ? html`<span class="spinner"></span>` : MICROSOFT_ICON}
                   <span class="btn-text">
                     ${isCompact ? 'Microsoft' : 'Continuar com a Microsoft'}
-                    ${!this.microsoftClientId && this.allowDemoFallback
-                      ? html`<span class="demo-pill">Demo</span>`
-                      : nothing}
                   </span>
                 </button>
               `

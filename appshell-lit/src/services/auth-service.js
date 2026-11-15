@@ -189,16 +189,12 @@ export const localProvider = {
   async signInWithSocial({ provider: socialProvider = 'google', credential, accessToken, user: socialUser } = {}) {
     requireSecureContext()
     const users = readJSON(USERS_KEY, [])
-    const email = normalizeEmail(
-      socialUser?.email || (socialProvider === 'google' ? 'usuario.google@gmail.com' : 'usuario.ms@outlook.com')
-    )
-    const name =
-      socialUser?.name || (socialProvider === 'google' ? 'Usuário Google' : 'Usuário Microsoft')
-    const avatarUrl =
-      socialUser?.avatarUrl ||
-      (socialProvider === 'google'
-        ? 'https://lh3.googleusercontent.com/a/default-user'
-        : null)
+    const email = normalizeEmail(socialUser?.email)
+    if (!email || !email.includes('@')) {
+      throw new Error('Dados do usuário social inválidos: e-mail é obrigatório.')
+    }
+    const name = String(socialUser?.name || email.split('@')[0]).trim()
+    const avatarUrl = socialUser?.avatarUrl || null
 
     let record = users.find((u) => u.email === email)
     if (!record) {

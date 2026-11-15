@@ -8,6 +8,7 @@ import {
   navigateToLogin,
   navigateToSignup,
 } from '../router.js'
+import '@fzl/webcomponents-lit/social-login'
 import './user-profile-view.js'
 
 /** Conta do usuário. mode:
@@ -339,6 +340,24 @@ export class AuthView extends LitElement {
     `
   }
 
+  async _handleSocialSuccess(e) {
+    const { provider, user, credential } = e.detail
+    this._error = null
+    this._busy = true
+    try {
+      await authService.signInWithSocial({ provider, user, credential })
+      navigateHome()
+    } catch (err) {
+      this._error = err.message
+      this._busy = false
+    }
+  }
+
+  _handleSocialError(e) {
+    this._error = e.detail?.error || 'Erro na autenticação social.'
+    this._busy = false
+  }
+
   _renderForm(screen) {
     if (authService.usesRedirect()) {
       return this._renderRedirect(screen)
@@ -349,6 +368,13 @@ export class AuthView extends LitElement {
       <p class="subtitle">
         ${signup ? 'Preencha os dados abaixo para criar sua conta.' : 'Acesse com seu e-mail e senha.'}
       </p>
+
+      <fzl-social-login
+        ?disabled=${this._busy}
+        divider-text="ou continue com e-mail"
+        @fzl-social-login-success=${this._handleSocialSuccess}
+        @fzl-social-login-error=${this._handleSocialError}
+      ></fzl-social-login>
 
       <form @submit=${this._submit} novalidate>
         ${signup

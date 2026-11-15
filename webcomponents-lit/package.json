@@ -87,6 +87,10 @@
       "types": "./dist/file-manager.d.ts",
       "import": "./dist/file-manager.js"
     },
+    "./social-login": {
+      "types": "./dist/social-login.d.ts",
+      "import": "./dist/social-login.js"
+    },
     "./custom-elements.json": "./custom-elements.json"
   },
   "scripts": {

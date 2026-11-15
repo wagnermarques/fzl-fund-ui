@@ -239,4 +239,44 @@ describe('authService com provedor do app', () => {
       ['1', 'passwordReset'],
     ])
   })
+
+  it('permite login social com conta Google e conta Microsoft no provedor local', async () => {
+    // 1. Login com conta pública Google
+    const googleUser = await authService.signInWithGoogle({
+      user: {
+        id: 'google-sub-123',
+        name: 'Carlos Google',
+        email: 'carlos.dev@gmail.com',
+        avatarUrl: 'https://lh3.googleusercontent.com/photo.jpg',
+      },
+    })
+    expect(googleUser).toMatchObject({
+      name: 'Carlos Google',
+      email: 'carlos.dev@gmail.com',
+      avatarUrl: 'https://lh3.googleusercontent.com/photo.jpg',
+    })
+    expect(authService.getCurrentUser()?.email).toBe('carlos.dev@gmail.com')
+
+    await authService.signOut()
+    expect(authService.getCurrentUser()).toBe(null)
+
+    // 2. Login com conta pública Microsoft
+    const msUser = await authService.signInWithMicrosoft({
+      user: {
+        id: 'ms-sub-456',
+        name: 'Mariana Microsoft',
+        email: 'mariana.ms@outlook.com',
+      },
+    })
+    expect(msUser).toMatchObject({
+      name: 'Mariana Microsoft',
+      email: 'mariana.ms@outlook.com',
+    })
+    expect(authService.getCurrentUser()?.email).toBe('mariana.ms@outlook.com')
+
+    // 3. Login social sem passar user pré-definido usa fallback realista
+    await authService.signOut()
+    const demoGoogle = await authService.signInWithSocial({ provider: 'google' })
+    expect(demoGoogle.email).toBe('usuario.google@gmail.com')
+  })
 })

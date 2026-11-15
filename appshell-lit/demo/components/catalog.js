@@ -26,6 +26,7 @@ import contactPickerDoc from '../../../docs/components/contact-picker.md?raw'
 import cameraCaptureDoc from '../../../docs/components/camera-capture.md?raw'
 import documentPickerDoc from '../../../docs/components/document-picker.md?raw'
 import fileManagerDoc from '../../../docs/components/file-manager.md?raw'
+import socialLoginDoc from '../../../docs/components/social-login.md?raw'
 
 /** Categorias taxonômicas para classificação dos Web Components do ecossistema FZL. */
 export const componentCategories = [
@@ -892,6 +893,34 @@ export const catalog = [
         packageName: '@fzl/webcomponents-lit',
         manifest: litManifest,
         load: () => import('@fzl/webcomponents-lit/file-manager'),
+      },
+    ],
+  },
+  {
+    id: 'social-login',
+    category: 'mobile',
+    categories: ['mobile', 'system', 'feedback'],
+    name: 'Login Social com Google & Microsoft',
+    icon: 'account_circle',
+    summary:
+      'Autenticação client-side com contas públicas do Google (Google Identity Services) e Microsoft (OAuth2/MSAL), com zero dependências externas de backend e modo demonstração.',
+    doc: socialLoginDoc,
+    slotText: '',
+    initialValues: {
+      providers: 'all',
+      layout: 'buttons',
+      'show-divider': true,
+      'divider-text': 'ou continue com e-mail',
+      'allow-demo-fallback': true,
+    },
+    implementations: [
+      {
+        id: 'lit',
+        label: 'Lit',
+        tag: 'fzl-social-login',
+        packageName: '@fzl/webcomponents-lit',
+        manifest: litManifest,
+        load: () => import('@fzl/webcomponents-lit/social-login'),
       },
     ],
   },

@@ -62,7 +62,16 @@ const RESETS_KEY = storageKey('auth:password-resets')
 const RESET_TTL_MS = 30 * 60 * 1000
 const DEFAULT_MIN_LENGTH = 6
 
-export const PROVIDER_OPERATIONS = ['signIn', 'signOut', 'signUp', 'requestPasswordReset', 'resetPassword', 'changePassword', 'updateProfile']
+export const PROVIDER_OPERATIONS = [
+  'signIn',
+  'signOut',
+  'signUp',
+  'signInWithSocial',
+  'requestPasswordReset',
+  'resetPassword',
+  'changePassword',
+  'updateProfile',
+]
 export const REQUIRED_OPERATIONS = ['signIn', 'signOut']
 
 // --- provedor local (demonstração) ---------------------------------------
@@ -170,6 +179,47 @@ export const localProvider = {
     // Mesma mensagem para e-mail inexistente e senha errada, de propósito.
     if (!record || (await hashPassword(password ?? '', record.salt)) !== record.passwordHash) {
       throw new Error('E-mail ou senha inválidos.')
+    }
+    writeJSON(SESSION_KEY, { userId: record.id })
+    return toPublicUser(record)
+  },
+
+  async signInWithSocial({ provider: socialProvider = 'google', credential, user: socialUser } = {}) {
+    requireSecureContext()
+    const users = readJSON(USERS_KEY, [])
+    const email = normalizeEmail(
+      socialUser?.email || (socialProvider === 'google' ? 'usuario.google@gmail.com' : 'usuario.ms@outlook.com')
+    )
+    const name =
+      socialUser?.name || (socialProvider === 'google' ? 'Usuário Google' : 'Usuário Microsoft')
+    const avatarUrl =
+      socialUser?.avatarUrl ||
+      (socialProvider === 'google'
+        ? 'https://lh3.googleusercontent.com/a/default-user'
+        : null)
+
+    let record = users.find((u) => u.email === email)
+    if (!record) {
+      record = {
+        id: crypto.randomUUID(),
+        name,
+        email,
+        avatarUrl,
+        provider: socialProvider,
+        createdAt: new Date().toISOString(),
+      }
+      writeJSON(USERS_KEY, [...users, record])
+    } else {
+      let changed = false
+      if (avatarUrl && !record.avatarUrl) {
+        record.avatarUrl = avatarUrl
+        changed = true
+      }
+      if (name && record.name !== name) {
+        record.name = name
+        changed = true
+      }
+      if (changed) saveUser(record)
     }
     writeJSON(SESSION_KEY, { userId: record.id })
     return toPublicUser(record)
@@ -374,6 +424,25 @@ export const authService = {
     const user = await provider.signIn({ email: normalizeEmail(email), password })
     setCurrentUser(user, 'signIn')
     return user
+  },
+
+  async signInWithSocial({ provider: socialProvider = 'google', credential, user } = {}) {
+    requireOperation('signInWithSocial')
+    const loggedUser = await provider.signInWithSocial({
+      provider: socialProvider,
+      credential,
+      user,
+    })
+    setCurrentUser(loggedUser, socialProvider)
+    return loggedUser
+  },
+
+  async signInWithGoogle(options = {}) {
+    return this.signInWithSocial({ ...options, provider: 'google' })
+  },
+
+  async signInWithMicrosoft(options = {}) {
+    return this.signInWithSocial({ ...options, provider: 'microsoft' })
   },
 
   async signOut() {

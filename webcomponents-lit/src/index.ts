@@ -35,3 +35,5 @@ export * from './components/document-picker/document-picker.types';
 export * from './components/document-picker/document-picker.component';
 export * from './components/file-manager/file-manager.types';
 export * from './components/file-manager/file-manager.component';
+export * from './components/social-login/social-login.types';
+export * from './components/social-login/social-login.component';

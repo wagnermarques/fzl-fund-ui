@@ -28,7 +28,8 @@ Além da **composição**, todos os controllers foram desenhados para **extensã
 | `FzlDocxReaderController` | Leitura `.docx` OOXML e texto com filtro em blocos, zoom tipográfico e `toStudyVerses()` | `parseDocx()`, `transformBlocks()`, `onDocumentOpened()` |
 | `FzlBookmarksController` | Favoritos com persistência em `Storage`, tags, notas e sincronização cross-tab (`storage` event) | `validateTag()`, `serializeBookmark()`, `getStorage()` |
 | `FzlDataGridController<T>` | Vinculação reativa a `FzlStore` (`store.observe()`), ordenação, filtro, paginação, seleção e CSV | `filterItems()`, `sortItems()`, `getRowId()` |
-| `FzlSocialAuthController` | Fluxo OAuth2 / GIS (Google & Microsoft) com fallback demo e `logout()` | `onAuthenticated()`, `createDemoResult()`, `onAuthError()` |
+| `FzlSocialAuthController` | Fluxo OAuth2 / GIS (Google & Microsoft) com escopos de Drive/OneDrive, `requestCloudAccessToken()` e `logout()` | `onAuthenticated()`, `createDemoResult()`, `onAuthError()` |
+| `FzlPersonalCloudDocsController` | Base unificada (herda de `FzlCloudUploadController`): detecta conta pessoal logada (Google ou Microsoft) e envia para **Google Docs** ou **OneDrive** | `onUnauthenticatedUpload()`, `onPersonalDocUploaded()`, hooks de upload |
 
 ---
 
@@ -113,10 +114,34 @@ export class FundAuditUploadController extends FzlCloudUploadController {
 
 ---
 
-## 4. Integração nos Web Components Nativos
+## 4. Integração nos Web Components Nativos & Nuvem Pessoal (Google Docs / OneDrive)
 
 Os Web Components abaixo expõem instâncias públicas desses controllers para acesso programático e extensibilidade direta:
 
 - `<fzl-social-login>`: `element.authController` (`FzlSocialAuthController`)
-- `<fzl-document-picker>`: `element.uploadController` (`FzlCloudUploadController`) e `element.readerController` (`FzlDocxReaderController`)
-- `<fzl-file-manager>`: `element.uploadController` (`FzlCloudUploadController`) e `element.readerController` (`FzlDocxReaderController`)
+- `<fzl-document-picker>`: `element.uploadController`, `element.readerController` e `.bindSocialAuth(authController, options)`
+- `<fzl-file-manager>`: `element.uploadController`, `element.readerController` e `.bindSocialAuth(authController, options)`
+
+### Fluxo Automático: Conta Pessoal Google / Microsoft -> Google Docs / OneDrive
+
+```ts
+import { FzlPersonalCloudDocsController } from '@fzl/webcomponents-lit/controllers';
+
+const personalDocs = new FzlPersonalCloudDocsController(null, {
+  convertToGoogleDocs: true
+});
+
+// 1. Usuário faz login com Google (ou loginWithMicrosoft())
+await personalDocs.loginWithGoogle();
+
+// 2. Arquivo .docx enviado e convertido diretamente para Google Docs na conta pessoal
+const result = await personalDocs.uploadToPersonalCloud(docxFile);
+console.log(result.externalViewerLabel); // "Abrir no Google Docs ↗"
+console.log(result.externalViewerUrl);   // https://docs.google.com/document/d/.../edit
+```
+
+Também é possível conectar diretamente os Web Components `<fzl-social-login>` e `<fzl-document-picker>` (ou `<fzl-file-manager>`):
+
+```js
+picker.bindSocialAuth(socialLogin.authController, { convertToGoogleDocs: true });
+```

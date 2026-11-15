@@ -17,14 +17,17 @@ export interface FzlSocialAuthConfig {
   microsoftTenantId?: string;
   allowDemoFallback?: boolean;
   demoDelayMs?: number;
+  requestDriveScope?: boolean;
+  googleScopes?: string;
+  microsoftScopes?: string;
 }
 
 /**
  * Controller reativo e headless para autenticação federada com Google Identity Services (GIS)
- * e Microsoft Entra / OAuth2, com suporte a fallback de demonstração configurável.
+ * e Microsoft Entra / OAuth2, com suporte a escopos de Drive/OneDrive e fallback de demonstração.
  *
  * Extensível via herança (`extends FzlSocialAuthController`) pelos hooks protegidos
- * `onAuthenticated`, `createDemoUser` e `onAuthError`.
+ * `onAuthenticated`, `createDemoResult` e `onAuthError`.
  */
 export class FzlSocialAuthController extends FzlBaseController {
   private _config: FzlSocialAuthConfig;
@@ -40,6 +43,9 @@ export class FzlSocialAuthController extends FzlBaseController {
       microsoftTenantId: 'common',
       allowDemoFallback: true,
       demoDelayMs: 400,
+      requestDriveScope: true,
+      googleScopes: 'https://www.googleapis.com/auth/drive.file openid profile email',
+      microsoftScopes: 'openid profile email User.Read Files.ReadWrite',
       ...config
     };
   }
@@ -70,6 +76,16 @@ export class FzlSocialAuthController extends FzlBaseController {
 
   get isAuthenticated(): boolean {
     return this._currentUser !== null;
+  }
+
+  get accessToken(): string | null {
+    return this._lastResult?.accessToken ?? null;
+  }
+
+  get cloudStorageProvider(): 'google-drive' | 'onedrive' | null {
+    if (this._currentUser?.provider === 'google') return 'google-drive';
+    if (this._currentUser?.provider === 'microsoft') return 'onedrive';
+    return null;
   }
 
   /**
@@ -199,11 +215,15 @@ export class FzlSocialAuthController extends FzlBaseController {
       if (this._config.microsoftClientId) {
         const redirectUri = window.location.origin;
         const tenant = this._config.microsoftTenantId || 'common';
+        const scopes =
+          this._config.requestDriveScope !== false
+            ? this._config.microsoftScopes || 'openid profile email User.Read Files.ReadWrite'
+            : 'openid profile email User.Read';
         const authUrl = `https://login.microsoftonline.com/${tenant}/oauth2/v2.0/authorize?client_id=${encodeURIComponent(
           this._config.microsoftClientId
         )}&response_type=token&redirect_uri=${encodeURIComponent(
           redirectUri
-        )}&scope=openid%20profile%20email%20User.Read&response_mode=fragment`;
+        )}&scope=${encodeURIComponent(scopes)}&response_mode=fragment`;
 
         const width = 500;
         const height = 650;
@@ -303,6 +323,86 @@ export class FzlSocialAuthController extends FzlBaseController {
   }
 
   /**
+   * Requisita (ou reutiliza) um OAuth2 `accessToken` com escopo de escrita em nuvem
+   * (`drive.file` para Google Drive / Docs e `Files.ReadWrite` para Microsoft OneDrive).
+   */
+  async requestCloudAccessToken(
+    provider?: FzlSocialAuthProvider
+  ): Promise<string | null> {
+    const targetProvider = provider ?? this._currentUser?.provider;
+    if (!targetProvider) return null;
+
+    if (
+      this._lastResult?.provider === targetProvider &&
+      this._lastResult.accessToken
+    ) {
+      return this._lastResult.accessToken;
+    }
+
+    if (targetProvider === 'google' && this._config.googleClientId) {
+      await loadGoogleGsiScript();
+      const win = window as unknown as {
+        google?: {
+          accounts?: {
+            oauth2?: {
+              initTokenClient: (opts: Record<string, unknown>) => {
+                requestAccessToken: () => void;
+              };
+            };
+          };
+        };
+      };
+
+      if (win.google?.accounts?.oauth2?.initTokenClient) {
+        const scope =
+          this._config.requestDriveScope !== false
+            ? this._config.googleScopes ||
+              'https://www.googleapis.com/auth/drive.file openid profile email'
+            : 'openid profile email';
+
+        const token = await new Promise<string>((resolve, reject) => {
+          const tokenClient = win.google!.accounts!.oauth2!.initTokenClient({
+            client_id: this._config.googleClientId,
+            scope,
+            callback: (response: { access_token?: string; error?: string }) => {
+              if (response.access_token) {
+                resolve(response.access_token);
+              } else {
+                reject(
+                  new Error(
+                    response.error || 'Não foi possível obter access_token do Google Drive.'
+                  )
+                );
+              }
+            }
+          });
+          tokenClient.requestAccessToken();
+        });
+
+        if (this._lastResult && this._lastResult.provider === 'google') {
+          this._lastResult = { ...this._lastResult, accessToken: token };
+        }
+        this.notifyChange();
+        return token;
+      }
+    }
+
+    if (this._config.allowDemoFallback !== false) {
+      const demoToken =
+        targetProvider === 'google'
+          ? 'demo-google-drive-oauth-token'
+          : 'demo-ms-onedrive-oauth-token';
+      if (this._lastResult && this._lastResult.provider === targetProvider) {
+        this._lastResult = { ...this._lastResult, accessToken: demoToken };
+      }
+      this.notifyChange();
+      return demoToken;
+    }
+
+    return null;
+  }
+
+  /**
    * Hook protegido que gera o usuário e resultado em modo demonstração.
    */
   protected async createDemoResult(
@@ -311,6 +411,7 @@ export class FzlSocialAuthController extends FzlBaseController {
     if (provider === 'google') {
       return {
         provider: 'google',
+        accessToken: 'demo-google-drive-oauth-token',
         user: {
           id: 'google-public-user-123',
           name: 'Usuário Google (Demonstração)',
@@ -324,6 +425,7 @@ export class FzlSocialAuthController extends FzlBaseController {
 
     return {
       provider: 'microsoft',
+      accessToken: 'demo-ms-onedrive-oauth-token',
       user: {
         id: 'ms-public-user-456',
         name: 'Usuário Microsoft (Demonstração)',

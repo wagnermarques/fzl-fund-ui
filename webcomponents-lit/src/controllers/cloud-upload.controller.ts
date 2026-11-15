@@ -10,6 +10,13 @@ import {
 } from '../components/common/cloud-storage';
 import type { FzlDocumentUploadStatus } from '../components/document-picker/document-picker.types';
 import { FzlBaseController, type FzlControllerHost } from './base.controller';
+import type { FzlSocialAuthController } from './social-auth.controller';
+
+export interface FzlBindSocialAuthOptions {
+  convertToGoogleDocs?: boolean;
+  googleDriveFolderId?: string;
+  oneDriveFolderId?: string;
+}
 
 export interface FzlCloudUploadControllerOptions {
   config?: FzlCloudStorageConfig;
@@ -31,6 +38,10 @@ export class FzlCloudUploadController extends FzlBaseController {
   private _lastError: string | null = null;
   private _lastFile: File | null = null;
   private _uploadCount = 0;
+  private _authUnsubscribe: (() => void) | null = null;
+  private _boundAuth:
+    | { controller: FzlSocialAuthController; options: FzlBindSocialAuthOptions }
+    | null = null;
 
   constructor(host?: FzlControllerHost | null, options: FzlCloudUploadControllerOptions = {}) {
     super(host);
@@ -103,6 +114,83 @@ export class FzlCloudUploadController extends FzlBaseController {
     this._lastError = null;
     this._lastFile = null;
     this.notifyChange();
+  }
+
+  private attachSocialAuthSubscription(): void {
+    this._authUnsubscribe?.();
+    this._authUnsubscribe = null;
+    if (!this._boundAuth) return;
+
+    const { controller: authController, options } = this._boundAuth;
+    const convertToDocs = options.convertToGoogleDocs ?? true;
+
+    const syncFromAuth = () => {
+      const user = authController.currentUser;
+      if (!user) return;
+
+      if (user.provider === 'google') {
+        this.setConfig({
+          ...this._config,
+          provider: 'google-drive',
+          googleDriveConvertToDocs: convertToDocs,
+          googleDriveFolderId: options.googleDriveFolderId ?? this._config.googleDriveFolderId,
+          googleAuthToken: authController.accessToken || undefined,
+          googleTokenProvider: async () =>
+            (await authController.requestCloudAccessToken('google')) || ''
+        });
+      } else if (user.provider === 'microsoft') {
+        this.setConfig({
+          ...this._config,
+          provider: 'onedrive',
+          oneDriveFolderId: options.oneDriveFolderId ?? this._config.oneDriveFolderId,
+          oneDriveAuthToken: authController.accessToken || undefined,
+          oneDriveTokenProvider: async () =>
+            (await authController.requestCloudAccessToken('microsoft')) || ''
+        });
+      }
+    };
+
+    syncFromAuth();
+    this._authUnsubscribe = authController.subscribe(syncFromAuth);
+  }
+
+  /**
+   * Vincula um `FzlSocialAuthController` para rotear automaticamente uploads para
+   * Google Drive / Google Docs (conta Google) ou OneDrive (conta Microsoft).
+   */
+  bindSocialAuth(
+    authController: FzlSocialAuthController,
+    options: FzlBindSocialAuthOptions = {}
+  ): () => void {
+    this._boundAuth = { controller: authController, options };
+    this.attachSocialAuthSubscription();
+    return () => {
+      if (this._boundAuth?.controller === authController) {
+        this.unbindSocialAuth();
+      }
+    };
+  }
+
+  /**
+   * Remove o vínculo ativo com o `FzlSocialAuthController`.
+   */
+  unbindSocialAuth(): void {
+    this._authUnsubscribe?.();
+    this._authUnsubscribe = null;
+    this._boundAuth = null;
+  }
+
+  override hostConnected(): void {
+    super.hostConnected();
+    if (this._boundAuth && !this._authUnsubscribe) {
+      this.attachSocialAuthSubscription();
+    }
+  }
+
+  override hostDisconnected(): void {
+    this._authUnsubscribe?.();
+    this._authUnsubscribe = null;
+    super.hostDisconnected();
   }
 
   /**

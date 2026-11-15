@@ -24,8 +24,12 @@ import {
   isTextReadable,
   normalizeWellKnownDirectory,
 } from './document-picker.types';
-import { FzlCloudUploadController } from '../../controllers/cloud-upload.controller';
+import {
+  FzlCloudUploadController,
+  type FzlBindSocialAuthOptions,
+} from '../../controllers/cloud-upload.controller';
 import { FzlDocxReaderController } from '../../controllers/docx-reader.controller';
+import type { FzlSocialAuthController } from '../../controllers/social-auth.controller';
 import {
   type FzlDocxBlock,
   type FzlDocxRun,
@@ -700,6 +704,63 @@ export class FzlDocumentPicker extends FzlWidgetMixin(LitElement) {
   /** Controller reativo de leitura estruturada DOCX/texto integrado ao picker. */
   public readonly readerController = new FzlDocxReaderController(this);
 
+  private _socialAuthUnbind: (() => void) | null = null;
+
+  /**
+   * Vincula um `FzlSocialAuthController` ao picker para rotear uploads à nuvem pessoal
+   * (Google Docs / Drive quando logado com Google; OneDrive quando logado com Microsoft).
+   */
+  bindSocialAuth(
+    authController: FzlSocialAuthController,
+    options: FzlBindSocialAuthOptions = {}
+  ): () => void {
+    this._socialAuthUnbind?.();
+
+    const unbindController = this.uploadController.bindSocialAuth(authController, options);
+    const convertToDocs = options.convertToGoogleDocs ?? true;
+
+    const syncElementProps = () => {
+      const user = authController.currentUser;
+      if (!user) return;
+      if (user.provider === 'google') {
+        this.storageProvider = 'google-drive';
+        this.googleDriveConvertToDocs = convertToDocs;
+        if (options.googleDriveFolderId) {
+          this.googleDriveFolderId = options.googleDriveFolderId;
+        }
+        if (authController.accessToken) {
+          this.googleAuthToken = authController.accessToken;
+        }
+        this.googleTokenProvider = async () =>
+          (await authController.requestCloudAccessToken('google')) || '';
+      } else if (user.provider === 'microsoft') {
+        this.storageProvider = 'onedrive';
+        if (options.oneDriveFolderId) {
+          this.oneDriveFolderId = options.oneDriveFolderId;
+        }
+        if (authController.accessToken) {
+          this.oneDriveAuthToken = authController.accessToken;
+        }
+        this.oneDriveTokenProvider = async () =>
+          (await authController.requestCloudAccessToken('microsoft')) || '';
+      }
+    };
+
+    syncElementProps();
+    const unsubProps = authController.subscribe(syncElementProps);
+
+    const cleanup = () => {
+      unbindController();
+      unsubProps();
+      if (this._socialAuthUnbind === cleanup) {
+        this._socialAuthUnbind = null;
+      }
+    };
+
+    this._socialAuthUnbind = cleanup;
+    return cleanup;
+  }
+
   override connectedCallback(): void {
     super.connectedCallback();
     this._loadBookmarksFromStorage();
@@ -747,6 +808,7 @@ export class FzlDocumentPicker extends FzlWidgetMixin(LitElement) {
   }
 
   override disconnectedCallback(): void {
+    this._socialAuthUnbind?.();
     for (const doc of this._documents) {
       if (doc.objectUrl) {
         try {

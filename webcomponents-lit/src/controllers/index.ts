@@ -8,3 +8,4 @@ export * from './docx-reader.controller';
 export * from './bookmarks.controller';
 export * from './data-grid.controller';
 export * from './social-auth.controller';
+export * from './personal-cloud-docs.controller';

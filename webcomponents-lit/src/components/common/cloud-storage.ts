@@ -111,6 +111,28 @@ export async function uploadToGoogleDrive(
       'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
 
   const shouldConvert = Boolean(opts.convertToDocs && isDocx);
+
+  if (opts.token.startsWith('demo-google-')) {
+    const fileId = `demo-gdoc-${Date.now()}`;
+    const externalViewerUrl = shouldConvert
+      ? `https://docs.google.com/document/d/${fileId}/edit`
+      : `https://drive.google.com/file/d/${fileId}/view`;
+    return {
+      success: true,
+      provider: 'google-drive',
+      fileId,
+      fileUrl: externalViewerUrl,
+      externalViewerUrl,
+      externalViewerLabel: getExternalViewerLabel('google-drive', shouldConvert),
+      response: {
+        demo: true,
+        id: fileId,
+        name: file.name,
+        convertedToGoogleDocs: shouldConvert,
+      },
+    };
+  }
+
   const boundary = `-------FzlCloudUpload${Date.now()}`;
   const delimiter = `\r\n--${boundary}\r\n`;
   const closeDelimiter = `\r\n--${boundary}--`;
@@ -237,6 +259,20 @@ export async function uploadToOneDrive(
     token: string;
   }
 ): Promise<FzlUploadResult> {
+  if (opts.token.startsWith('demo-ms-')) {
+    const fileId = `demo-onedrive-${Date.now()}`;
+    const externalViewerUrl = `https://onedrive.live.com/edit?id=${encodeURIComponent(fileId)}`;
+    return {
+      success: true,
+      provider: 'onedrive',
+      fileId,
+      fileUrl: externalViewerUrl,
+      externalViewerUrl,
+      externalViewerLabel: getExternalViewerLabel('onedrive'),
+      response: { demo: true, id: fileId, name: file.name },
+    };
+  }
+
   const driveBase = opts.driveId
     ? `https://graph.microsoft.com/v1.0/drives/${opts.driveId}`
     : `https://graph.microsoft.com/v1.0/me/drive`;

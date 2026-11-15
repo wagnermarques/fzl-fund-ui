@@ -912,36 +912,39 @@ store.put({ id: '1', ticker: 'FZL11', name: 'FZL Fund', price: 108.0 });
             <li><code>FzlDocxReaderController</code>: Parsing OOXML <code>.docx</code> e texto com <code>transformBlocks</code>, zoom tipográfico, busca em blocos e <code>toStudyVerses()</code>.</li>
             <li><code>FzlBookmarksController</code>: Favoritos persistidos com tags/notas, validação extensível via <code>validateTag</code> e sincronização entre abas.</li>
             <li><code>FzlDataGridController&lt;T&gt;</code>: Vinculação automática a <code>FzlStore</code> (<code>store.observe()</code>), ordenação, filtro, paginação e exportação CSV.</li>
-            <li><code>FzlSocialAuthController</code>: Fluxo OAuth2 / GIS (Google &amp; Microsoft) com hook <code>onAuthenticated</code> e fallback demo configurável.</li>
+            <li><code>FzlSocialAuthController</code>: Fluxo OAuth2 / GIS (Google &amp; Microsoft) com escopos de arquivo (<code>drive.file</code> / <code>Files.ReadWrite</code>), <code>requestCloudAccessToken()</code> e fallback demo.</li>
+            <li><code>FzlPersonalCloudDocsController</code>: Controller base para envio à nuvem pessoal do usuário autenticado (<strong>Google Docs</strong> para Google; <strong>OneDrive</strong> para Microsoft), além de <code>bindSocialAuth()</code> em uploaders e pickers.</li>
           </ul>
 
           <pre style="margin: 0; padding: 14px; border-radius: 10px; background: #0f172a; color: #e2e8f0; font-size: 0.78rem; overflow-x: auto; line-height: 1.5;"><code>import { LitElement, html } from 'lit';
 import {
   FzlCloudUploadController,
+  FzlPersonalCloudDocsController,
   FzlDataGridController,
 } from '@fzl/webcomponents-lit/controllers';
 
-// 1. Extensão por herança com regras da aplicação consumidora
-class RegulatedFundUploadController extends FzlCloudUploadController {
-  protected override async beforeUpload(file) {
-    return file.name.endsWith('.exe') ? false : file;
+// 1. Extensão por herança com envio automático ao Google Docs / OneDrive pessoal
+class FundPersonalDocsController extends FzlPersonalCloudDocsController {
+  protected override async onPersonalDocUploaded(file, result, user) {
+    console.info(\`Enviado por \${user.email} para \${result.externalViewerUrl}\`);
   }
 }
 
 // 2. Composição em um componente Lit ou view do AppShell
 class FundWorkspacePanel extends LitElement {
-  uploader = new RegulatedFundUploadController(this, {
+  personalDocs = new FundPersonalDocsController(this, { convertToGoogleDocs: true });
+  uploader = new FzlCloudUploadController(this, {
     config: { provider: 's3', s3Bucket: 'fidc-regulamentos' },
   });
   grid = new FzlDataGridController(this, { pageSize: 10 });
 
   render() {
-    return html\`&lt;p&gt;Upload: \${this.uploader.status} • Itens: \${this.grid.totalItems}&lt;/p&gt;\`;
+    return html\`&lt;p&gt;Destino: \${this.personalDocs.targetCloudLabel} • Itens: \${this.grid.totalItems}&lt;/p&gt;\`;
   }
 }</code></pre>
 
           <p style="margin: 12px 0 0; font-size: 0.82rem; color: var(--md-sys-color-on-surface-variant, #64748b);">
-            Os componentes <code>&lt;fzl-social-login&gt;</code>, <code>&lt;fzl-document-picker&gt;</code> e <code>&lt;fzl-file-manager&gt;</code> já expõem <code>.authController</code>, <code>.uploadController</code> e <code>.readerController</code> internamente.
+            Os componentes <code>&lt;fzl-social-login&gt;</code>, <code>&lt;fzl-document-picker&gt;</code> e <code>&lt;fzl-file-manager&gt;</code> já expõem <code>.authController</code>, <code>.uploadController</code>, <code>.readerController</code> e <code>.bindSocialAuth(authCtrl)</code>.
           </p>
         </div>
       </div>

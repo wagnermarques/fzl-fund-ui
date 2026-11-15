@@ -102,6 +102,8 @@ function toPublicUser(record) {
         phone: record.phone ?? '',
         bio: record.bio ?? '',
         role: record.role ?? '',
+        ...(record.provider ? { provider: record.provider } : {}),
+        ...(record.socialAccessToken ? { socialAccessToken: record.socialAccessToken } : {}),
       }
     : null
 }
@@ -184,7 +186,7 @@ export const localProvider = {
     return toPublicUser(record)
   },
 
-  async signInWithSocial({ provider: socialProvider = 'google', credential, user: socialUser } = {}) {
+  async signInWithSocial({ provider: socialProvider = 'google', credential, accessToken, user: socialUser } = {}) {
     requireSecureContext()
     const users = readJSON(USERS_KEY, [])
     const email = normalizeEmail(
@@ -206,6 +208,7 @@ export const localProvider = {
         email,
         avatarUrl,
         provider: socialProvider,
+        ...(accessToken ? { socialAccessToken: accessToken } : {}),
         createdAt: new Date().toISOString(),
       }
       writeJSON(USERS_KEY, [...users, record])
@@ -217,6 +220,14 @@ export const localProvider = {
       }
       if (name && record.name !== name) {
         record.name = name
+        changed = true
+      }
+      if (record.provider !== socialProvider) {
+        record.provider = socialProvider
+        changed = true
+      }
+      if (accessToken && record.socialAccessToken !== accessToken) {
+        record.socialAccessToken = accessToken
         changed = true
       }
       if (changed) saveUser(record)
@@ -426,11 +437,12 @@ export const authService = {
     return user
   },
 
-  async signInWithSocial({ provider: socialProvider = 'google', credential, user } = {}) {
+  async signInWithSocial({ provider: socialProvider = 'google', credential, accessToken, user } = {}) {
     requireOperation('signInWithSocial')
     const loggedUser = await provider.signInWithSocial({
       provider: socialProvider,
       credential,
+      accessToken,
       user,
     })
     setCurrentUser(loggedUser, socialProvider)

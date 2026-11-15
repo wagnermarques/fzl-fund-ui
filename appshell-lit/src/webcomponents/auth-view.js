@@ -341,11 +341,11 @@ export class AuthView extends LitElement {
   }
 
   async _handleSocialSuccess(e) {
-    const { provider, user, credential } = e.detail
+    const { provider, user, credential, accessToken } = e.detail
     this._error = null
     this._busy = true
     try {
-      await authService.signInWithSocial({ provider, user, credential })
+      await authService.signInWithSocial({ provider, user, credential, accessToken })
       navigateHome()
     } catch (err) {
       this._error = err.message

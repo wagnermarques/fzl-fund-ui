@@ -6,7 +6,8 @@ import {
   FzlDocxReaderController,
   FzlBookmarksController,
   FzlDataGridController,
-  FzlSocialAuthController
+  FzlSocialAuthController,
+  FzlPersonalCloudDocsController
 } from '@fzl/webcomponents-lit/controllers';
 import { createMinimalDocxBytes } from '@fzl/webcomponents-lit/document-picker';
 import '@fzl/webcomponents-lit/social-login';
@@ -370,6 +371,145 @@ describe('Headless & Reactive Controllers (@fzl/webcomponents-lit/controllers)',
       socialEl.remove();
       pickerEl.remove();
       fmEl.remove();
+    });
+  });
+
+  describe('FzlPersonalCloudDocsController & bindSocialAuth (Google Docs / OneDrive)', () => {
+    it('loga com conta pessoal Google e envia .docx convertido para Google Docs', async () => {
+      const host = createMockHost();
+      const personalDocs = new FzlPersonalCloudDocsController(host, {
+        convertToGoogleDocs: true,
+        authConfig: { demoDelayMs: 5 }
+      });
+
+      const userRes = await personalDocs.loginWithGoogle();
+      expect(userRes?.provider).toBe('google');
+      expect(personalDocs.targetCloudLabel).toBe('Google Docs');
+
+      const docxBytes = createMinimalDocxBytes(['Ofício Pessoal', 'Enviado via conta Google.']);
+      const docxFile = new File([docxBytes], 'oficio-pessoal.docx', {
+        type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+      });
+
+      const result = await personalDocs.uploadToPersonalCloud(docxFile);
+      expect(result.success).toBe(true);
+      expect(result.provider).toBe('google-drive');
+      expect(result.externalViewerUrl).toContain('https://docs.google.com/document/d/');
+      expect(result.externalViewerLabel).toBe('Abrir no Google Docs ↗');
+      expect(personalDocs.lastViewerUrl).toBe(result.externalViewerUrl);
+      expect(personalDocs.lastViewerLabel).toBe('Abrir no Google Docs ↗');
+      expect(host.dispatched.some((ev) => ev.type === 'fzl-personal-cloud-uploaded')).toBe(true);
+    });
+
+    it('loga com conta pessoal Microsoft e envia documento para OneDrive', async () => {
+      const personalDocs = new FzlPersonalCloudDocsController(null, {
+        authConfig: { demoDelayMs: 5 }
+      });
+
+      await personalDocs.loginWithMicrosoft();
+      expect(personalDocs.targetCloudLabel).toBe('Microsoft OneDrive');
+
+      const docxFile = new File(['conteudo docx'], 'minuta-ms.docx', {
+        type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+      });
+
+      const result = await personalDocs.uploadToPersonalCloud(docxFile);
+      expect(result.success).toBe(true);
+      expect(result.provider).toBe('onedrive');
+      expect(result.externalViewerUrl).toContain('https://onedrive.live.com/edit?id=');
+      expect(result.externalViewerLabel).toBe('Abrir no OneDrive ↗');
+    });
+
+    it('emite auth-required quando deslogado e suporta autoLoginProvider automático', async () => {
+      const host = createMockHost();
+      const personalDocs = new FzlPersonalCloudDocsController(host, {
+        authConfig: { demoDelayMs: 5 }
+      });
+
+      const doc = new File(['texto simples'], 'rascunho.docx', {
+        type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+      });
+
+      const blocked = await personalDocs.uploadToPersonalCloud(doc);
+      expect(blocked.success).toBe(false);
+      expect(host.dispatched.some((ev) => ev.type === 'fzl-personal-cloud-auth-required')).toBe(
+        true
+      );
+
+      const autoResult = await personalDocs.uploadToPersonalCloud(doc, {
+        autoLoginProvider: 'google'
+      });
+      expect(autoResult.success).toBe(true);
+      expect(personalDocs.isAuthenticated).toBe(true);
+      expect(autoResult.externalViewerUrl).toContain('docs.google.com/document/d/');
+    });
+
+    it('permite extensão por herança sobrescrevendo onPersonalDocUploaded()', async () => {
+      const auditTrail = [];
+
+      class AuditedPersonalDocsController extends FzlPersonalCloudDocsController {
+        async onPersonalDocUploaded(file, result, user) {
+          auditTrail.push({
+            file: file.name,
+            user: user.email,
+            viewerUrl: result.externalViewerUrl
+          });
+        }
+      }
+
+      const ctrl = new AuditedPersonalDocsController(null, {
+        authConfig: { demoDelayMs: 5 },
+        autoLoginProvider: 'google'
+      });
+
+      const file = new File(['doc auditado'], 'termo.docx', {
+        type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+      });
+      const result = await ctrl.uploadToPersonalCloud(file);
+
+      expect(result.success).toBe(true);
+      expect(auditTrail).toHaveLength(1);
+      expect(auditTrail[0]).toMatchObject({
+        file: 'termo.docx',
+        user: 'usuario.google@gmail.com'
+      });
+      expect(auditTrail[0].viewerUrl).toContain('https://docs.google.com/document/d/');
+    });
+
+    it('conecta <fzl-document-picker>.bindSocialAuth(socialLogin.authController) e envia para o Google Docs', async () => {
+      const socialEl = document.createElement('fzl-social-login');
+      const pickerEl = document.createElement('fzl-document-picker');
+      socialEl.authController.configure({ demoDelayMs: 5 });
+
+      document.body.append(socialEl, pickerEl);
+      await Promise.all([socialEl.updateComplete, pickerEl.updateComplete]);
+
+      const unbind = pickerEl.bindSocialAuth(socialEl.authController, {
+        convertToGoogleDocs: true
+      });
+
+      await socialEl.loginWithGoogle();
+      expect(pickerEl.storageProvider).toBe('google-drive');
+      expect(pickerEl.googleDriveConvertToDocs).toBe(true);
+
+      const docxBytes = createMinimalDocxBytes(['Ata de Comitê', 'Aprovada pela conta pessoal.']);
+      const docxFile = new File([docxBytes], 'ata-comite.docx', {
+        type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+      });
+      const [item] = await pickerEl.addFiles([docxFile]);
+
+      const ok = await pickerEl.uploadDocument(item.id);
+      expect(ok).toBe(true);
+
+      const uploaded = pickerEl.getDocuments().find((d) => d.id === item.id);
+      expect(uploaded?.uploadStatus).toBe('uploaded');
+      expect(uploaded?.storageProvider).toBe('google-drive');
+      expect(uploaded?.googleDocsUrl).toContain('https://docs.google.com/document/d/');
+      expect(uploaded?.externalViewerLabel).toBe('Abrir no Google Docs ↗');
+
+      unbind();
+      socialEl.remove();
+      pickerEl.remove();
     });
   });
 });

@@ -257,6 +257,49 @@ export class ConfigPrivacyView extends LitElement {
           </tbody>
         </table>
       </div>
+
+      <h2>Permissões OAuth2 e Acesso à Nuvem Pessoal (Menor Privilégio)</h2>
+      <p class="hint">
+        Quando o aplicativo utiliza autenticação federada (Google / Microsoft) ou envio opcional de
+        documentos pelo seletor (<code>&lt;fzl-document-picker&gt;</code>), solicitamos apenas as
+        permissões mínimas necessárias para cada operação:
+      </p>
+
+      <div class="cookie-table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Recurso / Fluxo</th>
+              <th>Escopo OAuth2 Utilizado</th>
+              <th>Dados Acessados</th>
+              <th>Garantia de Privacidade</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Login Social (Google)</td>
+              <td><code>openid profile email</code></td>
+              <td>Nome, e-mail e foto do perfil</td>
+              <td>Não solicita nem acessa nenhum arquivo do Google Drive no login padrão.</td>
+            </tr>
+            <tr>
+              <td>Envio de Documentos (Google Drive / Docs)</td>
+              <td><code>https://www.googleapis.com/auth/drive.file</code></td>
+              <td>Somente arquivos e pastas criados pelo app ou escolhidos pelo usuário</td>
+              <td>
+                <strong>Sem acesso ao restante do Drive:</strong> o aplicativo não consegue listar,
+                ler, alterar ou apagar arquivos pré-existentes na sua conta pessoal.
+              </td>
+            </tr>
+            <tr>
+              <td>Login Social e Documentos (Microsoft Entra / OneDrive)</td>
+              <td><code>User.Read</code> (login) / <code>Files.ReadWrite</code> (upload opcional)</td>
+              <td>Perfil básico na entrada; envio para pasta configurada quando autorizado</td>
+              <td>Permissões de escrita na nuvem são solicitadas apenas quando a integração de documentos é utilizada.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     `
   }
 }

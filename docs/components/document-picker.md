@@ -58,6 +58,19 @@ O componente possui arquitetura aberta e desacoplada para envio de arquivos dire
 </script>
 ```
 
+### Permissões & Escopos OAuth2 (Google Drive & OneDrive — Menor Privilégio)
+
+Para integrar o `<fzl-document-picker>` com o Google Drive sem pedir acesso irrestrito aos arquivos pessoais do usuário, o componente utiliza por padrão o escopo granular **`drive.file`**. Não existe no OAuth2 do Google um escopo que restrinja o acesso pelo caminho de uma pasta específica do usuário, mas o `drive.file` garante isolamento equivalente na prática:
+
+| Escopo / Provedor | O que libera | O app vê ou apaga arquivos antigos do usuário? |
+| :--- | :--- | :--- |
+| **`https://www.googleapis.com/auth/drive.file`** *(padrão usado aqui)* | Somente arquivos e pastas **criados pelo próprio app** ou **selecionados explicitamente** pelo usuário no Google Picker. | **Não.** Todo o restante do Google Drive pessoal do usuário permanece invisível e inacessível. |
+| **`https://www.googleapis.com/auth/drive.appdata`** | Apenas uma pasta oculta exclusiva do aplicativo (`appDataFolder`), fora do Drive normal. | **Não.** Porém os arquivos não ficam visíveis na interface comum do Google Docs/Drive. |
+| **`https://www.googleapis.com/auth/drive`** *(não utilizado)* | Leitura, escrita e exclusão em **todo** o Google Drive do usuário (escopo restrito). | **Sim.** Não deve ser solicitado pelo widget por violar o menor privilégio. |
+| **Microsoft OneDrive (`Files.ReadWrite` / `Files.ReadWrite.AppFolder`)** | `Files.ReadWrite` grava em pasta informada (`one-drive-folder-id`) ou raiz; `Files.ReadWrite.AppFolder` isola exclusivamente em `Apps/<Nome do App>` (`/special/approot`). | Com `Files.ReadWrite.AppFolder`, **não** (isolamento estrito na pasta do app). |
+
+> **Padrão recomendado:** mantenha o escopo `drive.file` e envie os arquivos para uma pasta criada pelo próprio aplicativo (via `google-drive-folder-id`). Assim, o usuário encontra tudo organizado em uma única pasta no Drive e o aplicativo tecnicamente não tem permissão para ler, alterar ou excluir quaisquer outros documentos pessoais pré-existentes.
+
 ---
 
 ## 4. Exemplo de Uso Geral

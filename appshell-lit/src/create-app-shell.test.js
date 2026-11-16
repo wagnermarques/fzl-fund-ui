@@ -33,7 +33,7 @@ describe('validateConfig', () => {
         microsoftTenantId: 'common',
         googleScopes: '',
         microsoftScopes: '',
-        requestDriveScope: true,
+        requestDriveScope: false,
         providers: 'all',
       },
       on: {},

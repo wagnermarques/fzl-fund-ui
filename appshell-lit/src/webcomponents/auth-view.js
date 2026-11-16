@@ -380,11 +380,15 @@ export class AuthView extends LitElement {
             microsoft-client-id=${socialAuth.microsoftClientId || ''}
             microsoft-tenant-id=${socialAuth.microsoftTenantId || 'common'}
             providers=${socialAuth.providers || 'all'}
-            ?request-drive-scope=${socialAuth.requestDriveScope !== false}
+            .requestDriveScope=${socialAuth.requestDriveScope === true}
             google-scopes=${socialAuth.googleScopes ||
-            'https://www.googleapis.com/auth/drive.file openid profile email'}
+            (socialAuth.requestDriveScope === true
+              ? 'https://www.googleapis.com/auth/drive.file openid profile email'
+              : 'openid profile email')}
             microsoft-scopes=${socialAuth.microsoftScopes ||
-            'openid profile email User.Read Files.ReadWrite'}
+            (socialAuth.requestDriveScope === true
+              ? 'openid profile email User.Read Files.ReadWrite'
+              : 'openid profile email User.Read')}
             divider-text="ou continue com e-mail"
             @fzl-social-login-success=${this._handleSocialSuccess}
             @fzl-social-login-error=${this._handleSocialError}

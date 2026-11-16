@@ -128,6 +128,60 @@ describe('FzlSocialLogin Web Component (<fzl-social-login>)', () => {
     expect(result.credential).toBe(credential);
   });
 
+  it('faz fallback para popup OAuth2 do Google com escopo mínimo quando One Tap não é exibido', async () => {
+    let requestedScope = '';
+    vi.stubGlobal('google', {
+      accounts: {
+        id: {
+          initialize: () => {},
+          prompt: (momentListener) => {
+            momentListener?.({
+              isNotDisplayed: () => true,
+              isSkippedMoment: () => false,
+              isDismissedMoment: () => false,
+            });
+          },
+        },
+        oauth2: {
+          initTokenClient: (opts) => {
+            requestedScope = opts.scope;
+            return {
+              requestAccessToken: () => {
+                opts.callback({ access_token: 'ya29.oauth2-popup-token' });
+              },
+            };
+          },
+        },
+      },
+    });
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        sub: 'google-popup-99',
+        name: 'Bruno Popup',
+        email: 'bruno.popup@gmail.com',
+        picture: 'https://lh3.googleusercontent.com/a/bruno',
+      }),
+    });
+
+    el.googleClientId = '71632020257-bunqshu7n4ein9v46amajmk21ts25b5p.apps.googleusercontent.com';
+    el.requestDriveScope = false;
+    await el.updateComplete;
+
+    const successSpy = vi.fn();
+    el.addEventListener('fzl-social-login-success', successSpy);
+
+    el.shadowRoot.querySelector('.btn-google').click();
+    await new Promise((r) => setTimeout(r, 30));
+    await el.updateComplete;
+
+    expect(requestedScope).toBe('openid profile email');
+    expect(successSpy).toHaveBeenCalledTimes(1);
+    const result = successSpy.mock.calls[0][0].detail;
+    expect(result.user.email).toBe('bruno.popup@gmail.com');
+    expect(result.accessToken).toBe('ya29.oauth2-popup-token');
+  });
+
   it('executa login com Microsoft via popup OAuth2 quando configurado', async () => {
     const idToken = createMockJwt({
       sub: 'ms-sub-carlos',

@@ -43,11 +43,13 @@ export default defineAppShellConfig({
   },
   // Client IDs públicos OAuth2 (Google / Microsoft Entra), sobrescritos por ambiente via
   // VITE_APPSHELL_SOCIAL_AUTH_GOOGLE_CLIENT_ID e VITE_APPSHELL_SOCIAL_AUTH_MICROSOFT_CLIENT_ID.
+  // Origem autorizada padrão deste Client ID Google: https://wagnermarques.github.io
   socialAuth: {
     enabled: true,
-    googleClientId: '',
+    googleClientId: '71632020257-bunqshu7n4ein9v46amajmk21ts25b5p.apps.googleusercontent.com',
     microsoftClientId: '',
     microsoftTenantId: 'common',
+    requestDriveScope: false,
   },
   // Os servidores do app. A url de cada um é sobrescrita por ambiente com
   // VITE_APPSHELL_BACKENDS_<NOME>_URL; vazia = ainda não configurado (a

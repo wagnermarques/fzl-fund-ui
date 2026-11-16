@@ -56,8 +56,10 @@ export function loadGoogleGsiScript(): Promise<void> {
       resolve();
       return;
     }
-    const win = window as unknown as { google?: { accounts?: { id?: unknown } } };
-    if (win.google?.accounts?.id) {
+    const win = window as unknown as {
+      google?: { accounts?: { id?: unknown; oauth2?: unknown } };
+    };
+    if (win.google?.accounts?.id || win.google?.accounts?.oauth2) {
       resolve();
       return;
     }

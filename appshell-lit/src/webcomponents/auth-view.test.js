@@ -52,6 +52,9 @@ describe('AuthView Web Component (<auth-view>) com Social Login', () => {
     expect(socialWidget.microsoftClientId).toBe('');
     expect(socialWidget.microsoftTenantId).toBe('organizations');
     expect(socialWidget.providers).toBe('google');
+    expect(socialWidget.requestDriveScope).toBe(false);
+    expect(socialWidget.googleScopes).toBe('openid profile email');
+    expect(socialWidget.microsoftScopes).toBe('openid profile email User.Read');
 
     authService.configureSocialAuth(false);
     await el.updateComplete;

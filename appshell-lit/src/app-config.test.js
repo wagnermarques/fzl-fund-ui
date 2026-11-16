@@ -333,7 +333,7 @@ describe('validateAppConfig — socialAuth', () => {
       microsoftTenantId: 'common',
       googleScopes: '',
       microsoftScopes: '',
-      requestDriveScope: true,
+      requestDriveScope: false,
       providers: 'all',
     })
     expect(validateSocialAuth({ googleClientId: 'g-123.apps.googleusercontent.com' }).providers).toBe('google')

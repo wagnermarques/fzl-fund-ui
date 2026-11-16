@@ -40,10 +40,22 @@ export class FzlSocialAuthController extends FzlBaseController {
     this._config = {
       microsoftTenantId: 'common',
       requestDriveScope: true,
-      googleScopes: 'https://www.googleapis.com/auth/drive.file openid profile email',
-      microsoftScopes: 'openid profile email User.Read Files.ReadWrite',
       ...config
     };
+  }
+
+  private resolveGoogleScopes(): string {
+    if (this._config.googleScopes) return this._config.googleScopes;
+    return this._config.requestDriveScope !== false
+      ? 'https://www.googleapis.com/auth/drive.file openid profile email'
+      : 'openid profile email';
+  }
+
+  private resolveMicrosoftScopes(): string {
+    if (this._config.microsoftScopes) return this._config.microsoftScopes;
+    return this._config.requestDriveScope !== false
+      ? 'openid profile email User.Read Files.ReadWrite'
+      : 'openid profile email User.Read';
   }
 
   get config(): FzlSocialAuthConfig {
@@ -130,17 +142,77 @@ export class FzlSocialAuthController extends FzlBaseController {
           accounts?: {
             id?: {
               initialize: (opts: Record<string, unknown>) => void;
-              prompt: () => void;
+              prompt: (
+                momentListener?: (notification?: {
+                  isNotDisplayed?: () => boolean;
+                  isSkippedMoment?: () => boolean;
+                  isDismissedMoment?: () => boolean;
+                  getDismissedReason?: () => string;
+                }) => void
+              ) => void;
+            };
+            oauth2?: {
+              initTokenClient: (opts: Record<string, unknown>) => {
+                requestAccessToken: () => void;
+              };
             };
           };
         };
       };
 
+      const requestGoogleOAuthPopup = () =>
+        new Promise<FzlSocialLoginResult>((resolve, reject) => {
+          const initTokenClient = win.google?.accounts?.oauth2?.initTokenClient;
+          if (!initTokenClient) {
+            reject(new Error('Prompt de login do Google não exibido pelo navegador.'));
+            return;
+          }
+          const scope = this.resolveGoogleScopes();
+
+          const tokenClient = initTokenClient({
+            client_id: this._config.googleClientId,
+            scope,
+            error_callback: (err: { message?: string; type?: string }) => {
+              reject(new Error(err?.message || 'Autenticação do Google cancelada ou bloqueada.'));
+            },
+            callback: async (response: { access_token?: string; error?: string }) => {
+              try {
+                if (!response.access_token) {
+                  reject(new Error(response.error || 'Nenhuma credencial retornada pelo Google.'));
+                  return;
+                }
+                const infoRes = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+                  headers: { Authorization: `Bearer ${response.access_token}` }
+                });
+                if (!infoRes.ok) {
+                  throw new Error(`Falha ao consultar perfil do Google (${infoRes.status}).`);
+                }
+                const profile = (await infoRes.json()) as Record<string, unknown>;
+                const user: FzlSocialUser = {
+                  id: String(profile.sub || `google-${Date.now()}`),
+                  name: String(profile.name || profile.email || 'Usuário Google'),
+                  email: String(profile.email || ''),
+                  avatarUrl: typeof profile.picture === 'string' ? profile.picture : null,
+                  provider: 'google',
+                  raw: profile
+                };
+                resolve({ provider: 'google', user, accessToken: response.access_token });
+              } catch (e) {
+                reject(e instanceof Error ? e : new Error(String(e)));
+              }
+            }
+          });
+          tokenClient.requestAccessToken();
+        });
+
       if (win.google?.accounts?.id) {
         result = await new Promise<FzlSocialLoginResult>((resolve, reject) => {
+          let settled = false;
           win.google!.accounts!.id!.initialize({
             client_id: this._config.googleClientId,
             callback: (response: { credential?: string }) => {
+              if (settled) return;
+              settled = true;
               if (!response.credential) {
                 reject(new Error('Nenhuma credencial retornada pelo Google.'));
                 return;
@@ -161,8 +233,22 @@ export class FzlSocialAuthController extends FzlBaseController {
               resolve({ provider: 'google', user, credential: response.credential });
             }
           });
-          win.google!.accounts!.id!.prompt();
+          win.google!.accounts!.id!.prompt((notification) => {
+            if (!notification || settled) return;
+            if (notification.isNotDisplayed?.() || notification.isSkippedMoment?.()) {
+              settled = true;
+              requestGoogleOAuthPopup().then(resolve, reject);
+            } else if (
+              notification.isDismissedMoment?.() &&
+              notification.getDismissedReason?.() !== 'credential_returned'
+            ) {
+              settled = true;
+              reject(new Error('Autenticação do Google cancelada pelo usuário.'));
+            }
+          });
         });
+      } else if (win.google?.accounts?.oauth2?.initTokenClient) {
+        result = await requestGoogleOAuthPopup();
       }
 
       if (!result) {
@@ -207,10 +293,7 @@ export class FzlSocialAuthController extends FzlBaseController {
 
       const redirectUri = window.location.origin;
       const tenant = this._config.microsoftTenantId || 'common';
-      const scopes =
-        this._config.requestDriveScope !== false
-          ? this._config.microsoftScopes || 'openid profile email User.Read Files.ReadWrite'
-          : 'openid profile email User.Read';
+      const scopes = this.resolveMicrosoftScopes();
       const authUrl = `https://login.microsoftonline.com/${tenant}/oauth2/v2.0/authorize?client_id=${encodeURIComponent(
         this._config.microsoftClientId
       )}&response_type=token&redirect_uri=${encodeURIComponent(
@@ -338,16 +421,15 @@ export class FzlSocialAuthController extends FzlBaseController {
       };
 
       if (win.google?.accounts?.oauth2?.initTokenClient) {
-        const scope =
-          this._config.requestDriveScope !== false
-            ? this._config.googleScopes ||
-              'https://www.googleapis.com/auth/drive.file openid profile email'
-            : 'openid profile email';
+        const scope = this.resolveGoogleScopes();
 
         const token = await new Promise<string>((resolve, reject) => {
           const tokenClient = win.google!.accounts!.oauth2!.initTokenClient({
             client_id: this._config.googleClientId,
             scope,
+            error_callback: (err: { message?: string }) => {
+              reject(new Error(err?.message || 'Autenticação do Google cancelada ou bloqueada.'));
+            },
             callback: (response: { access_token?: string; error?: string }) => {
               if (response.access_token) {
                 resolve(response.access_token);

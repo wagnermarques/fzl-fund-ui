@@ -221,13 +221,13 @@ export class FzlSocialLogin extends FzlWidgetMixin(LitElement) {
   @property({ type: Boolean, attribute: 'request-drive-scope' })
   requestDriveScope = true;
 
-  /** OAuth2 scopes requested for Google login/tokens. */
+  /** OAuth2 scopes requested for Google login/tokens (defaults based on requestDriveScope when empty). */
   @property({ type: String, attribute: 'google-scopes' })
-  googleScopes = 'https://www.googleapis.com/auth/drive.file openid profile email';
+  googleScopes = '';
 
-  /** OAuth2 scopes requested for Microsoft login/tokens. */
+  /** OAuth2 scopes requested for Microsoft login/tokens (defaults based on requestDriveScope when empty). */
   @property({ type: String, attribute: 'microsoft-scopes' })
-  microsoftScopes = 'openid profile email User.Read Files.ReadWrite';
+  microsoftScopes = '';
 
   @property({ type: Boolean })
   disabled = false;

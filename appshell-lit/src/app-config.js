@@ -388,7 +388,7 @@ export function validateSocialAuth(socialAuth, where = CONFIG_FILE) {
       microsoftTenantId: 'common',
       googleScopes: '',
       microsoftScopes: '',
-      requestDriveScope: true,
+      requestDriveScope: false,
       providers: 'none',
     }
   }
@@ -400,7 +400,7 @@ export function validateSocialAuth(socialAuth, where = CONFIG_FILE) {
       microsoftTenantId: 'common',
       googleScopes: '',
       microsoftScopes: '',
-      requestDriveScope: true,
+      requestDriveScope: false,
       providers: 'all',
     }
   }
@@ -418,7 +418,7 @@ export function validateSocialAuth(socialAuth, where = CONFIG_FILE) {
     microsoftTenantId = 'common',
     googleScopes = '',
     microsoftScopes = '',
-    requestDriveScope = true,
+    requestDriveScope = false,
     providers: explicitProviders,
   } = socialAuth
 

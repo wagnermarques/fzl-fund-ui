@@ -103,4 +103,4 @@ VITE_APPSHELL_SOCIAL_AUTH_MICROSOFT_CLIENT_ID=seu-client-id-azure
 VITE_APPSHELL_SOCIAL_AUTH_MICROSOFT_TENANT_ID=common
 ```
 
-Quando apenas um dos dois Client IDs é preenchido, o `<auth-view>` exibe automaticamente apenas o botão correspondente. Para ocultar os botões sociais por completo, use `socialAuth: false`. Além disso, `authService.getAccessToken()` entrega automaticamente o token OAuth2 retornado após o login social para backends com `auth: 'bearer'`.
+Quando apenas um dos dois Client IDs é preenchido, o `<auth-view>` exibe automaticamente apenas o botão correspondente. Para ocultar os botões sociais por completo, use `socialAuth: false`. Seguindo o princípio do menor privilégio, o login no AppShell solicita apenas `openid profile email` (`User.Read` na Microsoft) por padrão; defina `requestDriveScope: true` em `socialAuth` apenas se o app precisar gravar no Drive/OneDrive logo no login. Além disso, `authService.getAccessToken()` entrega automaticamente o token OAuth2 retornado após o login social para backends com `auth: 'bearer'`.

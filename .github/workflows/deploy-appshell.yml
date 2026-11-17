@@ -1,12 +1,23 @@
-# Publica o appshell (appshell-lit/) no GitHub Pages a cada push no main,
-# para testar no ar os web components que ele consome.
+# Publica o appshell (appshell-lit/) no GitHub Pages a cada push no main ou release,
+# e permite redeploy/rollback manual da branch release se a main quebrar.
 # URL: https://wagnermarques.github.io/fzl-fund-ui/
 name: Deploy appshell (GitHub Pages)
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
+      - release
   workflow_dispatch:
+    inputs:
+      target_ref:
+        description: 'Branch ou tag para deploy/rollback no GitHub Pages'
+        required: true
+        default: 'release'
+        type: choice
+        options:
+          - 'release'
+          - 'main'
 
 permissions:
   contents: read
@@ -25,6 +36,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.target_ref || github.ref }}
 
       - uses: actions/setup-node@v4
         with:

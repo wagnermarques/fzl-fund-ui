@@ -231,6 +231,23 @@ export class FzlFileManager extends FzlWidgetMixin(LitElement) {
       }
 
       /* Action buttons */
+      .fm-rename-row {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .fm-rename-input {
+        flex: 1;
+        min-width: 160px;
+        padding: 4px 8px;
+        border: 1px solid var(--_fzl-color-border, #cbd5e1);
+        border-radius: 6px;
+        font: inherit;
+        font-size: 0.85rem;
+      }
+
       .btn {
         display: inline-flex;
         align-items: center;
@@ -567,6 +584,8 @@ export class FzlFileManager extends FzlWidgetMixin(LitElement) {
   @state() private _searchQuery = '';
   @state() private _readerFontSize = 15;
   @state() private _readerSearchQuery = '';
+  @state() private _renamingId: string | null = null;
+  @state() private _renameDraft = '';
 
   /** Controller reativo de upload em nuvem integrado ao file manager. */
   public readonly uploadController = new FzlCloudUploadController(this);
@@ -880,6 +899,76 @@ export class FzlFileManager extends FzlWidgetMixin(LitElement) {
       file.status === 'bookmarked-only' || file.bookmarkedAt ? 'synced' : 'uploaded-only';
     this._updateFile(fileId, { status: nextStatus, uploadedAt: Date.now() });
     return true;
+  }
+
+  /** Starts inline rename mode for a file. */
+  startRename(fileId: string): void {
+    const file = this._files.find((f) => f.id === fileId);
+    if (!file) return;
+    this._renamingId = fileId;
+    this._renameDraft = file.name;
+    void this.updateComplete.then(() => {
+      const input = this.renderRoot.querySelector<HTMLInputElement>('input.fm-rename-input');
+      if (!input) return;
+      input.focus();
+      const dot = file.name.lastIndexOf('.');
+      input.setSelectionRange(0, dot > 0 ? dot : file.name.length);
+    });
+  }
+
+  cancelRename(): void {
+    this._renamingId = null;
+    this._renameDraft = '';
+  }
+
+  /**
+   * Renames a file and emits `fzl-file-rename` with `{ file, previousName, newName }`.
+   * Keeps the original extension when the new name omits it.
+   */
+  renameFile(fileId: string, rawName: string): boolean {
+    const file = this._files.find((f) => f.id === fileId);
+    let newName = (rawName || '').trim().replace(/[\\/:*?"<>|]+/g, '-');
+    if (!file || !newName) return false;
+    const ext = file.extension || (file.name.includes('.') ? file.name.slice(file.name.lastIndexOf('.')) : '');
+    if (ext && !newName.toLowerCase().endsWith(ext.toLowerCase())) newName += ext;
+    if (newName === file.name) return false;
+    const previousName = file.name;
+    const updated = this._updateFile(fileId, { name: newName });
+    this._syncLocalBookmarkStorage();
+    this.emit('fzl-file-rename', { file: updated || { ...file, name: newName }, previousName, newName });
+    return true;
+  }
+
+  private _commitRename(): void {
+    if (this._renamingId) this.renameFile(this._renamingId, this._renameDraft);
+    this.cancelRename();
+  }
+
+  private _renderFileTitle(file: FzlManagedFile, tag: 'span' | 'div') {
+    if (this._renamingId === file.id) {
+      return html`
+        <div class="fm-rename-row">
+          <input
+            class="fm-rename-input"
+            type="text"
+            aria-label="Novo nome do arquivo"
+            .value=${this._renameDraft}
+            @input=${(e: Event) => {
+              this._renameDraft = (e.target as HTMLInputElement).value;
+            }}
+            @keydown=${(e: KeyboardEvent) => {
+              if (e.key === 'Enter') this._commitRename();
+              if (e.key === 'Escape') this.cancelRename();
+            }}
+          />
+          <button type="button" class="btn btn-primary" @click=${() => this._commitRename()}>Salvar</button>
+          <button type="button" class="btn" @click=${() => this.cancelRename()}>Cancelar</button>
+        </div>
+      `;
+    }
+    return tag === 'span'
+      ? html`<span class="file-title" role="button" tabindex="0" @click=${() => this.openReader(file.id)}>${file.name}</span>`
+      : html`<div class="file-title" role="button" tabindex="0" @click=${() => this.openReader(file.id)}>${file.name}</div>`;
   }
 
   deleteFile(fileId: string): void {
@@ -1310,14 +1399,7 @@ export class FzlFileManager extends FzlWidgetMixin(LitElement) {
                           <tr>
                             <td>
                               <div class="file-name-cell">
-                                <span
-                                  class="file-title"
-                                  role="button"
-                                  tabindex="0"
-                                  @click=${() => this.openReader(file.id)}
-                                >
-                                  ${file.name}
-                                </span>
+                                ${this._renderFileTitle(file, 'span')}
                                 <span class="file-subpath">${file.folder}</span>
                                 <div class="tag-row">
                                   ${file.tags.map((t) => html`<span class="tag-chip">#${t}</span>`)}
@@ -1380,6 +1462,13 @@ export class FzlFileManager extends FzlWidgetMixin(LitElement) {
                                 <button
                                   type="button"
                                   class="btn"
+                                  @click=${() => this.startRename(file.id)}
+                                >
+                                  Renomear
+                                </button>
+                                <button
+                                  type="button"
+                                  class="btn"
                                   @click=${() => this.deleteFile(file.id)}
                                 >
                                   Remover
@@ -1404,14 +1493,7 @@ export class FzlFileManager extends FzlWidgetMixin(LitElement) {
                         <div>
                           <div class="fm-card-header">
                             <div>
-                              <div
-                                class="file-title"
-                                role="button"
-                                tabindex="0"
-                                @click=${() => this.openReader(file.id)}
-                              >
-                                ${file.name}
-                              </div>
+                              ${this._renderFileTitle(file, 'div')}
                               <div class="file-subpath">
                                 ${file.folder} · ${formatDocumentSize(file.size)}
                               </div>
@@ -1473,6 +1555,13 @@ export class FzlFileManager extends FzlWidgetMixin(LitElement) {
                                 </a>
                               `
                             : nothing}
+                          <button
+                            type="button"
+                            class="btn"
+                            @click=${() => this.startRename(file.id)}
+                          >
+                            Renomear
+                          </button>
                           <button
                             type="button"
                             class="btn"

@@ -37,13 +37,32 @@ flowchart LR
 
 ---
 
-## 2. Recommended Branching Strategy
+## 2. Recommended Branching Strategy & Rollback Plan
 
 The standard convention across the `fzlbpms-funds` family is:
 
-* **`main`**: Active development branch. Feature branches and PRs merge here.
-* **`production`**: Live production deployment branch. When features in `main` are tested and ready, merge `main` into `production` to trigger the production deploy.
-* *(Alternative)*: For smaller projects, you can use trunk-based development and deploy directly on every push to `main`.
+* **`main`**: Active development branch. Feature branches and PRs merge here. It can trigger development deploys or CI checks.
+* **`release`**: Stable release branch representing the official production state. Updated only when a version is reviewed and approved (e.g. `v1.0.0`).
+* **Emergency Rollback / Redeploy**: If changes pushed to `main` introduce regressions or break runtime behavior on the live environment, you can trigger an **instant 1-click redeploy of `release`** using `workflow_dispatch` without having to craft an emergency git revert commit under pressure.
+
+### Git Release Workflow (Day-to-day)
+```bash
+# 1. Update release branch with tested commits from main
+git checkout release
+git merge main --ff-only
+
+# 2. Tag the semantic version
+git tag v1.0.0
+
+# 3. Push release and tags to trigger the automated release deployment
+git push origin release --tags
+```
+
+### Emergency Rollback (If `main` breaks production)
+1. Go to your repository on GitHub → **Actions** → select **Deploy appshell**.
+2. Click **Run workflow**.
+3. Under **Branch / Target Ref**, select **`release`**.
+4. Click **Run workflow** — the stable release bundle is rebuilt and published over the broken deployment in under a minute.
 
 ---
 
@@ -95,8 +114,18 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches:
-      - production  # or 'main' if deploying directly from main
+      - release     # Official stable release
+      - main        # Continuous dev branch
   workflow_dispatch:
+    inputs:
+      target_ref:
+        description: 'Branch or tag to deploy/rollback on GitHub Pages'
+        required: true
+        default: 'release'
+        type: choice
+        options:
+          - 'release'
+          - 'main'
 
 permissions:
   contents: read
@@ -105,7 +134,7 @@ permissions:
 
 concurrency:
   group: 'pages'
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   build-and-deploy:
@@ -114,10 +143,10 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository (with submodules)
+      - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          submodules: recursive
+          ref: ${{ inputs.target_ref || github.ref }}
           fetch-depth: 0
 
       - name: Setup Node.js

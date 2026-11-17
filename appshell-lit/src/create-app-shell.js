@@ -173,7 +173,14 @@ function validateDrawer(drawer) {
     }
   }
 
-  return { sections, shellSections }
+  if (drawer.configHeader !== undefined && drawer.configHeader !== null && typeof drawer.configHeader !== 'function') {
+    throw new Error('createAppShell: drawer.configHeader deve ser uma função')
+  }
+  if (drawer.configItems !== undefined && drawer.configItems !== null && typeof drawer.configItems !== 'function') {
+    throw new Error('createAppShell: drawer.configItems deve ser uma função')
+  }
+
+  return { ...drawer, sections, shellSections }
 }
 
 /** `on` é { 'nome:do-evento': listener }, com nomes de SHELL_EVENTS. */

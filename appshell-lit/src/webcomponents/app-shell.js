@@ -403,7 +403,9 @@ export class AppShell extends LitElement {
           ${this.drawer.shellSections.config
             ? html`
                 <nav-accordion label="Config">
+                  ${typeof this.drawer.configHeader === 'function' ? this.drawer.configHeader(this) : ''}
                   <md-list>
+                    ${typeof this.drawer.configItems === 'function' ? this.drawer.configItems(this) : ''}
                     <md-list-item type="button" @click=${() => this._selectDrawerItem(navigateToConfigBackend)}>
                       <md-icon slot="start">dns</md-icon>
                       Backend

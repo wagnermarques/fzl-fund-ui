@@ -39,6 +39,7 @@ flowchart LR
 
 ### Integration Guides (`docs/guides/`)
 - [Consuming `<fzl-*>` Widgets in Host Applications (Angular, React, Vue, Plain HTML)](./guides/host-integration.md)
+- [AppShell Deployment, Release Strategy & Rollback Guide](../appshell-lit/documentation/deploy.md)
 
 ### Component Specifications (`docs/components/`)
 - [Component Specification Template (`_template.md`)](./components/_template.md)

@@ -57,6 +57,7 @@ All architectural decisions, styling conventions, and widget API specifications 
 3. [Host Application Integration Guide](./docs/guides/host-integration.md)
 4. [Component Specification Template](./docs/components/_template.md)
 5. [ADR 003: Appshell Lit dentro do monorepo](./docs/architecture/003-appshell-in-monorepo.md)
+6. [AppShell Overview, Release & Rollback Guide](./appshell-lit/README.md) (and [Full Deployment Guide](./appshell-lit/documentation/deploy.md))
 
 ---
 

@@ -1,6 +1,33 @@
-# Publica o appshell (appshell-lit/) no GitHub Pages a cada push no main ou release,
-# e permite redeploy/rollback manual da branch release se a main quebrar.
-# URL: https://wagnermarques.github.io/fzl-fund-ui/
+# ==============================================================================
+# PIPELINE DE DEPLOY & ROLLBACK — APPSHELL (GITHUB PAGES)
+# ==============================================================================
+# Publica o appshell (appshell-lit/) no GitHub Pages:
+# URL Pública: https://wagnermarques.github.io/fzl-fund-ui/
+#
+# ------------------------------------------------------------------------------
+# ESTRATÉGIA DE BRANCHES & RELEASE:
+# ------------------------------------------------------------------------------
+# - 'release': Branch estável representando a versão homologada de produção.
+#              Sempre que uma release for mesclada ou enviada, o deploy roda automaticamente.
+# - 'main':    Branch de desenvolvimento contínuo. Novos commits disparam deploy para
+#              validação no ar.
+#
+# ------------------------------------------------------------------------------
+# PLANO DE CONTINGÊNCIA / REDEPLOY DE EMERGÊNCIA (ROLLBACK EM 1 CLIQUE):
+# ------------------------------------------------------------------------------
+# Se um deploy recente da 'main' quebrar ou desestabilizar a aplicação no ar,
+# você pode redeployar a branch 'release' estável imediatamente:
+#
+# OPÇÃO 1 — Pelo Navegador (GitHub Actions Web UI):
+#   1. Acesse: Repositório -> Actions -> "Deploy appshell (GitHub Pages)"
+#   2. Clique no botão "Run workflow" (canto superior direito).
+#   3. No seletor "target_ref", selecione: 'release'.
+#   4. Clique no botão verde "Run workflow".
+#      O GitHub Actions recompila a release estável e sobrepõe o ar em ~1 minuto.
+#
+# OPÇÃO 2 — Pelo Terminal (GitHub CLI):
+#   gh workflow run deploy-appshell.yml -f target_ref=release
+# ==============================================================================
 name: Deploy appshell (GitHub Pages)
 
 on:
@@ -35,11 +62,15 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      # Faz checkout da branch escolhida manualmente no dispatch (ex: rollback para 'release')
+      # ou da branch disparada no evento de push.
+      - name: Checkout repository
+        uses: actions/checkout@v4
         with:
           ref: ${{ inputs.target_ref || github.ref }}
 
-      - uses: actions/setup-node@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: npm
@@ -47,15 +78,17 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      # Compila os web components consumidos pelo appshell antes do build final
       - name: Build web components
         run: npm run build:tokens && npm run build:es6 && npm run build:lit && npm run build:angular
 
+      # Quality Gate: impede deploy caso os testes unitários do appshell quebrem
       - name: Test appshell
         run: npm test --workspace=fzl-fund-appshell--lit
 
       # O Pages serve em /<repo>/, daí o --base. Variáveis vazias são ignoradas
-      # pelo appshell (ver src/app-config.js); defina-as em Settings → Variables.
-      - name: Build appshell
+      # pelo appshell (ver src/app-config.js); defina-as em Settings -> Secrets and variables -> Actions -> Variables.
+      - name: Build appshell (PWA estático)
         env:
           VITE_APPSHELL_TITLE: ${{ vars.VITE_APPSHELL_TITLE }}
           VITE_APPSHELL_BACKENDS_API_URL: ${{ vars.VITE_APPSHELL_BACKENDS_API_URL }}
@@ -63,9 +96,11 @@ jobs:
           VITE_APPSHELL_PUSH_VAPID_PUBLIC_KEY: ${{ vars.VITE_APPSHELL_PUSH_VAPID_PUBLIC_KEY }}
         run: npm run build --workspace=fzl-fund-appshell--lit -- --base=/${{ github.event.repository.name }}/
 
-      - uses: actions/upload-pages-artifact@v3
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
         with:
           path: ./appshell-lit/dist
 
-      - id: deployment
+      - name: Deploy to GitHub Pages
+        id: deployment
         uses: actions/deploy-pages@v4

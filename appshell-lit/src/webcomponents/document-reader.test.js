@@ -182,3 +182,240 @@ describe('<fzl-document-reader>', () => {
     expect(slot.assignedElements()).toContain(btn);
   });
 });
+
+// ------------------------------------------------------------------ fase 2
+import { anchorSelection, buildTextQuote } from '@fzl/webcomponents-lit/document-reader';
+
+const DOC = 'Primeiro parágrafo com texto.\n\nSegundo bloco: o projeto mudou a rotina.\n\nTerceiro: o projeto ajudou.';
+
+function textNodeOf(el) {
+  const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+  return walker.nextNode();
+}
+
+describe('anchorSelection / buildTextQuote', () => {
+  it('buildTextQuote returns text with prefix/suffix context', () => {
+    const start = DOC.indexOf('o projeto mudou');
+    const q = buildTextQuote(DOC, start, start + 9, 8);
+    expect(q).toEqual({ text: 'o projeto', prefix: ' bloco: ', suffix: ' mudou a' });
+  });
+
+  it('keeps offsets when the text still matches', () => {
+    const start = DOC.indexOf('Segundo');
+    expect(anchorSelection(DOC, { start, end: start + 7, text: 'Segundo' })).toEqual({ start, end: start + 7 });
+  });
+
+  it('re-anchors by quote + context when the document changed', () => {
+    const start = DOC.lastIndexOf('o projeto');
+    const saved = { start, end: start + 9, ...buildTextQuote(DOC, start, start + 9) };
+    const edited = 'Novo início inserido.\n\n' + DOC;
+    const found = anchorSelection(edited, saved);
+    expect(edited.slice(found.start, found.end)).toBe('o projeto');
+    // second occurrence ("Terceiro: o projeto"), chosen by prefix/suffix
+    expect(found.start).toBe(edited.lastIndexOf('o projeto'));
+  });
+
+  it('returns null when the text no longer exists', () => {
+    expect(anchorSelection('outro texto', { start: 0, end: 5, text: 'sumiu', prefix: '', suffix: '' })).toBeNull();
+  });
+});
+
+describe('<fzl-document-reader> selection & annotations', () => {
+  it('rangeToSelection maps a DOM range to canonical offsets, quote and block', async () => {
+    const el = await mount({ text: DOC });
+    const blocks = el.shadowRoot.querySelectorAll('.blk');
+    const node = textNodeOf(blocks[1]);
+    const range = document.createRange();
+    const local = node.data.indexOf('o projeto');
+    range.setStart(node, local);
+    range.setEnd(node, local + 9);
+    const sel = el.rangeToSelection(range);
+    const start = DOC.indexOf('o projeto');
+    expect(sel.start).toBe(start);
+    expect(sel.end).toBe(start + 9);
+    expect(sel.text).toBe('o projeto');
+    expect(sel.prefix).toBe(DOC.slice(start - 32, start));
+    expect(sel.suffix).toBe(DOC.slice(start + 9, start + 41));
+    expect(sel.blockIndex).toBe(1);
+  });
+
+  it('selection across blocks uses \\n\\n between them and trims whitespace', async () => {
+    const el = await mount({ text: DOC });
+    const blocks = el.shadowRoot.querySelectorAll('.blk');
+    const a = textNodeOf(blocks[0]);
+    const b = textNodeOf(blocks[1]);
+    const range = document.createRange();
+    range.setStart(a, a.data.length - 7); // " texto." region
+    range.setEnd(b, 7);
+    const sel = el.rangeToSelection(range);
+    expect(sel.text).toBe('texto.\n\nSegundo');
+    expect(DOC.slice(sel.start, sel.end)).toBe(sel.text);
+    expect([sel.blockIndex, sel.endBlockIndex]).toEqual([0, 1]);
+  });
+
+  it('draws annotations without changing the text and keeps offsets valid', async () => {
+    const start = DOC.indexOf('o projeto mudou');
+    const el = await mount({
+      text: DOC,
+      annotations: [
+        { id: 'a1', start, end: start + 15, color: 'tomato', title: 'Mudança' },
+        { id: 'a2', start: start + 2, end: start + 9 },
+      ],
+    });
+    const blocks = el.shadowRoot.querySelectorAll('.blk');
+    expect(blocks[1].textContent).toBe('Segundo bloco: o projeto mudou a rotina.');
+    const marks = [...blocks[1].querySelectorAll('mark.ann')];
+    expect(marks.map((m) => m.textContent)).toEqual(['o ', 'projeto', ' mudou']);
+    expect(marks[1].dataset.ids).toBe('a1 a2');
+    expect(marks[1].dataset.top).toBe('a2');
+    expect(marks[1].classList.contains('multi')).toBe(true);
+    expect(marks[0].title).toBe('Mudança');
+
+    // a range inside a mark still maps to the right offsets
+    const node = textNodeOf(marks[1]);
+    const range = document.createRange();
+    range.setStart(node, 0);
+    range.setEnd(node, 7);
+    expect(el.rangeToSelection(range)).toMatchObject({ start: start + 2, end: start + 9, text: 'projeto' });
+  });
+
+  it('annotation spanning two blocks is drawn in both', async () => {
+    const el = await mount({ text: DOC, annotations: [{ id: 'x', start: 20, end: 45 }] });
+    const blocks = el.shadowRoot.querySelectorAll('.blk');
+    expect(blocks[0].querySelector('mark').textContent).toBe(DOC.slice(20, 29));
+    expect(blocks[1].querySelector('mark').textContent).toBe(DOC.slice(31, 45));
+  });
+
+  it('ignores invalid annotations and marks the active one', async () => {
+    const el = await mount({
+      text: DOC,
+      annotations: [{ id: 'bad', start: 10, end: 5 }, { id: 'ok', start: 0, end: 8 }, { start: 0, end: 3 }],
+      activeAnnotation: 'ok',
+    });
+    const marks = el.shadowRoot.querySelectorAll('mark.ann');
+    expect(marks.length).toBe(1);
+    expect(marks[0].classList.contains('active')).toBe(true);
+  });
+
+  it('clicking a highlight emits fzl-reader-annotation-click', async () => {
+    const el = await mount({ text: DOC, annotations: [{ id: 'k1', start: 0, end: 8, title: 'T' }] });
+    const got = [];
+    el.addEventListener('fzl-reader-annotation-click', (e) => got.push(e.detail));
+    el.shadowRoot.querySelector('mark.ann').click();
+    expect(got).toHaveLength(1);
+    expect(got[0].id).toBe('k1');
+    expect(got[0].annotation.title).toBe('T');
+  });
+
+  it('scrollToAnnotation finds rendered highlights', async () => {
+    const el = await mount({ text: DOC, annotations: [{ id: 'z', start: 0, end: 8 }] });
+    expect(await el.scrollToAnnotation('z')).toBe(true);
+    expect(el.shadowRoot.querySelector('mark.ann').classList.contains('flash')).toBe(true);
+    expect(await el.scrollToAnnotation('nope')).toBe(false);
+  });
+
+  it('emits fzl-reader-selection / -clear from the document selection', async () => {
+    const el = await mount({ text: DOC });
+    const events = [];
+    el.addEventListener('fzl-reader-selection', (e) => events.push(['sel', e.detail.text]));
+    el.addEventListener('fzl-reader-selection-clear', () => events.push(['clear']));
+
+    const node = textNodeOf(el.shadowRoot.querySelectorAll('.blk')[2]);
+    const range = document.createRange();
+    range.setStart(node, 0);
+    range.setEnd(node, 8);
+    vi.spyOn(el, 'getSelectionRange').mockReturnValue(range);
+    document.dispatchEvent(new Event('selectionchange'));
+    await new Promise((r) => setTimeout(r, 200));
+    expect(el.selection.text).toBe('Terceiro');
+
+    el.getSelectionRange.mockReturnValue(null);
+    document.dispatchEvent(new Event('selectionchange'));
+    await new Promise((r) => setTimeout(r, 200));
+    expect(el.selection).toBeNull();
+    expect(events).toEqual([['sel', 'Terceiro'], ['clear']]);
+  });
+
+  it('keeps the selection while focus is in slotted popover UI', async () => {
+    const el = await mount({ text: DOC });
+    const input = document.createElement('input');
+    input.slot = 'selection-popover';
+    el.appendChild(input);
+    await el.updateComplete;
+
+    const node = textNodeOf(el.shadowRoot.querySelector('.blk'));
+    const range = document.createRange();
+    range.setStart(node, 0);
+    range.setEnd(node, 8);
+    const spy = vi.spyOn(el, 'getSelectionRange').mockReturnValue(range);
+    document.dispatchEvent(new Event('selectionchange'));
+    await new Promise((r) => setTimeout(r, 200));
+    await el.updateComplete;
+    const pop = el.shadowRoot.querySelector('.sel-pop');
+    expect(el.selection.text).toBe('Primeiro');
+
+    input.focus();
+    spy.mockReturnValue(null);
+    document.dispatchEvent(new Event('selectionchange'));
+    await new Promise((r) => setTimeout(r, 200));
+    expect(el.selection).not.toBeNull();
+
+    el.clearSelection();
+    await el.updateComplete;
+    expect(el.selection).toBeNull();
+    expect(pop.hidden).toBe(true);
+  });
+
+  it('changing the content clears the selection', async () => {
+    const el = await mount({ text: DOC });
+    const node = textNodeOf(el.shadowRoot.querySelector('.blk'));
+    const range = document.createRange();
+    range.setStart(node, 0);
+    range.setEnd(node, 8);
+    vi.spyOn(el, 'getSelectionRange').mockReturnValue(range);
+    document.dispatchEvent(new Event('selectionchange'));
+    await new Promise((r) => setTimeout(r, 200));
+    const cleared = vi.fn();
+    el.addEventListener('fzl-reader-selection-clear', cleared);
+    el.text = 'outro';
+    await el.updateComplete;
+    expect(cleared).toHaveBeenCalled();
+  });
+});
+
+describe('<fzl-document-reader> pendingRange', () => {
+  it('draws the pending passage (not clickable) and combines it with annotations', async () => {
+    const el = await mount({ text: DOC, annotations: [{ id: 'a', start: 0, end: 8 }], pendingRange: { start: 4, end: 18 } });
+    const block = el.shadowRoot.querySelector('.blk');
+    expect(block.textContent).toBe(DOC.split('\n\n')[0]);
+    const marks = [...block.querySelectorAll('mark.ann')];
+    expect(marks.map((m) => [m.textContent, m.classList.contains('pending'), m.dataset.ids ?? null])).toEqual([
+      ['Prim', false, 'a'],
+      ['eiro', true, 'a'],
+      [' parágrafo', true, null],
+    ]);
+    const clicks = vi.fn();
+    el.addEventListener('fzl-reader-annotation-click', clicks);
+    marks[2].click();
+    expect(clicks).not.toHaveBeenCalled();
+    el.pendingRange = null;
+    await el.updateComplete;
+    expect(block.querySelectorAll('mark.pending').length).toBe(0);
+  });
+
+  it('keeps the selection while pendingRange overlaps it', async () => {
+    const el = await mount({ text: DOC });
+    const node = textNodeOf(el.shadowRoot.querySelector('.blk'));
+    const range = document.createRange();
+    range.setStart(node, 0);
+    range.setEnd(node, 8);
+    const spy = vi.spyOn(el, 'getSelectionRange').mockReturnValue(range);
+    document.dispatchEvent(new Event('selectionchange'));
+    await new Promise((r) => setTimeout(r, 200));
+    el.pendingRange = { start: el.selection.start, end: el.selection.end };
+    spy.mockReturnValue(null);
+    document.dispatchEvent(new Event('selectionchange'));
+    await new Promise((r) => setTimeout(r, 200));
+    expect(el.selection?.text).toBe('Primeiro');
+  });
+});

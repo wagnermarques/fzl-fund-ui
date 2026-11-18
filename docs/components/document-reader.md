@@ -2,8 +2,7 @@
 
 > Leitor genérico de textos longos (entrevistas, artigos, DOCX convertido). Ocupa todo o espaço disponível com scroll próprio e tem uma barra fina com título, A−/A+, largura de leitura e tela cheia, além de um slot `actions` para botões do app.
 
-**Status:** fase 1 (leitura e tela cheia).  
-**Próxima fase:** seleção persistível (`fzl-reader-selection`, `annotations`, `anchorSelection`).
+**Status:** fase 1 (leitura e tela cheia) e fase 2 (seleção persistível e grifos).
 
 ---
 
@@ -42,10 +41,15 @@ O leitor ocupa `100%` da altura do pai (`--fzl-reader-height`). Dê altura ao co
 | `readingWidth` | `reading-width` | `'narrow' \| 'wide'` | `'narrow'` | Coluna estreita (~72ch) ou larga (~120ch). |
 | `compact` | `compact` | `boolean` | `false` | Barra de 36px (normal: 44px). |
 | `hideToolbar` | `hide-toolbar` | `boolean` | `false` | Esconde a barra. |
+| `annotations` | — | `FzlReaderAnnotation[]` | `[]` | Grifos `{ id, start, end, color?, title? }` por offsets no texto canônico. |
+| `activeAnnotation` | `active-annotation` | `string` | `null` | Grifo destacado com contorno. |
+| `pendingRange` | — | `{ start, end } \| null` | `null` | Trecho em edição, desenhado tracejado (veja §8). |
+| `contextLength` | `context-length` | `number` | `32` | Caracteres de `prefix`/`suffix` na seleção. |
+| `noSelection` | `no-selection` | `boolean` | `false` | Desliga os eventos de seleção. |
 | `fullscreen` | — | `boolean` | — | Getter: em tela cheia. O componente põe o atributo `fullscreen` no host (para CSS). |
 | `fullscreenMode` | — | `'native' \| 'immersive' \| null` | — | Getter. O host recebe `fullscreen-mode="native\|immersive"`. |
 
-Getters: `plainText`, `resolvedBlocks`, `blockOffsets`, `scrollElement`, `nativeFullscreenSupported`.
+Getters: `plainText`, `resolvedBlocks`, `blockOffsets`, `selection`, `scrollElement`, `nativeFullscreenSupported`.
 
 ## 3. Métodos
 
@@ -55,6 +59,11 @@ Getters: `plainText`, `resolvedBlocks`, `blockOffsets`, `scrollElement`, `native
 | `enterFullscreen()` / `exitFullscreen()` | Controle explícito. |
 | `stepFontSize(1 \| -1)` | Igual aos botões A+/A−. |
 | `toggleReadingWidth()` | Alterna estreita/larga. |
+| `clearSelection()` | Remove a seleção (DOM e estado) e esconde o popover. |
+| `scrollToAnnotation(id)` | Rola até o grifo e o faz piscar. Retorna `false` se ele não estiver desenhado. |
+| `scrollToOffset(offset)` | Rola até o bloco do offset. |
+| `rangeToSelection(range)` | Converte um `Range`/`StaticRange` do leitor em `{ text, start, end, prefix, suffix, ... }`. |
+| `blockIndexAt(offset)` | Índice do bloco que contém o offset. |
 
 ## 4. Tela cheia
 
@@ -68,10 +77,13 @@ Getters: `plainText`, `resolvedBlocks`, `blockOffsets`, `scrollElement`, `native
 | --- | --- | --- |
 | `fzl-reader-fullscreen-change` | `{ fullscreen: boolean, mode: 'native' \| 'immersive' \| null }` | Entrou/saiu da tela cheia. |
 | `fzl-reader-preferences-change` | `{ fontSize, readingWidth }` | O usuário mudou fonte ou largura. Use para lembrar a preferência. |
+| `fzl-reader-selection` | `{ text, start, end, prefix, suffix, blockIndex, endBlockIndex, rect }` | Texto selecionado no leitor (ao soltar o ponteiro; pelo teclado/toque, após 150 ms). Espaços nas pontas são removidos. |
+| `fzl-reader-selection-clear` | — | A seleção sumiu (exceto enquanto o foco está em conteúdo do próprio leitor, ou `pendingRange` cobre a seleção). |
+| `fzl-reader-annotation-click` | `{ id, ids, annotation }` | Clique num grifo. `id` é o mais específico (menor); `ids`, todos sob o clique. |
 
 ## 6. Texto canônico e offsets
 
-Todos os offsets do leitor (fase 2: seleção e grifos) se referem ao **texto canônico**:
+Todos os offsets do leitor (seleção e grifos) se referem ao **texto canônico**:
 
 ```
 plainText = blocks.map(b => b.text).join('\n\n')   // com \r\n normalizado para \n
@@ -81,9 +93,46 @@ plainText = blocks.map(b => b.text).join('\n\n')   // com \r\n normalizado para 
 - Com `text`, o texto é dividido em parágrafos por linhas em branco e cada parágrafo perde espaços no fim. Por isso, **use `reader.plainText`** (ou `readerPlainText(blocks)`) como referência, não o texto original.
 - Helpers exportados: `readerBlocksFromText`, `readerPlainText`, `readerBlockOffsets`, `normalizeReaderBlocks`.
 
-## 7. Personalização
+## 7. Seleção persistível
 
-- Slots: `actions` (botões na barra), `empty` (estado vazio).
-- Partes: `toolbar`, `title`, `scroller`, `page`.
-- Variáveis CSS: `--fzl-reader-height`, `--fzl-reader-font-family`, `--fzl-reader-z-index`.
-- Subclasse: sobrescreva `renderBlockText(block, index, offset)` ou `renderBlock(block, index)`. Os nós de texto renderizados devem conter exatamente `block.text`, para os offsets continuarem válidos.
+O detail de `fzl-reader-selection` segue o modelo W3C Web Annotation: posição (`start`/`end`, *TextPositionSelector*) mais citação (`text`, `prefix`, `suffix`, *TextQuoteSelector*). Guarde os cinco campos.
+
+```ts
+reader.addEventListener('fzl-reader-selection', (e) => {
+  const { text, start, end, prefix, suffix } = e.detail;
+  abrirFormulario(e.detail);                     // ex.: no slot "selection-popover"
+  reader.pendingRange = { start, end };          // mantém o trecho visível
+});
+
+async function salvar(titulo) {
+  const s = reader.selection;
+  await trechos.create({ docId, titulo, ...s });  // persistência é do app
+  reader.pendingRange = null;
+  reader.clearSelection();
+}
+
+// Ao abrir o documento (o texto pode ter mudado desde que o trecho foi salvo):
+import { anchorSelection } from '@fzl/webcomponents-lit/document-reader';
+reader.annotations = trechos
+  .map((t) => ({ t, pos: anchorSelection(reader.plainText, t) }))
+  .filter(({ pos }) => pos)
+  .map(({ t, pos }) => ({ id: t.id, ...pos, color: t.cor, title: t.titulo }));
+```
+
+- `anchorSelection(texto, { start, end, text, prefix, suffix })` → `{ start, end } | null`: mantém os offsets se o texto ainda bate; senão procura todas as ocorrências de `text` e escolhe a de melhor contexto (`prefix`/`suffix`) e, no empate, a mais próxima do `start` antigo. `null` quando o trecho não existe mais.
+- `buildTextQuote(texto, start, end, contexto = 32)` gera `{ text, prefix, suffix }`.
+- A seleção é lida com `Selection.getComposedRanges()` (Safari, Firefox e Chrome atuais), depois `shadowRoot.getSelection()` (Chrome antigo) e, por fim, `document.getSelection()`.
+- Os grifos são desenhados a partir dos dados (`<mark>` em volta de pedaços do texto). O texto do documento não muda e os offsets continuam válidos. Grifos sobrepostos ficam mais fortes e o clique devolve o mais específico.
+
+## 8. Popover e trecho pendente
+
+- O slot `selection-popover` aparece abaixo da seleção, dentro da área de texto, e rola junto com ela. Fica oculto sem seleção ou sem conteúdo.
+- Ao focar um campo do popover (ou do slot `actions`), o navegador tira a seleção visual. O leitor **mantém** `reader.selection` enquanto o foco estiver em conteúdo dele, ou enquanto `pendingRange` cobrir a seleção.
+- `pendingRange` desenha o trecho com fundo azul tracejado (`--fzl-reader-pending`), para o pesquisador continuar vendo o que vai salvar. Zere-o ao salvar ou cancelar.
+
+## 9. Personalização
+
+- Slots: `actions` (botões na barra; a barra quebra linha quando falta espaço, sem esmagar o título), `selection-popover`, `empty` (estado vazio).
+- Partes: `toolbar`, `title`, `scroller`, `page`, `selection-popover`, `annotation` (e `pending`).
+- Variáveis CSS: `--fzl-reader-height`, `--fzl-reader-font-family`, `--fzl-reader-z-index`, `--fzl-reader-highlight`, `--fzl-reader-pending`.
+- Subclasse: sobrescreva `renderBlockText(block, index, offset)` (o padrão desenha os grifos) ou `renderBlock(block, index)`. Os nós de texto renderizados devem conter exatamente `block.text`, para os offsets continuarem válidos.

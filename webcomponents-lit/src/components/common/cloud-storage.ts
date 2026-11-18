@@ -443,3 +443,138 @@ export async function uploadToCloudStorage(
 
   throw new Error('Nenhum endpoint ou provedor de nuvem configurado para envio do arquivo.');
 }
+
+// ---------------------------------------------------------------------------
+// Remote delete / update (used by FzlCrudBaseController remote adapters)
+// ---------------------------------------------------------------------------
+
+/** Error raised by the remote helpers below, carrying the HTTP status. */
+export class FzlCloudStorageError extends Error {
+  readonly status: number;
+  readonly provider: FzlStorageProvider;
+
+  constructor(provider: FzlStorageProvider, status: number, message: string) {
+    super(message);
+    this.name = 'FzlCloudStorageError';
+    this.provider = provider;
+    this.status = status;
+  }
+
+  /** `true` when the remote file no longer exists (404/410). */
+  get isNotFound(): boolean {
+    return this.status === 404 || this.status === 410;
+  }
+}
+
+async function ensureOk(res: Response, provider: FzlStorageProvider, label: string): Promise<void> {
+  if (res.ok) return;
+  const text = await res.text().catch(() => '');
+  throw new FzlCloudStorageError(provider, res.status, `${label} (${res.status}): ${text}`);
+}
+
+/**
+ * Removes a Google Drive file. By default it is moved to the trash (recoverable for
+ * 30 days); pass `permanent: true` to delete it for good.
+ * With the `drive.file` scope only files created by the app can be touched.
+ */
+export async function deleteFromGoogleDrive(
+  fileId: string,
+  opts: { token: string; permanent?: boolean }
+): Promise<void> {
+  const url = `https://www.googleapis.com/drive/v3/files/${encodeURIComponent(fileId)}`;
+  const res = opts.permanent
+    ? await fetch(url, { method: 'DELETE', headers: { Authorization: `Bearer ${opts.token}` } })
+    : await fetch(url, {
+        method: 'PATCH',
+        headers: {
+          Authorization: `Bearer ${opts.token}`,
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+        body: JSON.stringify({ trashed: true }),
+      });
+  await ensureOk(res, 'google-drive', 'Google Drive API error');
+}
+
+/**
+ * Replaces the content of an existing Google Drive file (`uploadType=media`).
+ */
+export async function updateGoogleDriveFile(
+  fileId: string,
+  file: Blob,
+  opts: { token: string }
+): Promise<FzlUploadResult> {
+  const res = await fetch(
+    `https://www.googleapis.com/upload/drive/v3/files/${encodeURIComponent(fileId)}?uploadType=media&fields=id,name,mimeType,webViewLink,webContentLink`,
+    {
+      method: 'PATCH',
+      headers: {
+        Authorization: `Bearer ${opts.token}`,
+        'Content-Type': file.type || 'application/octet-stream',
+      },
+      body: file,
+    }
+  );
+  await ensureOk(res, 'google-drive', 'Google Drive API error');
+  const data = (await res.json()) as { id: string; webViewLink?: string; webContentLink?: string };
+  return {
+    success: true,
+    provider: 'google-drive',
+    fileId: data.id,
+    fileUrl: data.webContentLink || data.webViewLink,
+    externalViewerUrl: data.webViewLink,
+    externalViewerLabel: getExternalViewerLabel('google-drive'),
+    response: data,
+  };
+}
+
+function oneDriveBase(driveId?: string): string {
+  return driveId
+    ? `https://graph.microsoft.com/v1.0/drives/${encodeURIComponent(driveId)}`
+    : 'https://graph.microsoft.com/v1.0/me/drive';
+}
+
+/**
+ * Removes a OneDrive item (personal OneDrive moves it to the recycle bin).
+ */
+export async function deleteFromOneDrive(
+  itemId: string,
+  opts: { token: string; driveId?: string }
+): Promise<void> {
+  const res = await fetch(`${oneDriveBase(opts.driveId)}/items/${encodeURIComponent(itemId)}`, {
+    method: 'DELETE',
+    headers: { Authorization: `Bearer ${opts.token}` },
+  });
+  await ensureOk(res, 'onedrive', 'Microsoft OneDrive API error');
+}
+
+/**
+ * Replaces the content of an existing OneDrive item.
+ */
+export async function updateOneDriveFile(
+  itemId: string,
+  file: Blob,
+  opts: { token: string; driveId?: string }
+): Promise<FzlUploadResult> {
+  const res = await fetch(
+    `${oneDriveBase(opts.driveId)}/items/${encodeURIComponent(itemId)}/content`,
+    {
+      method: 'PUT',
+      headers: {
+        Authorization: `Bearer ${opts.token}`,
+        'Content-Type': file.type || 'application/octet-stream',
+      },
+      body: file,
+    }
+  );
+  await ensureOk(res, 'onedrive', 'Microsoft OneDrive API error');
+  const data = (await res.json()) as { id: string; webUrl?: string; '@microsoft.graph.downloadUrl'?: string };
+  return {
+    success: true,
+    provider: 'onedrive',
+    fileId: data.id,
+    fileUrl: data['@microsoft.graph.downloadUrl'] || data.webUrl,
+    externalViewerUrl: data.webUrl,
+    externalViewerLabel: getExternalViewerLabel('onedrive'),
+    response: data,
+  };
+}

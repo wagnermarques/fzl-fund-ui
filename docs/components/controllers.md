@@ -8,7 +8,7 @@
 
 ## 1. Visão Geral
 
-Os **Headless Reactive Controllers** desacoplam regras de negócio reutilizáveis (upload multi-provedor, parsing de `.docx`, persistência de favoritos, estado reativo de grid/store e autenticação social) do template DOM dos Web Components.
+Os **Headless Reactive Controllers** desacoplam regras de negócio reutilizáveis (upload multi-provedor, parsing de `.docx`, persistência de favoritos, estado reativo de grid/store, autenticação social, isolamento de dados por usuário e CRUD local-first multi-fonte) do template DOM dos Web Components.
 
 Eles implementam o protocolo `FzlReactiveController` (compatível com `ReactiveController` do Lit) e funcionam em **dois modos**:
 
@@ -30,6 +30,10 @@ Além da **composição**, todos os controllers foram desenhados para **extensã
 | `FzlDataGridController<T>` | Vinculação reativa a `FzlStore` (`store.observe()`), ordenação, filtro, paginação, seleção e CSV | `filterItems()`, `sortItems()`, `getRowId()` |
 | `FzlSocialAuthController` | Fluxo OAuth2 / GIS (Google & Microsoft) com escopos de Drive/OneDrive, `requestCloudAccessToken()` e `logout()` | `onAuthenticated()`, `onAuthError()` |
 | `FzlPersonalCloudDocsController` | Base unificada (herda de `FzlCloudUploadController`): detecta conta pessoal logada (Google ou Microsoft) e envia para **Google Docs** ou **OneDrive** | `onUnauthenticatedUpload()`, `onPersonalDocUploaded()`, hooks de upload |
+| `FzlUserDataController` | Isola IndexedDB/`localStorage` **por usuário** e aplica a política de logout (`purge` \| `ask` \| `keep`), protegendo dados não sincronizados | `resolveUserScope()`, `shouldPurgeOnLogout()`, `confirmPurge()`, `onBeforePurge()`, `onUserChanged()` |
+| `FzlCrudBaseController<T>` | CRUD *local-first* multi-fonte: apagar do grid apaga de todas as fontes (lápide → remotos → local), com adaptadores IndexedDB, Google Drive e OneDrive | `beforeCreate()`, `beforeDelete()`, `deleteRemote()`, `deleteLocal()`, `onPartialFailure()`, `isUnsynced()` |
+
+Documentação detalhada de cada controller: [`docs/controllers/`](../controllers/) (também em `#/controllers` no appshell).
 
 ---
 

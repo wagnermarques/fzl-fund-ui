@@ -7,6 +7,7 @@ import {
   type FzlDocumentBookmark
 } from '../components/document-picker/document-picker.types';
 import { FzlBaseController, type FzlControllerHost } from './base.controller';
+import type { FzlUserDataController } from './user-data.controller';
 
 export type FzlBookmarkInput = Partial<FzlDocumentBookmark> & {
   id: string;
@@ -18,6 +19,11 @@ export interface FzlBookmarksControllerOptions {
   storage?: Storage | null;
   maxTextPersistLength?: number;
   autoLoad?: boolean;
+  /**
+   * Isola os favoritos por usuário: a chave vira `userData.scopedName(storageKey)`,
+   * recarrega ao trocar de usuário e fica vazia (sem persistir) sem ninguém logado.
+   */
+  userData?: FzlUserDataController | null;
 }
 
 /**
@@ -32,6 +38,9 @@ export class FzlBookmarksController extends FzlBaseController {
   private readonly _customStorage: Storage | null | undefined;
   private readonly _maxTextPersistLength: number;
   private _items: FzlDocumentBookmark[] = [];
+  private _baseKey: string;
+  private _userData: FzlUserDataController | null = null;
+  private _userDataCleanup: (() => void) | null = null;
   private readonly _onStorageEvent = (event: StorageEvent): void => {
     if (!this._storageKey) return;
     if (event.key === null || event.key === this._storageKey) {
@@ -41,12 +50,60 @@ export class FzlBookmarksController extends FzlBaseController {
 
   constructor(host?: FzlControllerHost | null, options: FzlBookmarksControllerOptions = {}) {
     super(host);
-    this._storageKey = options.storageKey ?? 'fzl:document-bookmarks';
+    this._baseKey = options.storageKey ?? 'fzl:document-bookmarks';
+    this._storageKey = this._baseKey;
     this._customStorage = options.storage;
     this._maxTextPersistLength = options.maxTextPersistLength ?? 250_000;
-    if (options.autoLoad !== false) {
+    if (options.userData) {
+      this.bindUserData(options.userData, options.autoLoad !== false);
+    } else if (options.autoLoad !== false) {
       this.load();
     }
+  }
+
+  /**
+   * Vincula um `FzlUserDataController`: os favoritos passam a ser do usuário ativo.
+   * Retorna a função que desfaz o vínculo (volta à chave global).
+   */
+  bindUserData(userData: FzlUserDataController, loadNow = true): () => void {
+    this.unbindUserData();
+    this._userData = userData;
+    const apply = (force: boolean): void => {
+      const next = userData.tryScopedName(this._baseKey) ?? '';
+      if (!force && next === this._storageKey) return;
+      this._storageKey = next;
+      if (next) {
+        this.load();
+      } else {
+        this._items = [];
+        this.notifyChange();
+      }
+    };
+    const offScope = userData.subscribe(() => apply(false));
+    const offParticipant = userData.registerParticipant({
+      purge: (scope) => {
+        if (scope === userData.scope) {
+          this._items = [];
+          this.notifyChange();
+        }
+      }
+    });
+    this._userDataCleanup = () => {
+      offScope();
+      offParticipant();
+    };
+    if (loadNow) apply(true);
+    else this._storageKey = userData.tryScopedName(this._baseKey) ?? '';
+    return () => this.unbindUserData();
+  }
+
+  unbindUserData(): void {
+    if (!this._userData) return;
+    this._userDataCleanup?.();
+    this._userDataCleanup = null;
+    this._userData = null;
+    this._storageKey = this._baseKey;
+    this.load();
   }
 
   get storageKey(): string {
@@ -65,9 +122,15 @@ export class FzlBookmarksController extends FzlBaseController {
   }
 
   setStorageKey(key: string): this {
-    if (this._storageKey === key) return this;
-    this._storageKey = key;
-    this.load();
+    if (this._baseKey === key) return this;
+    this._baseKey = key;
+    this._storageKey = this._userData ? (this._userData.tryScopedName(key) ?? '') : key;
+    if (this._storageKey) {
+      this.load();
+    } else {
+      this._items = [];
+      this.notifyChange();
+    }
     return this;
   }
 

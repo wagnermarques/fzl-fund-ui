@@ -3,7 +3,9 @@ import '../src/styles/theme.css'
 import './home-view.js'
 import './components/components-view.js'
 import './developers-view.js'
+import './controllers/controllers-view.js'
 import { catalog, findComponent } from './components/catalog.js'
+import { controllers, findController } from './controllers/catalog.js'
 import { createAppShell, pattern } from '../src/index.js'
 
 // Só o que é código. Título, analytics, chave do push... estão no
@@ -31,6 +33,24 @@ createAppShell({
       ],
       render: ({ params }) =>
         html`<component-docs-view .component=${findComponent(params.id)} .implId=${params.impl}></component-docs-view>`,
+    },
+    // Documentação dos controllers extensíveis (@fzl/webcomponents-lit/controllers)
+    {
+      name: 'controllers',
+      match: pattern('controllers'),
+      title: 'Controllers',
+      crumb: [{ label: 'Controllers' }],
+      render: () => html`<controllers-view></controllers-view>`,
+    },
+    {
+      name: 'controller',
+      match: pattern('controllers/:id'),
+      title: ({ params }) => findController(params.id)?.name ?? 'Controller',
+      crumb: ({ params }) => [
+        { label: 'Controllers', href: '#/controllers' },
+        { label: findController(params.id)?.name ?? params.id },
+      ],
+      render: ({ params }) => html`<controller-docs-view .controllerId=${params.id}></controller-docs-view>`,
     },
     // Compatibilidade com rotas legadas do showcase: redireciona para a visão viva dos componentes
     {
@@ -83,6 +103,18 @@ createAppShell({
         label: 'Engenharia & Arquitetura',
         items: [
           { label: 'Infraestrutura de Componentes', icon: 'terminal', href: '#/developers' },
+        ],
+      },
+      {
+        id: 'controllers',
+        label: 'Controllers (extensíveis)',
+        items: [
+          { label: 'Todos os controllers', icon: 'account_tree', href: '#/controllers' },
+          ...controllers.map((controller) => ({
+            label: controller.name,
+            icon: controller.icon,
+            href: `#/controllers/${controller.id}`,
+          })),
         ],
       },
       {

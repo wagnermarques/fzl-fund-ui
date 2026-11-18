@@ -24,6 +24,7 @@ import readerMarkBarDoc from '../../../docs/components/reader-mark-bar.md?raw'
 import interviewTranscriberDoc from '../../../docs/components/interview-transcriber.md?raw'
 import contactPickerDoc from '../../../docs/components/contact-picker.md?raw'
 import cameraCaptureDoc from '../../../docs/components/camera-capture.md?raw'
+import audioCaptureDoc from '../../../docs/components/audio-capture.md?raw'
 import documentPickerDoc from '../../../docs/components/document-picker.md?raw'
 import fileManagerDoc from '../../../docs/components/file-manager.md?raw'
 import socialLoginDoc from '../../../docs/components/social-login.md?raw'
@@ -774,6 +775,34 @@ export const catalog = [
         packageName: '@fzl/webcomponents-lit',
         manifest: litManifest,
         load: () => import('@fzl/webcomponents-lit/interview-transcriber'),
+      },
+    ],
+  },
+  {
+    id: 'audio-capture',
+    category: 'multimedia',
+    categories: ['multimedia', 'mobile'],
+    name: 'Captura de Áudio (IndexedDB)',
+    icon: 'graphic_eq',
+    summary:
+      'Gravador de áudio via MediaRecorder com medidor de nível, pausa/retomada e limite de duração; por padrão salva o binário de cada gravação no IndexedDB do navegador, com biblioteca para ouvir, baixar e excluir.',
+    doc: audioCaptureDoc,
+    slotText: '',
+    initialValues: {
+      storage: 'indexeddb',
+      'db-name': 'fzl-audio-capture',
+      'store-name': 'recordings',
+      'max-duration': 300,
+      'show-library': true,
+    },
+    implementations: [
+      {
+        id: 'lit',
+        label: 'Lit',
+        tag: 'fzl-audio-capture',
+        packageName: '@fzl/webcomponents-lit',
+        manifest: litManifest,
+        load: () => import('@fzl/webcomponents-lit/audio-capture'),
       },
     ],
   },

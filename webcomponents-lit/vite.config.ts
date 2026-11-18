@@ -25,6 +25,7 @@ export default defineConfig({
         'interview-transcriber': resolve(__dirname, 'src/components/interview-transcriber/interview-transcriber.component.ts'),
         'contact-picker': resolve(__dirname, 'src/components/contact-picker/contact-picker.component.ts'),
         'camera-capture': resolve(__dirname, 'src/components/camera-capture/camera-capture.component.ts'),
+        'audio-capture': resolve(__dirname, 'src/components/audio-capture/audio-capture.component.ts'),
         'document-picker': resolve(__dirname, 'src/components/document-picker/document-picker.component.ts'),
         'file-manager': resolve(__dirname, 'src/components/file-manager/file-manager.component.ts'),
         'social-login': resolve(__dirname, 'src/components/social-login/social-login.component.ts'),

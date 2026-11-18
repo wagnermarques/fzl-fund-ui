@@ -21,6 +21,7 @@ import geoExplorerDoc from '../../../docs/components/geo-explorer.md?raw'
 import formDoc from '../../../docs/components/form.md?raw'
 import dataGridDoc from '../../../docs/components/data-grid.md?raw'
 import readerMarkBarDoc from '../../../docs/components/reader-mark-bar.md?raw'
+import documentReaderDoc from '../../../docs/components/document-reader.md?raw'
 import interviewTranscriberDoc from '../../../docs/components/interview-transcriber.md?raw'
 import contactPickerDoc from '../../../docs/components/contact-picker.md?raw'
 import cameraCaptureDoc from '../../../docs/components/camera-capture.md?raw'
@@ -746,6 +747,44 @@ export const catalog = [
         packageName: '@fzl/webcomponents-lit',
         manifest: litManifest,
         load: () => import('@fzl/webcomponents-lit/reader-content'),
+      },
+    ],
+  },
+  {
+    id: 'document-reader',
+    category: 'reader',
+    name: 'Leitor de Documentos (tela cheia)',
+    icon: 'chrome_reader_mode',
+    summary:
+      'Leitor genérico de textos longos (texto puro ou blocks do FzlDocxReaderController) com barra compacta, A−/A+, largura de leitura e tela cheia (Fullscreen API com fallback imersivo para iOS).',
+    doc: documentReaderDoc,
+    initialValues: {
+      'document-title': 'Entrevista 03 — Participante B',
+      meta: 'DOCX · 412 palavras',
+      compact: true,
+      'reading-width': 'narrow',
+      'font-size': 18,
+      text:
+        'Entrevistador: Pode contar como foi o primeiro contato com o projeto?\n\n' +
+        'Participante: Foi por indicação de uma colega. No começo eu não entendia bem a proposta, ' +
+        'achava que era só mais uma planilha para preencher. Depois de algumas semanas percebi que ' +
+        'as informações voltavam para a gente de um jeito organizado.\n\n' +
+        'Entrevistador: E o que mudou na rotina da equipe?\n\n' +
+        'Participante: A gente passou a se reunir menos para discutir números e mais para decidir. ' +
+        'Antes cada um tinha a sua versão dos dados. Hoje existe uma fonte só, e isso reduziu muito ' +
+        'o retrabalho.\n\n' +
+        'Entrevistador: Houve resistência?\n\n' +
+        'Participante: Houve, principalmente de quem estava acostumado com o processo antigo. ' +
+        'O que ajudou foi mostrar resultados pequenos logo no início.',
+    },
+    implementations: [
+      {
+        id: 'lit',
+        label: 'Lit',
+        tag: 'fzl-document-reader',
+        packageName: '@fzl/webcomponents-lit',
+        manifest: litManifest,
+        load: () => import('@fzl/webcomponents-lit/document-reader'),
       },
     ],
   },

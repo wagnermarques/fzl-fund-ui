@@ -79,6 +79,10 @@
       "types": "./dist/camera-capture.d.ts",
       "import": "./dist/camera-capture.js"
     },
+    "./document-reader": {
+      "types": "./dist/document-reader.d.ts",
+      "import": "./dist/document-reader.js"
+    },
     "./audio-capture": {
       "types": "./dist/audio-capture.d.ts",
       "import": "./dist/audio-capture.js"

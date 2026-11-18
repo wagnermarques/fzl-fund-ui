@@ -24,6 +24,7 @@ export * from './components/form/form.component';
 export * from './components/grid/data-grid.component';
 export * from './components/reader/reader-mark-bar.component';
 export * from './components/reader/reader-content.component';
+export * from './components/document-reader/document-reader.component';
 export * from './components/interview-transcriber/interview-transcriber.types';
 export * from './components/interview-transcriber/interview-transcriber.component';
 export * from './components/contact-picker/contact-picker.types';

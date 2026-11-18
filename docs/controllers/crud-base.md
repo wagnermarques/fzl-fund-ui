@@ -100,6 +100,8 @@ O `FzlIndexedDbCrudAdapter` guarda `Blob`/`File` como `ArrayBuffer` e os reconst
 | `create(data, { id?, sync? })` | Grava localmente; envia se `sync`/`autoSync`. |
 | `update(id, patch \| fn, { sync? })` | Grava localmente; um registro já sincronizado vira `dirty` (ou é reenviado com `autoSync`). |
 | `sync(id, providers?)` | Envia aos remotos: atualiza os que já têm cópia e cria nos outros. |
+| `attachRemote(id, ref, data?)` | Registra uma cópia remota enviada pelo pipeline do próprio app (sem `sync()`): troca ou adiciona a referência do mesmo provedor e marca o registro como `synced`, para que `delete()` alcance essa cópia. Cria o registro se ele não existir (arquivo que só existe na nuvem). Ignora lápides. |
+| `putLocal(id, patch \| fn)` | Troca só os dados locais (ex.: o binário salvo de um documento existente) sem mudar `syncState` nem `remotes`. |
 | `delete(id \| ids, { skipConfirm? })` | Exclusão consistente; devolve `{ deleted, pending, cancelled }`. |
 | `retryPending()` | Conclui exclusões pendentes e reenvia registros `dirty`/`error`. |
 | `bindGrid(grid)` | Espelha `rows` num `FzlDataGridController` (ou qualquer `{ setItems }`). |

@@ -379,6 +379,76 @@ export class FzlCrudBaseController<T = Record<string, unknown>> extends FzlBaseC
     return record.remotes.map((ref) => ref.provider).filter((p) => this.remotes.has(p));
   }
 
+  /**
+   * Records that the record is persisted remotely, for apps that send it through their own
+   * pipeline instead of `sync()`. Replaces (or adds) the ref of the same provider and marks
+   * the record `synced`, so `delete()` reaches the remote copy. When the record does not exist
+   * it is created from `data` (e.g. a file that only exists in the cloud). Tombstones and
+   * records with an operation in progress are left untouched (`null`).
+   */
+  async attachRemote(id: string, ref: FzlRemoteRef, data?: T): Promise<FzlCrudRecord<T> | null> {
+    if (this._busy.has(id)) return null;
+    const current = this.get(id);
+    if (current?.syncState === 'pending-delete') return null;
+
+    const now = Date.now();
+    const remoteRef: FzlRemoteRef = { ...ref, syncedAt: ref.syncedAt ?? now };
+    const record: FzlCrudRecord<T> = current
+      ? {
+          ...current,
+          data: data ?? current.data,
+          remotes: [...current.remotes.filter((r) => r.provider !== ref.provider), remoteRef],
+          syncState: 'synced',
+          updatedAt: now,
+          lastError: undefined
+        }
+      : {
+          id,
+          data: data ?? ({} as T),
+          remotes: [remoteRef],
+          syncState: 'synced',
+          createdAt: now,
+          updatedAt: now
+        };
+
+    try {
+      await this.local.put(record);
+    } catch (err) {
+      this.fail(errorMessage(err), { operation: 'attachRemote', id });
+      this.notifyChange();
+      return null;
+    }
+    this.replace(record);
+    this.emitHostEvent('fzl-crud-sync', { record });
+    this.notifyChange();
+    return record;
+  }
+
+  /**
+   * Changes only the local data (e.g. the saved binary of an existing document) without
+   * touching `syncState` or `remotes`. Tombstones and busy records are left untouched (`null`).
+   */
+  async putLocal(id: string, patch: Partial<T> | ((data: T) => T)): Promise<FzlCrudRecord<T> | null> {
+    const current = this.get(id);
+    if (!current || current.syncState === 'pending-delete' || this._busy.has(id)) return null;
+    const data =
+      typeof patch === 'function'
+        ? (patch as (data: T) => T)(current.data)
+        : ({ ...(current.data as object), ...(patch as object) } as T);
+    const record: FzlCrudRecord<T> = { ...current, data, updatedAt: Date.now() };
+    try {
+      await this.local.put(record);
+    } catch (err) {
+      this.fail(errorMessage(err), { operation: 'putLocal', id });
+      this.notifyChange();
+      return null;
+    }
+    this.replace(record);
+    this.emitHostEvent('fzl-crud-update', { record, previous: current, localOnly: true });
+    this.notifyChange();
+    return record;
+  }
+
   // --- sync ------------------------------------------------------------------------------
 
   /**

@@ -306,6 +306,54 @@ describe('FzlCrudBaseController', () => {
     expect(ctrl.deleted).toEqual(['fake-drive-1']);
   });
 
+  it('attachRemote registers an externally uploaded copy so delete reaches it', async () => {
+    const remote = createFakeRemote();
+    remote.files.set('ext-1', {});
+    const local = new FzlMemoryCrudAdapter();
+    const ctrl = new FzlCrudBaseController(null, { local, remotes: [remote] });
+    await ctrl.load();
+    const record = await ctrl.create({ name: 'a.docx' });
+
+    const attached = await ctrl.attachRemote(record.id, { provider: 'fake-drive', remoteId: 'ext-1' });
+    expect(attached.syncState).toBe('synced');
+    expect(attached.remotes).toEqual([expect.objectContaining({ provider: 'fake-drive', remoteId: 'ext-1' })]);
+    expect((await local.get(record.id)).syncState).toBe('synced');
+    expect(remote.calls).toEqual([]); // nothing re-uploaded
+
+    // Same provider: the ref is replaced, not duplicated.
+    const again = await ctrl.attachRemote(record.id, { provider: 'fake-drive', remoteId: 'ext-1' });
+    expect(again.remotes).toHaveLength(1);
+
+    await ctrl.delete(record.id);
+    expect(remote.calls).toEqual([['delete', 'ext-1']]);
+    expect(remote.files.has('ext-1')).toBe(false);
+  });
+
+  it('attachRemote creates a cloud-only record and ignores tombstones', async () => {
+    const remote = createFakeRemote();
+    const ctrl = new FzlCrudBaseController(null, { local: new FzlMemoryCrudAdapter(), remotes: [remote] });
+    await ctrl.load();
+    const created = await ctrl.attachRemote('cloud-1', { provider: 'fake-drive', remoteId: 'r9' }, { name: 'nuvem.pdf' });
+    expect(created).toMatchObject({ id: 'cloud-1', syncState: 'synced', data: { name: 'nuvem.pdf' } });
+
+    remote.failDelete = true;
+    await ctrl.delete('cloud-1');
+    expect(await ctrl.attachRemote('cloud-1', { provider: 'fake-drive', remoteId: 'r9' })).toBeNull();
+    expect(ctrl.get('cloud-1').syncState).toBe('pending-delete');
+  });
+
+  it('putLocal changes data without touching syncState or remotes', async () => {
+    const remote = createFakeRemote();
+    const ctrl = new FzlCrudBaseController(null, { local: new FzlMemoryCrudAdapter(), remotes: [remote] });
+    await ctrl.load();
+    const record = await ctrl.create({ name: 'a.docx', size: 1 }, { sync: true });
+    const updated = await ctrl.putLocal(record.id, { size: 2 });
+    expect(updated.data).toEqual({ name: 'a.docx', size: 2 });
+    expect(updated.syncState).toBe('synced');
+    expect(updated.remotes).toEqual(record.remotes);
+    expect(remote.calls).toEqual([['create', record.id]]);
+  });
+
   it('bindGrid mirrors the rows into FzlDataGridController', async () => {
     const ctrl = new FzlCrudBaseController(null, { local: new FzlMemoryCrudAdapter() });
     const grid = new FzlDataGridController(null, { columns: 'name' });

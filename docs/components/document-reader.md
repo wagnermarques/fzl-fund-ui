@@ -45,6 +45,7 @@ O leitor ocupa `100%` da altura do pai (`--fzl-reader-height`). Dê altura ao co
 | `activeAnnotation` | `active-annotation` | `string` | `null` | Grifo destacado com contorno. |
 | `pendingRange` | — | `{ start, end } \| null` | `null` | Trecho em edição, desenhado tracejado (veja §8). |
 | `contextLength` | `context-length` | `number` | `32` | Caracteres de `prefix`/`suffix` na seleção. |
+| `popoverAutofocus` | `popover-autofocus` | `boolean` | `false` | Foca o primeiro campo do slot `selection-popover` quando ele abre. |
 | `noSelection` | `no-selection` | `boolean` | `false` | Desliga os eventos de seleção. |
 | `fullscreen` | — | `boolean` | — | Getter: em tela cheia. O componente põe o atributo `fullscreen` no host (para CSS). |
 | `fullscreenMode` | — | `'native' \| 'immersive' \| null` | — | Getter. O host recebe `fullscreen-mode="native\|immersive"`. |
@@ -59,6 +60,7 @@ Getters: `plainText`, `resolvedBlocks`, `blockOffsets`, `selection`, `scrollElem
 | `enterFullscreen()` / `exitFullscreen()` | Controle explícito. |
 | `stepFontSize(1 \| -1)` | Igual aos botões A+/A−. |
 | `toggleReadingWidth()` | Alterna estreita/larga. |
+| `focusSelectionPopover()` | Foca o primeiro campo do slot `selection-popover`. |
 | `clearSelection()` | Remove a seleção (DOM e estado) e esconde o popover. |
 | `scrollToAnnotation(id)` | Rola até o grifo e o faz piscar. Retorna `false` se ele não estiver desenhado. |
 | `scrollToOffset(offset)` | Rola até o bloco do offset. |
@@ -126,6 +128,7 @@ reader.annotations = trechos
 
 ## 8. Popover e trecho pendente
 
+- `fzl-reader-selection` é disparado **depois** da renderização que mostra o popover, então o app pode focar um campo dele no próprio listener. Ou use `popover-autofocus`.
 - O slot `selection-popover` aparece abaixo da seleção, dentro da área de texto, e rola junto com ela. Fica oculto sem seleção ou sem conteúdo.
 - Ao focar um campo do popover (ou do slot `actions`), o navegador tira a seleção visual. O leitor **mantém** `reader.selection` enquanto o foco estiver em conteúdo dele, ou enquanto `pendingRange` cobrir a seleção.
 - `pendingRange` desenha o trecho com fundo azul tracejado (`--fzl-reader-pending`), para o pesquisador continuar vendo o que vai salvar. Zere-o ao salvar ou cancelar.

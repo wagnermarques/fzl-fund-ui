@@ -419,3 +419,26 @@ describe('<fzl-document-reader> pendingRange', () => {
     expect(el.selection?.text).toBe('Primeiro');
   });
 });
+
+describe('<fzl-document-reader> popover timing', () => {
+  it('fires fzl-reader-selection after the popover is visible and autofocuses its field', async () => {
+    const el = await mount({ text: DOC, popoverAutofocus: true });
+    const input = document.createElement('input');
+    input.slot = 'selection-popover';
+    el.appendChild(input);
+    await el.updateComplete;
+    let hiddenAtEvent = null;
+    el.addEventListener('fzl-reader-selection', () => {
+      hiddenAtEvent = el.shadowRoot.querySelector('.sel-pop').hidden;
+    });
+    const node = textNodeOf(el.shadowRoot.querySelector('.blk'));
+    const range = document.createRange();
+    range.setStart(node, 0);
+    range.setEnd(node, 8);
+    vi.spyOn(el, 'getSelectionRange').mockReturnValue(range);
+    document.dispatchEvent(new Event('selectionchange'));
+    await new Promise((r) => setTimeout(r, 200));
+    expect(hiddenAtEvent).toBe(false);
+    expect(document.activeElement).toBe(input);
+  });
+});

@@ -425,6 +425,9 @@ export class FzlDocumentReader extends FzlWidgetMixin(LitElement) {
   /** Characters of context kept in `prefix`/`suffix` of `fzl-reader-selection`. */
   @property({ type: Number, attribute: 'context-length' }) contextLength = FZL_READER_CONTEXT_LENGTH;
 
+  /** Focuses the first field of the `selection-popover` slot when it opens. */
+  @property({ type: Boolean, attribute: 'popover-autofocus' }) popoverAutofocus = false;
+
   /** Disables `fzl-reader-selection` events. */
   @property({ type: Boolean, attribute: 'no-selection' }) noSelection = false;
 
@@ -859,12 +862,32 @@ export class FzlDocumentReader extends FzlWidgetMixin(LitElement) {
     this._selection = detail;
     this._popoverPos = detail ? this._computePopoverPos(detail) : null;
     if (detail) {
-      this.dispatchEvent(
-        new CustomEvent<FzlReaderSelectionDetail>('fzl-reader-selection', { detail, bubbles: true, composed: true }),
-      );
+      // Fired after the render that shows the popover, so listeners can focus its fields.
+      void this.updateComplete.then(() => {
+        if (this._selection !== detail) return;
+        this.dispatchEvent(
+          new CustomEvent<FzlReaderSelectionDetail>('fzl-reader-selection', { detail, bubbles: true, composed: true }),
+        );
+        if (this.popoverAutofocus) this.focusSelectionPopover();
+      });
     } else if (had) {
       this.dispatchEvent(new CustomEvent('fzl-reader-selection-clear', { bubbles: true, composed: true }));
     }
+  }
+
+  /** Focuses the first focusable element of the `selection-popover` slot. Returns `true` on success. */
+  focusSelectionPopover(): boolean {
+    const slot = this.renderRoot?.querySelector<HTMLSlotElement>('slot[name="selection-popover"]');
+    const selector =
+      'input:not([disabled]):not([type="hidden"]), textarea:not([disabled]), select:not([disabled]), button:not([disabled]), [contenteditable=""], [contenteditable="true"], [tabindex]:not([tabindex="-1"])';
+    for (const el of slot?.assignedElements({ flatten: true }) ?? []) {
+      const target = (el.matches(selector) ? el : el.querySelector(selector)) as HTMLElement | null;
+      if (target) {
+        target.focus();
+        return true;
+      }
+    }
+    return false;
   }
 
   private _computePopoverPos(detail: FzlReaderSelectionDetail): { top: number; left: number } | null {

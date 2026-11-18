@@ -129,6 +129,7 @@ reader.annotations = trechos
 ## 8. Popover e trecho pendente
 
 - `fzl-reader-selection` é disparado **depois** da renderização que mostra o popover, então o app pode focar um campo dele no próprio listener. Ou use `popover-autofocus`.
+- **Deixe o conteúdo do slot `selection-popover` sempre renderizado** (o leitor o esconde sem seleção). Se o app só criar o formulário ao receber `fzl-reader-selection`, o popover não abre a tempo e `popover-autofocus` não encontra o campo.
 - O slot `selection-popover` aparece abaixo da seleção, dentro da área de texto, e rola junto com ela. Fica oculto sem seleção ou sem conteúdo.
 - Ao focar um campo do popover (ou do slot `actions`), o navegador tira a seleção visual. O leitor **mantém** `reader.selection` enquanto o foco estiver em conteúdo dele, ou enquanto `pendingRange` cobrir a seleção.
 - `pendingRange` desenha o trecho com fundo azul tracejado (`--fzl-reader-pending`), para o pesquisador continuar vendo o que vai salvar. Zere-o ao salvar ou cancelar.

@@ -19,6 +19,7 @@ import { buildTextQuote, FZL_READER_CONTEXT_LENGTH } from './document-reader.anc
 
 export * from './document-reader.types';
 export * from './document-reader.anchoring';
+export * from './document-reader.pdf';
 
 export type FzlReaderFullscreenMode = 'native' | 'immersive';
 

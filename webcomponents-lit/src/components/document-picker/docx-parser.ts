@@ -5,7 +5,7 @@ export interface FzlDocxRun {
   underline?: boolean;
 }
 
-export type FzlDocxBlock =
+export type FzlDocxBlock = (
   | {
       type: 'heading';
       level: 1 | 2 | 3;
@@ -26,7 +26,11 @@ export type FzlDocxBlock =
       type: 'table';
       rows: string[][];
       text: string;
-    };
+    }
+) & {
+  /** Source page (1-based) — set for PDFs extracted with `extractPdfBlocks`. */
+  page?: number;
+};
 
 export interface FzlDocxParseResult {
   textContent: string;

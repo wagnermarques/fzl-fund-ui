@@ -147,7 +147,29 @@ reader.annotations = trechos
 - **`snap-to-words`:** ao soltar, uma seleção como "uldade de acessar a internet na esc" vira "dificuldade de acessar a internet na escola". Letras, números, acentos e `-`/`'` entre letras contam como palavra. O evento já sai ajustado e a seleção visível é atualizada. Também exportado: `snapRangeToWords(texto, start, end)`.
 - **Painel lateral (`aside`):** conteúdo do slot `aside` aparece à direita da área de texto (embaixo quando o leitor tem menos de 640px). Fica visível também em tela cheia. O botão de painel na barra só aparece quando o slot tem conteúdo. Tamanho: `--fzl-reader-aside-width` (320px) e `--fzl-reader-aside-height` (40%).
 
-## 10. Personalização
+## 10. PDF
+
+`extractPdfBlocks(fonte, { pdfjs, ... })` lê a camada de texto de um PDF (`File`/`Blob`/`ArrayBuffer`/`Uint8Array`) e devolve blocos prontos para o leitor, cada um com `page`.
+
+```ts
+import { extractPdfBlocks } from '@fzl/webcomponents-lit/document-reader';
+import * as pdfjs from 'pdfjs-dist';
+import workerSrc from 'pdfjs-dist/build/pdf.worker.min.mjs?url'; // Vite: o worker vira um asset do app
+pdfjs.GlobalWorkerOptions.workerSrc = workerSrc;
+
+const { blocks, text, pageCount, needsOcr, title } = await extractPdfBlocks(file, { pdfjs });
+if (needsOcr) avisar('PDF escaneado: sem texto selecionável (OCR ainda não suportado).');
+reader.blocks = blocks;
+```
+
+- **O pdf.js não é dependência deste pacote.** O app instala `pdfjs-dist` e passa o módulo (ou uma função que o carrega sob demanda, ex.: `pdfjs: () => import('pdfjs-dist')`). Assim, quem não usa PDF não carrega ~1 MB.
+- Montagem do texto: junta as linhas em parágrafos (pelo espaçamento vertical e pelas frases curtas no fim do parágrafo). Remove a hifenização de fim de linha ("difi-" + "culdade" → "dificuldade", só quando a linha seguinte começa em minúscula). Detecta títulos pelo tamanho da fonte. Remove cabeçalhos e rodapés repetidos (em 3 páginas ou mais) e números de página soltos. Também continua um parágrafo na página seguinte quando a frase não terminou; nesse caso, `page` é a página onde o parágrafo começa.
+- Opções: `removeHeadersFooters`, `dehyphenate`, `mergeAcrossPages`, `detectHeadings` (todas `true`), `password`, `maxPages`, `signal` (`AbortSignal`), `onProgress(page, total)`.
+- `needsOcr: true` quando o PDF tem menos de ~20 caracteres de texto por página (PDF escaneado). Nesse caso `blocks` vem vazio ou quase vazio.
+- `pdfPagesToBlocks(paginas, opções)` é a parte pura (recebe os `items` de `page.getTextContent()`), útil para testes ou para outro extrator.
+- No `<fzl-document-picker>`: `picker.pdfTextExtractor = (file) => extractPdfBlocks(file, { pdfjs })` preenche `textContent`, `docxBlocks` (com `page`), `pageCount` e `pdfNeedsOcr` dos PDFs, como já acontece com DOCX.
+
+## 11. Personalização
 
 - Slots: `actions` (botões na barra; a barra quebra linha quando falta espaço, sem esmagar o título), `selection-popover`, `aside`, `empty` (estado vazio).
 - Partes: `toolbar`, `title`, `scroller`, `page`, `selection-popover`, `annotation` (e `pending`), `aside`, `page-marker`.

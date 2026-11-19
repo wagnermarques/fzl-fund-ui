@@ -93,6 +93,10 @@ export interface FzlDocumentItem {
   lastModified: number;
   textContent?: string;
   docxBlocks?: FzlDocxBlock[];
+  /** PDF only: `true` when the PDF has no text layer (scanned; needs OCR). */
+  pdfNeedsOcr?: boolean;
+  /** PDF only: number of pages. */
+  pageCount?: number;
   objectUrl?: string;
   file?: File;
   tags: string[];
@@ -320,3 +324,14 @@ export const SAMPLE_DOCUMENTS: FzlDocumentItem[] = [
     uploadStatus: 'idle',
   },
 ];
+
+/**
+ * Optional PDF text extractor for `<fzl-document-picker>` (e.g. `extractPdfBlocks`
+ * bound to a pdf.js instance). Keeps pdf.js out of the picker bundle.
+ */
+export type FzlPdfTextExtractor = (file: File) => Promise<{
+  text: string;
+  blocks: { type: string; text: string; level?: number; page?: number }[];
+  pageCount?: number;
+  needsOcr?: boolean;
+}>;

@@ -102,3 +102,16 @@ Para integrar o `<fzl-document-picker>` com o Google Drive sem pedir acesso irre
   };
 </script>
 ```
+
+
+## PDF com texto selecionável
+
+Por padrão, PDFs entram só com `objectUrl`. Para extrair o texto (parágrafos com `page`), informe um extrator. O pdf.js fica por conta do app:
+
+```ts
+import { extractPdfBlocks } from '@fzl/webcomponents-lit/document-reader';
+import * as pdfjs from 'pdfjs-dist';
+picker.pdfTextExtractor = (file) => extractPdfBlocks(file, { pdfjs });
+```
+
+O item recebe `textContent`, `docxBlocks` (com `page`), `pageCount` e `pdfNeedsOcr`. Falhas disparam `fzl-document-error`. Detalhes em [document-reader.md](./document-reader.md#10-pdf).

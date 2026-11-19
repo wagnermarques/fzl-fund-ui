@@ -23,6 +23,7 @@ import {
   isFileSystemAccessSupported,
   isTextReadable,
   normalizeWellKnownDirectory,
+  type FzlPdfTextExtractor,
 } from './document-picker.types';
 import {
   FzlCloudUploadController,
@@ -611,6 +612,12 @@ export class FzlDocumentPicker extends FzlWidgetMixin(LitElement) {
 
   @property({ type: String }) mode: FzlDocumentPickerMode = 'all';
   @property({ type: String }) accept = '.txt,.md,.pdf,.csv,.json,.doc,.docx,.png,.jpg';
+
+  /**
+   * Optional PDF text extractor. When set, PDFs get `textContent`/`docxBlocks` (with `page`)
+   * like DOCX. Example: `picker.pdfTextExtractor = (f) => extractPdfBlocks(f, { pdfjs })`.
+   */
+  @property({ attribute: false }) pdfTextExtractor: FzlPdfTextExtractor | null = null;
   @property({ type: Boolean }) multiple = true;
   @property({ type: Number, attribute: 'max-file-size' }) maxFileSize = 26214400;
   @property({ type: String }) endpoint = '';
@@ -855,6 +862,8 @@ export class FzlDocumentPicker extends FzlWidgetMixin(LitElement) {
       const { extension, category } = detectDocumentCategory(file.name, file.type);
       let textContent: string | undefined;
       let docxBlocks: FzlDocxBlock[] | undefined;
+      let pdfNeedsOcr: boolean | undefined;
+      let pageCount: number | undefined;
 
       if (isDocxDocument(file.name, file.type)) {
         try {
@@ -867,6 +876,22 @@ export class FzlDocumentPicker extends FzlWidgetMixin(LitElement) {
             err instanceof Error
               ? err.message
               : `Não foi possível ler o arquivo .docx "${file.name}".`;
+          this._errorMessage = msg;
+          this.emit('fzl-document-error', { error: msg, fileName: file.name });
+        }
+      } else if (category === 'pdf' && this.pdfTextExtractor) {
+        try {
+          const extracted = await this.pdfTextExtractor(file);
+          textContent = extracted.text;
+          docxBlocks = (extracted.blocks ?? []).map((b) =>
+            b.type === 'heading'
+              ? { type: 'heading', level: (Math.min(3, Math.max(1, b.level ?? 2)) as 1 | 2 | 3), text: b.text, runs: [{ text: b.text }], page: b.page }
+              : { type: b.type === 'list-item' ? 'list-item' : 'paragraph', text: b.text, runs: [{ text: b.text }], page: b.page },
+          );
+          pdfNeedsOcr = extracted.needsOcr;
+          pageCount = extracted.pageCount;
+        } catch (err) {
+          const msg = err instanceof Error ? err.message : `Não foi possível extrair o texto do PDF "${file.name}".`;
           this._errorMessage = msg;
           this.emit('fzl-document-error', { error: msg, fileName: file.name });
         }
@@ -904,6 +929,8 @@ export class FzlDocumentPicker extends FzlWidgetMixin(LitElement) {
         lastModified: file.lastModified || Date.now(),
         textContent,
         docxBlocks,
+        ...(pdfNeedsOcr !== undefined ? { pdfNeedsOcr } : {}),
+        ...(pageCount !== undefined ? { pageCount } : {}),
         objectUrl,
         file,
         tags: existingIdx >= 0 ? [...this._documents[existingIdx].tags] : [],

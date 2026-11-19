@@ -12,6 +12,8 @@ export interface FzlReaderBlock {
   text: string;
   /** Heading level (1–3). Defaults to 2. */
   level?: number;
+  /** Source page (1-based), e.g. for PDF. The reader shows a "p. N" marker when it changes. */
+  page?: number;
 }
 
 export type FzlReaderWidth = 'narrow' | 'wide';

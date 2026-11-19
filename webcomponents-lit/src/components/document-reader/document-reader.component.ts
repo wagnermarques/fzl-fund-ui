@@ -60,6 +60,10 @@ export interface FzlReaderSelectionDetail {
   blockIndex: number;
   /** Block where the selection ends. */
   endBlockIndex: number;
+  /** Page of the first selected character (only when blocks have `page`). */
+  page?: number;
+  /** Page of the last selected character (only when blocks have `page`). */
+  endPage?: number;
   /** Viewport rect of the selection (for positioning UI). */
   rect: FzlReaderSelectionRect | null;
 }
@@ -93,6 +97,7 @@ const icon = (path: TemplateResult) =>
 const ICON_ENTER_FS = icon(svg`<path fill="currentColor" d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/>`);
 const ICON_EXIT_FS = icon(svg`<path fill="currentColor" d="M5 16h3v3h2v-5H5v2zm3-8H5v2h5V5H8v3zm6 11h2v-3h3v-2h-5v5zm2-11V5h-2v5h5V8h-3z"/>`);
 const ICON_WIDE = icon(svg`<path fill="currentColor" d="M3 5h18v2H3zm0 12h18v2H3zM7 11l-4 1 4 1v-2zm10 0v2l4-1-4-1zM8 11h8v2H8z"/>`);
+const ICON_ASIDE = icon(svg`<path fill="currentColor" d="M3 5h18v14H3V5zm2 2v10h9V7H5zm11 0v10h3V7h-3z"/>`);
 const ICON_NARROW = icon(svg`<path fill="currentColor" d="M7 5h10v2H7zm0 12h10v2H7zM3 11l4 1-4 1v-2zm18 0v2l-4-1 4-1zM9 11h6v2H9z"/>`);
 
 /**
@@ -129,10 +134,12 @@ const ICON_NARROW = icon(svg`<path fill="currentColor" d="M7 5h10v2H7zm0 12h10v2
  * @fires {CustomEvent<FzlReaderSelectionDetail>} fzl-reader-selection - Text selected inside the reader (after the pointer is released)
  * @fires {CustomEvent<void>} fzl-reader-selection-clear - The selection was removed
  * @fires {CustomEvent<FzlReaderAnnotationClickDetail>} fzl-reader-annotation-click - A highlight was clicked
+ * @fires {CustomEvent<{ open: boolean }>} fzl-reader-aside-toggle - The side panel was opened/closed by the user
  *
  * @slot actions - Extra buttons in the toolbar
  * @slot empty - Content shown when there is no text
  * @slot selection-popover - Small UI shown under the current selection (e.g. title field + Save)
+ * @slot aside - Collapsible side panel (right; below the text on narrow widths), visible in fullscreen too
  *
  * @csspart toolbar - The top bar
  * @csspart title - The title in the toolbar
@@ -140,10 +147,14 @@ const ICON_NARROW = icon(svg`<path fill="currentColor" d="M7 5h10v2H7zm0 12h10v2
  * @csspart page - The text column
  * @csspart selection-popover - Container of the `selection-popover` slot
  * @csspart annotation - Each highlight `<mark>`
+ * @csspart aside - The side panel
+ * @csspart page-marker - The "p. N" page marker
  *
  * @cssprop --fzl-reader-height - Host height (default 100%)
  * @cssprop --fzl-reader-font-family - Font of the text
  * @cssprop --fzl-reader-z-index - z-index of the immersive overlay
+ * @cssprop --fzl-reader-aside-width - Width of the side panel (default 320px)
+ * @cssprop --fzl-reader-aside-height - Height of the side panel on narrow widths (default 40%)
  */
 export class FzlDocumentReader extends FzlWidgetMixin(LitElement) {
   static override styles = [
@@ -278,9 +289,60 @@ export class FzlDocumentReader extends FzlWidgetMixin(LitElement) {
         cursor: default;
       }
 
+      .body {
+        flex: 1 1 auto;
+        min-height: 0;
+        display: flex;
+      }
+      .aside {
+        flex: none;
+        width: var(--fzl-reader-aside-width, 320px);
+        max-width: 50%;
+        border-left: 1px solid var(--_fzl-color-border, #e2e8f0);
+        background: var(--_fzl-color-surface, #ffffff);
+        overflow: auto;
+        overscroll-behavior: contain;
+      }
+      .aside[hidden] {
+        display: none;
+      }
+      :host([data-narrow]) .body {
+        flex-direction: column;
+      }
+      :host([data-narrow]) .aside {
+          width: auto;
+          max-width: none;
+          height: var(--fzl-reader-aside-height, 40%);
+          border-left: none;
+          border-top: 1px solid var(--_fzl-color-border, #e2e8f0);
+      }
+      .pg {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin: 1.2em 0 0.8em;
+        font-family: var(--_fzl-font-family);
+        font-size: 0.7rem;
+        color: var(--_fzl-color-text-muted, #64748b);
+        user-select: none;
+        -webkit-user-select: none;
+      }
+      .pg::before {
+        content: attr(data-label);
+        flex: none;
+      }
+      .pg::after {
+        content: '';
+        flex: 1;
+        border-top: 1px dashed var(--_fzl-color-border, #e2e8f0);
+      }
+      .pg:first-child {
+        margin-top: 0;
+      }
       .scroller {
         flex: 1 1 auto;
         min-height: 0;
+        min-width: 0;
         overflow-y: auto;
         overscroll-behavior: contain;
         -webkit-overflow-scrolling: touch;
@@ -431,6 +493,14 @@ export class FzlDocumentReader extends FzlWidgetMixin(LitElement) {
   /** Disables `fzl-reader-selection` events. */
   @property({ type: Boolean, attribute: 'no-selection' }) noSelection = false;
 
+  /** Expands selections to whole words (and updates the visible selection). */
+  @property({ type: Boolean, attribute: 'snap-to-words' }) snapToWords = false;
+
+  /** Whether the `aside` panel is open. */
+  @property({ type: Boolean, attribute: 'aside-open', reflect: true }) asideOpen = false;
+
+  @state() private _hasAsideContent = false;
+
   @state() private _selection: FzlReaderSelectionDetail | null = null;
   @state() private _popoverPos: { top: number; left: number } | null = null;
   @state() private _hasPopoverContent = false;
@@ -455,6 +525,8 @@ export class FzlDocumentReader extends FzlWidgetMixin(LitElement) {
   private _usingPopover = false;
   private _annotations: (FzlReaderAnnotation & { pending?: boolean })[] = [];
   private _pointerSelecting = false;
+  private _suppressSnap = false;
+  private _resizeObserver: ResizeObserver | null = null;
   private _lastPointerInPopover = false;
   private _selectionTimer: ReturnType<typeof setTimeout> | null = null;
 
@@ -491,6 +563,13 @@ export class FzlDocumentReader extends FzlWidgetMixin(LitElement) {
     window.addEventListener('pointerup', this._onPointerUp, true);
     window.addEventListener('pointercancel', this._onPointerUp, true);
     window.addEventListener('pointerdown', this._onWindowPointerDown, true);
+    if (typeof ResizeObserver !== 'undefined') {
+      this._resizeObserver ??= new ResizeObserver((entries) => {
+        const width = entries[entries.length - 1]?.contentRect.width ?? this.clientWidth;
+        this.toggleAttribute('data-narrow', width > 0 && width < 640);
+      });
+      this._resizeObserver.observe(this);
+    }
   }
 
   override disconnectedCallback(): void {
@@ -503,6 +582,7 @@ export class FzlDocumentReader extends FzlWidgetMixin(LitElement) {
     window.removeEventListener('pointercancel', this._onPointerUp, true);
     window.removeEventListener('pointerdown', this._onWindowPointerDown, true);
     if (this._selectionTimer) clearTimeout(this._selectionTimer);
+    this._resizeObserver?.disconnect();
     if (this.fullscreenMode === 'immersive') this._setFullscreen(null);
   }
 
@@ -738,9 +818,19 @@ export class FzlDocumentReader extends FzlWidgetMixin(LitElement) {
     while (end > start && /\s/.test(text[end - 1])) end--;
     if (end <= start) return null;
 
+    let rectRange: Range = live;
+    if (this.snapToWords && !this._suppressSnap) {
+      const snapped = snapRangeToWords(text, start, end);
+      if (snapped.start !== start || snapped.end !== end) {
+        start = snapped.start;
+        end = snapped.end;
+        rectRange = this.offsetsToRange(start, end) ?? live;
+      }
+    }
+
     let rect: FzlReaderSelectionRect | null = null;
     try {
-      const r = live.getBoundingClientRect?.();
+      const r = rectRange.getBoundingClientRect?.();
       if (r) {
         rect = { x: r.x, y: r.y, width: r.width, height: r.height, top: r.top, right: r.right, bottom: r.bottom, left: r.left };
       }
@@ -754,8 +844,103 @@ export class FzlDocumentReader extends FzlWidgetMixin(LitElement) {
       end,
       blockIndex: this.blockIndexAt(start),
       endBlockIndex: this.blockIndexAt(end - 1),
+      ...this._pageFields(start, end),
       rect,
     };
+  }
+
+  private _pageFields(start: number, end: number): { page?: number; endPage?: number } {
+    const page = this.pageAt(start);
+    if (page === undefined) return {};
+    return { page, endPage: this.pageAt(end - 1) ?? page };
+  }
+
+  /** Source page of the canonical `offset` (only when blocks have `page`). */
+  pageAt(offset: number): number | undefined {
+    const page = this._blocks[this.blockIndexAt(offset)]?.page;
+    return typeof page === 'number' ? page : undefined;
+  }
+
+  /** DOM position (text node + offset) of a canonical offset, or `null`. */
+  protected domPointAt(offset: number, preferEnd = false): { node: Node; offset: number } | null {
+    const index = this.blockIndexAt(offset);
+    const block = this.renderRoot?.querySelector<HTMLElement>(`.blk[data-index="${index}"]`);
+    if (!block) return null;
+    let local = Math.max(0, Math.min(offset - (this._offsets[index] ?? 0), this._blocks[index]?.text.length ?? 0));
+    const walker = document.createTreeWalker(block, NodeFilter.SHOW_TEXT);
+    let node = walker.nextNode() as Text | null;
+    let last: Text | null = null;
+    while (node) {
+      const len = node.data.length;
+      if (local < len || (local === len && preferEnd)) return { node, offset: local };
+      local -= len;
+      last = node;
+      node = walker.nextNode() as Text | null;
+    }
+    return last ? { node: last, offset: last.data.length } : { node: block, offset: 0 };
+  }
+
+  /** Builds a DOM range for canonical offsets `[start, end)`. */
+  offsetsToRange(start: number, end: number): Range | null {
+    const a = this.domPointAt(start);
+    const b = this.domPointAt(end, true);
+    if (!a || !b) return null;
+    try {
+      const range = document.createRange();
+      range.setStart(a.node, a.offset);
+      range.setEnd(b.node, b.offset);
+      return range;
+    } catch {
+      return null;
+    }
+  }
+
+  /** Selects canonical offsets `[start, end)` in the document (visible selection). */
+  selectOffsets(start: number, end: number): boolean {
+    const range = this.offsetsToRange(start, end);
+    const sel = document.getSelection();
+    if (!range || !sel) return false;
+    try {
+      sel.setBaseAndExtent(range.startContainer, range.startOffset, range.endContainer, range.endOffset);
+      return true;
+    } catch {
+      try {
+        sel.removeAllRanges();
+        sel.addRange(range);
+        return true;
+      } catch {
+        return false;
+      }
+    }
+  }
+
+  /** Like `rangeToSelection`, ignoring `snapToWords`. */
+  rangeToSelectionRaw(range: AbstractRange): FzlReaderSelectionDetail | null {
+    this._suppressSnap = true;
+    try {
+      return this.rangeToSelection(range);
+    } finally {
+      this._suppressSnap = false;
+    }
+  }
+
+  // ---------------------------------------------------------------- aside
+
+  /** Opens/closes the `aside` panel. Emits `fzl-reader-aside-toggle`. */
+  toggleAside(force?: boolean): void {
+    const open = force ?? !this.asideOpen;
+    if (open === this.asideOpen) return;
+    this.asideOpen = open;
+    this.dispatchEvent(
+      new CustomEvent<{ open: boolean }>('fzl-reader-aside-toggle', { detail: { open }, bubbles: true, composed: true }),
+    );
+  }
+
+  private _onAsideSlotChange(event: Event) {
+    const slot = event.target as HTMLSlotElement;
+    this._hasAsideContent = slot.assignedNodes({ flatten: true }).some(
+      (n) => n.nodeType === Node.ELEMENT_NODE || (n.textContent ?? '').trim() !== '',
+    );
   }
 
   /** Index of the block containing the canonical `offset`. */
@@ -844,6 +1029,10 @@ export class FzlDocumentReader extends FzlWidgetMixin(LitElement) {
     const range = this.getSelectionRange();
     const detail = range ? this.rangeToSelection(range) : null;
     if (detail) {
+      if (this.snapToWords && range) {
+        const raw = this.rangeToSelectionRaw(range);
+        if (raw && (raw.start !== detail.start || raw.end !== detail.end)) this.selectOffsets(detail.start, detail.end);
+      }
       const prev = this._selection;
       if (!prev || prev.start !== detail.start || prev.end !== detail.end) this._setSelection(detail);
       return;
@@ -1037,6 +1226,16 @@ export class FzlDocumentReader extends FzlWidgetMixin(LitElement) {
         <div class="tools">
           <slot name="actions"></slot>
           <span class="sep" aria-hidden="true"></span>
+          ${this._hasAsideContent
+            ? html`<button
+                class="tool"
+                type="button"
+                aria-pressed=${this.asideOpen ? 'true' : 'false'}
+                aria-label=${this.asideOpen ? 'Fechar painel' : 'Abrir painel'}
+                title=${this.asideOpen ? 'Fechar painel' : 'Abrir painel'}
+                @click=${() => this.toggleAside()}
+              >${ICON_ASIDE}</button>`
+            : null}
           <button
             class="tool"
             type="button"
@@ -1077,6 +1276,7 @@ export class FzlDocumentReader extends FzlWidgetMixin(LitElement) {
   override render() {
     return html`
       ${this._renderToolbar()}
+      <div class="body">
       <div
         class="scroller"
         part="scroller"
@@ -1092,7 +1292,15 @@ export class FzlDocumentReader extends FzlWidgetMixin(LitElement) {
               style="font-size:${this.fontSize}px"
               @click=${this._onPageClick}
             >
-              ${this._blocks.map((block, index) => this.renderBlock(block, index))}
+              ${this._blocks.map((block, index) => {
+                const page = block.page;
+                const prev = index > 0 ? this._blocks[index - 1].page : undefined;
+                const marker =
+                  typeof page === 'number' && page !== prev
+                    ? html`<div class="pg" part="page-marker" data-page=${page} data-label=${`p. ${page}`} role="separator" aria-label=${`Página ${page}`}></div>`
+                    : null;
+                return html`${marker}${this.renderBlock(block, index)}`;
+              })}
               <div
                 class="sel-pop"
                 part="selection-popover"
@@ -1106,8 +1314,32 @@ export class FzlDocumentReader extends FzlWidgetMixin(LitElement) {
             </article>`
           : html`<div class="empty"><slot name="empty">Nenhum documento para exibir.</slot></div>`}
       </div>
+      <aside class="aside" part="aside" ?hidden=${!this.asideOpen || !this._hasAsideContent}>
+        <slot name="aside" @slotchange=${this._onAsideSlotChange}></slot>
+      </aside>
+      </div>
     `;
   }
+}
+
+const WORD_CHAR = /[\p{L}\p{N}\p{M}_]/u;
+const WORD_JOINER = /['’\-]/;
+
+function isWordAt(text: string, i: number): boolean {
+  const ch = text[i];
+  if (ch === undefined) return false;
+  if (WORD_CHAR.test(ch)) return true;
+  // Apostrophe/hyphen inside a word ("d'água", "guarda-chuva").
+  return WORD_JOINER.test(ch) && WORD_CHAR.test(text[i - 1] ?? '') && WORD_CHAR.test(text[i + 1] ?? '');
+}
+
+/** Expands `[start, end)` so it does not cut words in half. */
+export function snapRangeToWords(text: string, start: number, end: number): { start: number; end: number } {
+  let s = start;
+  let e = end;
+  if (isWordAt(text, s)) while (s > 0 && isWordAt(text, s - 1)) s--;
+  if (e > 0 && isWordAt(text, e - 1)) while (e < text.length && isWordAt(text, e)) e++;
+  return { start: s, end: e };
 }
 
 /** Converts a StaticRange (or Range) into a live Range. */

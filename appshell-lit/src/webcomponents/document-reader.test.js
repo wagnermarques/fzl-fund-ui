@@ -442,3 +442,99 @@ describe('<fzl-document-reader> popover timing', () => {
     expect(document.activeElement).toBe(input);
   });
 });
+
+import { snapRangeToWords } from '@fzl/webcomponents-lit/document-reader';
+
+describe('snap-to-words', () => {
+  it('snapRangeToWords expands partial words (accents, hyphen, apostrophe)', () => {
+    const t = 'a dificuldade de acessar a internet na escola';
+    const s = t.indexOf('uldade');
+    const e = t.indexOf('escola') + 3;
+    const r = snapRangeToWords(t, s, e);
+    expect(t.slice(r.start, r.end)).toBe('dificuldade de acessar a internet na escola');
+    const u = 'o guarda-chuva d’água ação';
+    const r2 = snapRangeToWords(u, u.indexOf('chu'), u.indexOf('água') + 2);
+    expect(u.slice(r2.start, r2.end)).toBe('guarda-chuva d’água');
+    expect(snapRangeToWords('um, dois', 0, 3)).toEqual({ start: 0, end: 3 });
+  });
+
+  it('emits the snapped selection and updates the visible selection', async () => {
+    const el = await mount({ text: DOC, snapToWords: true });
+    const node = textNodeOf(el.shadowRoot.querySelectorAll('.blk')[1]);
+    const range = document.createRange();
+    const i = node.data.indexOf('projeto');
+    range.setStart(node, i + 2);
+    range.setEnd(node, i + 11); // "ojeto mud"
+    const select = vi.spyOn(el, 'selectOffsets');
+    vi.spyOn(el, 'getSelectionRange').mockReturnValue(range);
+    const got = [];
+    el.addEventListener('fzl-reader-selection', (e) => got.push(e.detail.text));
+    document.dispatchEvent(new Event('selectionchange'));
+    await new Promise((r) => setTimeout(r, 200));
+    expect(got).toEqual(['projeto mudou']);
+    const start = DOC.indexOf('projeto mudou');
+    expect(select).toHaveBeenCalledWith(start, start + 13);
+    expect(el.offsetsToRange(start, start + 13).toString()).toBe('projeto mudou');
+  });
+});
+
+describe('page markers', () => {
+  const blocks = [
+    { type: 'paragraph', text: 'um', page: 1 },
+    { type: 'paragraph', text: 'dois', page: 1 },
+    { type: 'paragraph', text: 'três', page: 2 },
+  ];
+
+  it('renders a marker when the page changes, without adding text', async () => {
+    const el = await mount({ blocks });
+    const markers = [...el.shadowRoot.querySelectorAll('.pg')];
+    expect(markers.map((m) => m.dataset.label)).toEqual(['p. 1', 'p. 2']);
+    expect(markers.every((m) => m.textContent === '')).toBe(true);
+    expect(el.plainText).toBe('um\n\ndois\n\ntrês');
+    expect(el.pageAt(el.plainText.indexOf('três'))).toBe(2);
+  });
+
+  it('selection reports page and endPage', async () => {
+    const el = await mount({ blocks });
+    const b = el.shadowRoot.querySelectorAll('.blk');
+    const range = document.createRange();
+    range.setStart(textNodeOf(b[1]), 0);
+    range.setEnd(textNodeOf(b[2]), 4);
+    expect(el.rangeToSelection(range)).toMatchObject({ text: 'dois\n\ntrês', page: 1, endPage: 2 });
+  });
+
+  it('no page fields without pages', async () => {
+    const el = await mount({ text: DOC });
+    const range = document.createRange();
+    const n = textNodeOf(el.shadowRoot.querySelector('.blk'));
+    range.setStart(n, 0);
+    range.setEnd(n, 8);
+    expect(el.rangeToSelection(range).page).toBeUndefined();
+  });
+});
+
+describe('aside panel', () => {
+  it('shows a toolbar toggle only with aside content and toggles the panel', async () => {
+    const el = await mount({ text: DOC });
+    expect(el.shadowRoot.querySelector('button[aria-label="Abrir painel"]')).toBeNull();
+    const list = document.createElement('ul');
+    list.slot = 'aside';
+    el.appendChild(list);
+    await new Promise((r) => setTimeout(r, 0));
+    await el.updateComplete;
+    const btn = el.shadowRoot.querySelector('button[aria-label="Abrir painel"]');
+    expect(btn).not.toBeNull();
+    const aside = el.shadowRoot.querySelector('.aside');
+    expect(aside.hidden).toBe(true);
+    const events = [];
+    el.addEventListener('fzl-reader-aside-toggle', (e) => events.push(e.detail.open));
+    btn.click();
+    await el.updateComplete;
+    expect(el.asideOpen).toBe(true);
+    expect(el.hasAttribute('aside-open')).toBe(true);
+    expect(aside.hidden).toBe(false);
+    el.toggleAside(false);
+    await el.updateComplete;
+    expect(events).toEqual([true, false]);
+  });
+});

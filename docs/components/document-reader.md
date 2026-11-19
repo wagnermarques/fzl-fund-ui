@@ -46,6 +46,8 @@ O leitor ocupa `100%` da altura do pai (`--fzl-reader-height`). Dê altura ao co
 | `pendingRange` | — | `{ start, end } \| null` | `null` | Trecho em edição, desenhado tracejado (veja §8). |
 | `contextLength` | `context-length` | `number` | `32` | Caracteres de `prefix`/`suffix` na seleção. |
 | `popoverAutofocus` | `popover-autofocus` | `boolean` | `false` | Foca o primeiro campo do slot `selection-popover` quando ele abre. |
+| `snapToWords` | `snap-to-words` | `boolean` | `false` | Ao soltar, expande a seleção até palavras inteiras (também a seleção visível). |
+| `asideOpen` | `aside-open` | `boolean` | `false` | Painel lateral (slot `aside`) aberto. Refletido. |
 | `noSelection` | `no-selection` | `boolean` | `false` | Desliga os eventos de seleção. |
 | `fullscreen` | — | `boolean` | — | Getter: em tela cheia. O componente põe o atributo `fullscreen` no host (para CSS). |
 | `fullscreenMode` | — | `'native' \| 'immersive' \| null` | — | Getter. O host recebe `fullscreen-mode="native\|immersive"`. |
@@ -66,6 +68,10 @@ Getters: `plainText`, `resolvedBlocks`, `blockOffsets`, `selection`, `scrollElem
 | `scrollToOffset(offset)` | Rola até o bloco do offset. |
 | `rangeToSelection(range)` | Converte um `Range`/`StaticRange` do leitor em `{ text, start, end, prefix, suffix, ... }`. |
 | `blockIndexAt(offset)` | Índice do bloco que contém o offset. |
+| `pageAt(offset)` | Página de origem do offset (blocos com `page`). |
+| `selectOffsets(start, end)` | Seleciona visivelmente o intervalo. |
+| `offsetsToRange(start, end)` | `Range` do DOM para o intervalo. |
+| `toggleAside(force?)` | Abre/fecha o painel lateral e emite `fzl-reader-aside-toggle`. |
 
 ## 4. Tela cheia
 
@@ -79,8 +85,9 @@ Getters: `plainText`, `resolvedBlocks`, `blockOffsets`, `selection`, `scrollElem
 | --- | --- | --- |
 | `fzl-reader-fullscreen-change` | `{ fullscreen: boolean, mode: 'native' \| 'immersive' \| null }` | Entrou/saiu da tela cheia. |
 | `fzl-reader-preferences-change` | `{ fontSize, readingWidth }` | O usuário mudou fonte ou largura. Use para lembrar a preferência. |
-| `fzl-reader-selection` | `{ text, start, end, prefix, suffix, blockIndex, endBlockIndex, rect }` | Texto selecionado no leitor (ao soltar o ponteiro; pelo teclado/toque, após 150 ms). Espaços nas pontas são removidos. |
+| `fzl-reader-selection` | `{ text, start, end, prefix, suffix, blockIndex, endBlockIndex, page?, endPage?, rect }` | Texto selecionado no leitor (ao soltar o ponteiro; pelo teclado/toque, após 150 ms). Espaços nas pontas são removidos. |
 | `fzl-reader-selection-clear` | — | A seleção sumiu (exceto enquanto o foco está em conteúdo do próprio leitor, ou `pendingRange` cobre a seleção). |
+| `fzl-reader-aside-toggle` | `{ open }` | O usuário abriu/fechou o painel lateral. |
 | `fzl-reader-annotation-click` | `{ id, ids, annotation }` | Clique num grifo. `id` é o mais específico (menor); `ids`, todos sob o clique. |
 
 ## 6. Texto canônico e offsets
@@ -134,9 +141,15 @@ reader.annotations = trechos
 - Ao focar um campo do popover (ou do slot `actions`), o navegador tira a seleção visual. O leitor **mantém** `reader.selection` enquanto o foco estiver em conteúdo dele, ou enquanto `pendingRange` cobrir a seleção.
 - `pendingRange` desenha o trecho com fundo azul tracejado (`--fzl-reader-pending`), para o pesquisador continuar vendo o que vai salvar. Zere-o ao salvar ou cancelar.
 
-## 9. Personalização
+## 9. Páginas, palavras inteiras e painel lateral
 
-- Slots: `actions` (botões na barra; a barra quebra linha quando falta espaço, sem esmagar o título), `selection-popover`, `empty` (estado vazio).
-- Partes: `toolbar`, `title`, `scroller`, `page`, `selection-popover`, `annotation` (e `pending`).
-- Variáveis CSS: `--fzl-reader-height`, `--fzl-reader-font-family`, `--fzl-reader-z-index`, `--fzl-reader-highlight`, `--fzl-reader-pending`.
+- **Páginas:** blocos podem ter `page` (1-based, ex.: PDF). O leitor mostra um marcador discreto "p. N" quando a página muda. O marcador é desenhado só com CSS (`::before`), então não entra no texto nem nos offsets. A seleção traz `page`/`endPage` e `reader.pageAt(offset)` responde a página de qualquer offset.
+- **`snap-to-words`:** ao soltar, uma seleção como "uldade de acessar a internet na esc" vira "dificuldade de acessar a internet na escola". Letras, números, acentos e `-`/`'` entre letras contam como palavra. O evento já sai ajustado e a seleção visível é atualizada. Também exportado: `snapRangeToWords(texto, start, end)`.
+- **Painel lateral (`aside`):** conteúdo do slot `aside` aparece à direita da área de texto (embaixo quando o leitor tem menos de 640px). Fica visível também em tela cheia. O botão de painel na barra só aparece quando o slot tem conteúdo. Tamanho: `--fzl-reader-aside-width` (320px) e `--fzl-reader-aside-height` (40%).
+
+## 10. Personalização
+
+- Slots: `actions` (botões na barra; a barra quebra linha quando falta espaço, sem esmagar o título), `selection-popover`, `aside`, `empty` (estado vazio).
+- Partes: `toolbar`, `title`, `scroller`, `page`, `selection-popover`, `annotation` (e `pending`), `aside`, `page-marker`.
+- Variáveis CSS: `--fzl-reader-height`, `--fzl-reader-font-family`, `--fzl-reader-z-index`, `--fzl-reader-highlight`, `--fzl-reader-pending`, `--fzl-reader-aside-width`, `--fzl-reader-aside-height`.
 - Subclasse: sobrescreva `renderBlockText(block, index, offset)` (o padrão desenha os grifos) ou `renderBlock(block, index)`. Os nós de texto renderizados devem conter exatamente `block.text`, para os offsets continuarem válidos.

@@ -562,8 +562,10 @@ export class FzlDocumentReader extends FzlWidgetMixin(LitElement) {
     window.addEventListener('keydown', this._onKeydown);
     document.addEventListener('selectionchange', this._onSelectionChange);
     window.addEventListener('pointerup', this._onPointerUp, true);
-    window.addEventListener('pointercancel', this._onPointerUp, true);
+    window.addEventListener('mouseup', this._onPointerUp, true);
+    window.addEventListener('touchend', this._onPointerUp, true);
     window.addEventListener('pointerdown', this._onWindowPointerDown, true);
+    window.addEventListener('mousedown', this._onWindowPointerDown, true);
     if (typeof ResizeObserver !== 'undefined') {
       this._resizeObserver ??= new ResizeObserver((entries) => {
         const width = entries[entries.length - 1]?.contentRect.width ?? this.clientWidth;
@@ -580,8 +582,10 @@ export class FzlDocumentReader extends FzlWidgetMixin(LitElement) {
     window.removeEventListener('keydown', this._onKeydown);
     document.removeEventListener('selectionchange', this._onSelectionChange);
     window.removeEventListener('pointerup', this._onPointerUp, true);
-    window.removeEventListener('pointercancel', this._onPointerUp, true);
+    window.removeEventListener('mouseup', this._onPointerUp, true);
+    window.removeEventListener('touchend', this._onPointerUp, true);
     window.removeEventListener('pointerdown', this._onWindowPointerDown, true);
+    window.removeEventListener('mousedown', this._onWindowPointerDown, true);
     if (this._selectionTimer) clearTimeout(this._selectionTimer);
     this._resizeObserver?.disconnect();
     if (this.fullscreenMode === 'immersive') this._setFullscreen(null);
@@ -997,11 +1001,11 @@ export class FzlDocumentReader extends FzlWidgetMixin(LitElement) {
     return !!pop && event.composedPath().includes(pop);
   }
 
-  private _onWindowPointerDown = (event: PointerEvent) => {
+  private _onWindowPointerDown = (event: Event) => {
     this._lastPointerInPopover = this._isInPopover(event);
   };
 
-  private _onScrollerPointerDown = (event: PointerEvent) => {
+  private _onScrollerPointerDown = (event: Event) => {
     if (this._isInPopover(event)) return;
     this._pointerSelecting = true;
   };
@@ -1009,11 +1013,15 @@ export class FzlDocumentReader extends FzlWidgetMixin(LitElement) {
   private _onPointerUp = () => {
     if (!this._pointerSelecting) return;
     this._pointerSelecting = false;
-    this._scheduleSelectionRead(0);
+    this._scheduleSelectionRead(10);
   };
 
   private _onSelectionChange = () => {
     if (this._pointerSelecting) return; // read once, when the pointer is released
+    if (typeof window !== 'undefined') {
+      const mouseEvt = window.event as MouseEvent | undefined;
+      if (mouseEvt && (mouseEvt.buttons & 1) === 1) return;
+    }
     this._scheduleSelectionRead(150);
   };
 
@@ -1285,6 +1293,7 @@ export class FzlDocumentReader extends FzlWidgetMixin(LitElement) {
         role="region"
         aria-label=${this.documentTitle || 'Documento'}
         @pointerdown=${this._onScrollerPointerDown}
+        @mousedown=${this._onScrollerPointerDown}
       >
         ${this._blocks.length
           ? html`<article

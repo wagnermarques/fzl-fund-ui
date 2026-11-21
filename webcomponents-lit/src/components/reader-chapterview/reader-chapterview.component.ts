@@ -49,6 +49,7 @@ export class FzlReaderChapterView extends FzlWidgetMixin(LitElement) {
       :host {
         display: inline-block;
         vertical-align: middle;
+        max-width: 100%;
       }
 
       :host([hidden]) {
@@ -63,6 +64,7 @@ export class FzlReaderChapterView extends FzlWidgetMixin(LitElement) {
         align-items: center;
         justify-content: center;
         gap: var(--_fzl-space-1, 4px);
+        max-width: 100%;
         padding: var(--_fzl-space-1, 4px) var(--_fzl-space-3, 12px);
         border-radius: var(--_fzl-radius-full, 9999px);
         border: 1px solid var(--_fzl-color-border, #cac4cf);
@@ -76,8 +78,14 @@ export class FzlReaderChapterView extends FzlWidgetMixin(LitElement) {
           color var(--_fzl-transition-fast, 0.15s ease),
           box-shadow var(--_fzl-transition-fast, 0.15s ease);
         box-sizing: border-box;
+        text-align: left;
         text-decoration: none;
         outline: none;
+      }
+
+      .label {
+        min-width: 0;
+        overflow-wrap: anywhere;
       }
 
       .chip:hover:not(:disabled) {
@@ -325,6 +333,9 @@ export class FzlReaderChapterViewGroup extends FzlWidgetMixin(LitElement) {
         display: flex;
         align-items: center;
         gap: var(--_fzl-space-2, 8px);
+        max-width: 100%;
+        min-width: 0;
+        box-sizing: border-box;
       }
 
       :host([wrap]),
@@ -337,6 +348,8 @@ export class FzlReaderChapterViewGroup extends FzlWidgetMixin(LitElement) {
         align-items: center;
         gap: var(--_fzl-space-2, 8px);
         width: 100%;
+        max-width: 100%;
+        min-width: 0;
       }
 
       .group.wrap {

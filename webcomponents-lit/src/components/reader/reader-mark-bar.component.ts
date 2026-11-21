@@ -44,6 +44,7 @@ export class FzlReaderMarkBar extends FzlWidgetMixin(LitElement) {
         display: block;
         position: fixed;
         z-index: 9999;
+        max-width: calc(100vw - 16px);
         font-family: var(--_fzl-font-family);
         color: var(--_fzl-color-text, #0f172a);
         user-select: none;
@@ -71,6 +72,7 @@ export class FzlReaderMarkBar extends FzlWidgetMixin(LitElement) {
         display: inline-flex;
         align-items: center;
         gap: 6px;
+        max-width: 100%;
         padding: 6px 10px;
         background: rgba(255, 255, 255, 0.94);
         backdrop-filter: blur(14px);
@@ -251,6 +253,19 @@ export class FzlReaderMarkBar extends FzlWidgetMixin(LitElement) {
         transform: rotate(225deg);
       }
 
+      @media (max-width: 520px) {
+        .mark-bar {
+          flex-wrap: wrap;
+          justify-content: center;
+          border-radius: 18px;
+          padding: 6px 8px;
+          gap: 4px;
+        }
+        .divider {
+          display: none;
+        }
+      }
+
       /* High Contrast */
       @media (forced-colors: active) {
         .mark-bar {
@@ -374,7 +389,8 @@ export class FzlReaderMarkBar extends FzlWidgetMixin(LitElement) {
     if (this.mode === 'floating') {
       if (this._posX === null || this._posY === null) {
         // Safe elevated default: 76px from bottom, centered
-        const defaultLeft = Math.max(16, (vw - barWidth) / 2);
+        const effectiveWidth = Math.min(this.offsetWidth || barWidth, vw - 16);
+        const defaultLeft = Math.max(8, (vw - effectiveWidth) / 2);
         const defaultTop = Math.max(16, vh - barHeight - 76);
         this._posX = defaultLeft;
         this._posY = defaultTop;
@@ -418,7 +434,8 @@ export class FzlReaderMarkBar extends FzlWidgetMixin(LitElement) {
     const barHeight = 44;
 
     this._isTopFlipped = !this._isTopFlipped;
-    const defaultLeft = Math.max(16, (vw - barWidth) / 2);
+    const effectiveWidth = Math.min(this.offsetWidth || barWidth, vw - 16);
+    const defaultLeft = Math.max(8, (vw - effectiveWidth) / 2);
 
     if (this._isTopFlipped) {
       // Jump to top

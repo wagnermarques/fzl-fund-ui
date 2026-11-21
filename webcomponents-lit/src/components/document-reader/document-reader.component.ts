@@ -177,6 +177,9 @@ export class FzlDocumentReader extends FzlWidgetMixin(LitElement) {
       :host {
         display: flex;
         flex-direction: column;
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
         height: var(--fzl-reader-height, 100%);
         min-height: 0;
         font-family: var(--_fzl-font-family);
@@ -306,6 +309,9 @@ export class FzlDocumentReader extends FzlWidgetMixin(LitElement) {
       .body {
         flex: 1 1 auto;
         min-height: 0;
+        min-width: 0;
+        max-width: 100%;
+        overflow: hidden;
         display: flex;
       }
       .aside {
@@ -358,7 +364,7 @@ export class FzlDocumentReader extends FzlWidgetMixin(LitElement) {
         flex: 1 1 auto;
         min-height: 0;
         min-width: 0;
-        overflow-y: auto;
+        overflow: auto;
         overscroll-behavior: contain;
         -webkit-overflow-scrolling: touch;
       }
@@ -368,15 +374,20 @@ export class FzlDocumentReader extends FzlWidgetMixin(LitElement) {
       }
       .page {
         position: relative;
+        min-width: 0;
         margin: 0 auto;
         padding: 24px 20px 64px;
-        max-width: 72ch;
+        max-width: min(72ch, 100%);
         font-family: var(--fzl-reader-font-family, Georgia, 'Times New Roman', serif);
         line-height: 1.7;
         overflow-wrap: break-word;
+        word-break: break-word;
+      }
+      :host([data-narrow]) .page {
+        padding: 16px 12px 64px;
       }
       .page.wide {
-        max-width: 120ch;
+        max-width: min(120ch, 100%);
       }
       .blk {
         margin: 0 0 1em;
@@ -451,6 +462,7 @@ export class FzlDocumentReader extends FzlWidgetMixin(LitElement) {
       .sel-pop {
         position: absolute;
         z-index: 2;
+        max-width: calc(100% - 16px);
         transform: translateX(-50%);
         font-family: var(--_fzl-font-family);
         font-size: 0.875rem;
@@ -469,12 +481,17 @@ export class FzlDocumentReader extends FzlWidgetMixin(LitElement) {
       .pdf-container {
         display: flex;
         flex-direction: column;
-        align-items: center;
+        align-items: flex-start;
         gap: 20px;
         padding: 24px 16px 80px;
         background: var(--_fzl-color-surface-muted, #f1f5f9);
+        min-width: 100%;
+        width: max-content;
         min-height: 100%;
         box-sizing: border-box;
+      }
+      :host([data-narrow]) .pdf-container {
+        padding: 12px 8px 80px;
       }
       .pdf-page {
         position: relative;
@@ -1510,9 +1527,10 @@ export class FzlDocumentReader extends FzlWidgetMixin(LitElement) {
   fitPdfWidth(): void {
     const scroller = this.renderRoot?.querySelector<HTMLElement>('.scroller');
     if (!scroller || !this._defaultPageWidth) return;
-    const availableWidth = scroller.clientWidth - 48;
-    if (availableWidth > 200) {
-      this.pdfScale = Math.min(2.5, Math.max(0.6, Math.round((availableWidth / this._defaultPageWidth) * 100) / 100));
+    const pad = this.hasAttribute('data-narrow') ? 16 : 48;
+    const availableWidth = scroller.clientWidth - pad;
+    if (availableWidth > 120) {
+      this.pdfScale = Math.min(2.5, Math.max(0.3, Math.round((availableWidth / this._defaultPageWidth) * 100) / 100));
       this._renderedPages.clear();
       this.requestUpdate();
     }
@@ -1553,6 +1571,15 @@ export class FzlDocumentReader extends FzlWidgetMixin(LitElement) {
         const vp = page1.getViewport({ scale: 1 });
         this._defaultPageWidth = vp.width;
         this._defaultPageHeight = vp.height;
+
+        if (!this.hasAttribute('pdf-scale')) {
+          const scroller = this.renderRoot?.querySelector<HTMLElement>('.scroller');
+          const pad = this.hasAttribute('data-narrow') ? 16 : 48;
+          const availableWidth = (scroller?.clientWidth ?? 0) - pad;
+          if (availableWidth > 120 && this._defaultPageWidth * this.pdfScale > availableWidth) {
+            this.pdfScale = Math.min(2.5, Math.max(0.3, Math.floor((availableWidth / this._defaultPageWidth) * 100) / 100));
+          }
+        }
       }
     } catch (err: any) {
       console.warn('[fzl-document-reader] Falha ao carregar documento PDF:', err);

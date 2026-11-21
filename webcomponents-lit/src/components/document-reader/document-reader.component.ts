@@ -354,6 +354,7 @@ export class FzlDocumentReader extends FzlWidgetMixin(LitElement) {
         margin-top: 0;
       }
       .scroller {
+        position: relative;
         flex: 1 1 auto;
         min-height: 0;
         min-width: 0;
@@ -1135,14 +1136,29 @@ export class FzlDocumentReader extends FzlWidgetMixin(LitElement) {
     type ComposedSel = Selection & { getComposedRanges?: (...args: unknown[]) => StaticRange[] };
     const composed = sel as ComposedSel | null;
     if (root && composed && typeof composed.getComposedRanges === 'function') {
+      const shadowRoots: ShadowRoot[] = [];
+      let n: Node | null = this;
+      while (n) {
+        const r: Node | null = n instanceof ShadowRoot ? n : (n.getRootNode?.() ?? null);
+        if (r instanceof ShadowRoot && !shadowRoots.includes(r)) {
+          shadowRoots.push(r);
+        }
+        n = (r instanceof ShadowRoot && r.host) ? r.host : null;
+      }
+      if (!shadowRoots.includes(root)) shadowRoots.push(root);
+
       let ranges: StaticRange[] | undefined;
       try {
-        ranges = composed.getComposedRanges({ shadowRoots: [root] });
+        ranges = composed.getComposedRanges({ shadowRoots });
       } catch {
         try {
-          ranges = composed.getComposedRanges(root);
+          ranges = composed.getComposedRanges({ shadowRoots: [root] });
         } catch {
-          ranges = undefined;
+          try {
+            ranges = composed.getComposedRanges(root);
+          } catch {
+            ranges = undefined;
+          }
         }
       }
       const r = ranges?.[0];
@@ -1174,7 +1190,6 @@ export class FzlDocumentReader extends FzlWidgetMixin(LitElement) {
   };
 
   private _onPointerUp = () => {
-    if (!this._pointerSelecting) return;
     this._pointerSelecting = false;
     this._scheduleSelectionRead(10);
   };
@@ -1201,8 +1216,9 @@ export class FzlDocumentReader extends FzlWidgetMixin(LitElement) {
     const range = this.getSelectionRange();
 
     if (this.viewMode === 'pdf' && range && !range.collapsed) {
-      const pageDiv = (range.startContainer.parentElement?.closest('.pdf-page') ||
-        range.endContainer.parentElement?.closest('.pdf-page')) as HTMLElement | null;
+      const startEl = range.startContainer instanceof Element ? range.startContainer : range.startContainer.parentElement;
+      const endEl = range.endContainer instanceof Element ? range.endContainer : range.endContainer.parentElement;
+      const pageDiv = (startEl?.closest('.pdf-page') || endEl?.closest('.pdf-page')) as HTMLElement | null;
       if (pageDiv) {
         const pageNum = Number(pageDiv.dataset.pageNumber || '1');
         const text = range.toString().trim();

@@ -8,7 +8,9 @@ import { styleMap } from 'lit/directives/style-map.js';
 import { fzlDesignTokensCss } from '@fzl/design-tokens';
 import { FzlWidgetMixin } from '@fzl/core';
 import {
+  FzlPdfRect,
   FzlReaderBlock,
+  FzlReaderViewMode,
   FzlReaderWidth,
   normalizeReaderBlocks,
   readerBlocksFromText,
@@ -28,7 +30,7 @@ export interface FzlReaderFullscreenChangeDetail {
   mode: FzlReaderFullscreenMode | null;
 }
 
-/** A highlight drawn over the canonical plain text (`reader.plainText`). */
+/** A highlight drawn over the canonical plain text (`reader.plainText`) or PDF page. */
 export interface FzlReaderAnnotation {
   id: string;
   start: number;
@@ -37,6 +39,10 @@ export interface FzlReaderAnnotation {
   color?: string;
   /** Tooltip. */
   title?: string;
+  /** Source page (1-based), e.g. for PDF documents. */
+  page?: number;
+  /** Normalized bounding boxes (0..1) on the PDF page. */
+  rects?: FzlPdfRect[];
 }
 
 export interface FzlReaderSelectionRect {
@@ -67,6 +73,8 @@ export interface FzlReaderSelectionDetail {
   endPage?: number;
   /** Viewport rect of the selection (for positioning UI). */
   rect: FzlReaderSelectionRect | null;
+  /** Normalized bounding boxes (0..1) on the PDF page when selected in PDF view. */
+  rects?: FzlPdfRect[];
 }
 
 export interface FzlReaderAnnotationClickDetail {
@@ -100,6 +108,11 @@ const ICON_EXIT_FS = icon(svg`<path fill="currentColor" d="M5 16h3v3h2v-5H5v2zm3
 const ICON_WIDE = icon(svg`<path fill="currentColor" d="M3 5h18v2H3zm0 12h18v2H3zM7 11l-4 1 4 1v-2zm10 0v2l4-1-4-1zM8 11h8v2H8z"/>`);
 const ICON_ASIDE = icon(svg`<path fill="currentColor" d="M3 5h18v14H3V5zm2 2v10h9V7H5zm11 0v10h3V7h-3z"/>`);
 const ICON_NARROW = icon(svg`<path fill="currentColor" d="M7 5h10v2H7zm0 12h10v2H7zM3 11l4 1-4 1v-2zm18 0v2l-4-1 4-1zM9 11h6v2H9z"/>`);
+const ICON_PDF = icon(svg`<path fill="currentColor" d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/>`);
+const ICON_TEXT = icon(svg`<path fill="currentColor" d="M14 17H4v2h10v-2zm6-8H4v2h16V9zM4 15h16v-2H4v2zM4 5v2h16V5H4z"/>`);
+const ICON_ZOOM_IN = icon(svg`<path fill="currentColor" d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14zm.5-7H9v2H7v1h2v2h1v-2h2V9h-2z"/>`);
+const ICON_ZOOM_OUT = icon(svg`<path fill="currentColor" d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14zM7 9h5v1H7z"/>`);
+const ICON_FIT_WIDTH = icon(svg`<path fill="currentColor" d="M4 4h2v16H4zm14 0h2v16h-2zM8 13h8v-2H8zM7 12l3-3v2h4V9l3 3-3 3v-2h-4v2z"/>`);
 
 /**
  * Document Reader (`fzl-document-reader`).
@@ -450,6 +463,114 @@ export class FzlDocumentReader extends FzlWidgetMixin(LitElement) {
         text-align: center;
         color: var(--_fzl-color-text-muted, #64748b);
       }
+
+      /* PDF Viewer */
+      .pdf-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 20px;
+        padding: 24px 16px 80px;
+        background: var(--_fzl-color-surface-muted, #f1f5f9);
+        min-height: 100%;
+        box-sizing: border-box;
+      }
+      .pdf-page {
+        position: relative;
+        background: #ffffff;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.12), 0 1px 3px rgba(0, 0, 0, 0.08);
+        border-radius: 3px;
+        overflow: visible;
+        margin: 0 auto;
+      }
+      .pdf-canvas {
+        display: block;
+        width: 100%;
+        height: 100%;
+      }
+      .pdf-page-number {
+        position: absolute;
+        bottom: -22px;
+        right: 0;
+        font-family: var(--_fzl-font-family);
+        font-size: 0.75rem;
+        color: var(--_fzl-color-text-muted, #64748b);
+        user-select: none;
+        -webkit-user-select: none;
+      }
+      .textLayer {
+        position: absolute;
+        inset: 0;
+        overflow: clip;
+        opacity: 1;
+        line-height: 1;
+        text-size-adjust: none;
+        -webkit-text-size-adjust: none;
+        forced-color-adjust: none;
+        transform-origin: 0 0;
+        caret-color: CanvasText;
+        z-index: 2;
+      }
+      .textLayer :is(span, br) {
+        color: transparent;
+        position: absolute;
+        white-space: pre;
+        cursor: text;
+        transform-origin: 0% 0%;
+      }
+      .textLayer > :not(.markedContent),
+      .textLayer .markedContent span:not(.markedContent) {
+        z-index: 1;
+        --font-height: 0;
+        font-size: calc(var(--text-scale-factor, var(--total-scale-factor, 1)) * var(--font-height));
+        --scale-x: 1;
+        --rotate: 0deg;
+        transform: rotate(var(--rotate)) scaleX(var(--scale-x)) scale(var(--min-font-size-inv, 1));
+      }
+      .textLayer .markedContent {
+        display: contents;
+      }
+      .textLayer ::selection {
+        background: rgba(0, 106, 106, 0.35);
+      }
+      .pdf-highlights-layer {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        z-index: 3;
+      }
+      .pdf-annotation {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+      }
+      .pdf-highlight {
+        position: absolute;
+        pointer-events: auto;
+        cursor: pointer;
+        border-radius: 2px;
+        mix-blend-mode: multiply;
+        transition: opacity 0.15s ease;
+      }
+      .pdf-highlight:hover {
+        opacity: 0.85;
+        outline: 2px solid var(--_fzl-color-primary, #006a6a);
+      }
+      .pdf-highlight.active {
+        opacity: 0.9;
+        outline: 2px solid var(--_fzl-color-primary, #006a6a);
+      }
+      .pdf-highlight.flash {
+        animation: fzl-pdf-flash 1.2s ease-out;
+      }
+      @keyframes fzl-pdf-flash {
+        0%, 40% {
+          outline: 4px solid var(--_fzl-color-primary, #006a6a);
+        }
+        100% {
+          outline: 0 solid transparent;
+        }
+      }
     `,
   ];
 
@@ -499,6 +620,28 @@ export class FzlDocumentReader extends FzlWidgetMixin(LitElement) {
 
   /** Whether the `aside` panel is open. */
   @property({ type: Boolean, attribute: 'aside-open', reflect: true }) asideOpen = false;
+
+  /** PDF binary source (Blob, File, ArrayBuffer, Uint8Array or URL string). */
+  @property({ attribute: false }) pdfSource: Blob | File | ArrayBuffer | Uint8Array | string | null = null;
+
+  /** PDF.js module or a function/promise returning it. */
+  @property({ attribute: false }) pdfjs: any = null;
+
+  /** View mode: 'text' (default) or 'pdf' (when pdfSource is present). */
+  @property({ type: String, attribute: 'view-mode' }) viewMode: FzlReaderViewMode = 'text';
+
+  /** PDF zoom scale factor. Defaults to 1.15. */
+  @property({ type: Number, attribute: 'pdf-scale' }) pdfScale = 1.15;
+
+  @state() private _pdfDoc: any = null;
+  @state() private _pdfPageCount = 0;
+  @state() private _defaultPageWidth = 595;
+  @state() private _defaultPageHeight = 842;
+  @state() private _pdfLoading = false;
+  @state() private _pdfError: string | null = null;
+  private _renderedPages = new Set<number>();
+  private _renderingPages = new Set<number>();
+  private _pdfObserver: IntersectionObserver | null = null;
 
   @state() private _hasAsideContent = false;
 
@@ -588,10 +731,18 @@ export class FzlDocumentReader extends FzlWidgetMixin(LitElement) {
     window.removeEventListener('mousedown', this._onWindowPointerDown, true);
     if (this._selectionTimer) clearTimeout(this._selectionTimer);
     this._resizeObserver?.disconnect();
+    this._pdfObserver?.disconnect();
+    this._pdfObserver = null;
+    this._pdfDoc?.destroy?.();
     if (this.fullscreenMode === 'immersive') this._setFullscreen(null);
   }
 
   protected override willUpdate(changed: PropertyValues<this>): void {
+    if (changed.has('pdfSource')) {
+      if (this.pdfSource && !this.hasAttribute('view-mode')) {
+        this.viewMode = 'pdf';
+      }
+    }
     if (changed.has('blocks') || changed.has('text')) {
       const blocks = normalizeReaderBlocks(this.blocks);
       this._blocks = blocks.length ? blocks : readerBlocksFromText(this.text);
@@ -615,6 +766,18 @@ export class FzlDocumentReader extends FzlWidgetMixin(LitElement) {
     if (changed.has('fontSize')) {
       const size = Number(this.fontSize);
       this.fontSize = Number.isFinite(size) ? Math.min(MAX_FONT_SIZE, Math.max(MIN_FONT_SIZE, size)) : 18;
+    }
+  }
+
+  protected override updated(changed: PropertyValues<this>): void {
+    super.updated(changed);
+    if (changed.has('pdfSource') || changed.has('pdfjs')) {
+      void this._loadPdf();
+    }
+    if (this.viewMode === 'pdf' && this._pdfDoc) {
+      this._setupPdfIntersectionObserver();
+      if (!this._renderedPages.has(1)) void this._renderPage(1);
+      if (this._pdfPageCount >= 2 && !this._renderedPages.has(2)) void this._renderPage(2);
     }
   }
 
@@ -1036,6 +1199,55 @@ export class FzlDocumentReader extends FzlWidgetMixin(LitElement) {
   private _readSelection() {
     if (this.noSelection || !this.isConnected) return;
     const range = this.getSelectionRange();
+
+    if (this.viewMode === 'pdf' && range && !range.collapsed) {
+      const pageDiv = (range.startContainer.parentElement?.closest('.pdf-page') ||
+        range.endContainer.parentElement?.closest('.pdf-page')) as HTMLElement | null;
+      if (pageDiv) {
+        const pageNum = Number(pageDiv.dataset.pageNumber || '1');
+        const text = range.toString().trim();
+        if (text) {
+          const pageRect = pageDiv.getBoundingClientRect();
+          const clientRects = Array.from(range.getClientRects()).filter((r) => r.width > 0 && r.height > 0);
+          const rects: FzlPdfRect[] = clientRects.map((r) => ({
+            left: Math.max(0, (r.left - pageRect.left) / pageRect.width),
+            top: Math.max(0, (r.top - pageRect.top) / pageRect.height),
+            width: Math.min(1, r.width / pageRect.width),
+            height: Math.min(1, r.height / pageRect.height),
+          }));
+
+          const selRect = range.getBoundingClientRect();
+          const rect: FzlReaderSelectionRect = {
+            x: selRect.x,
+            y: selRect.y,
+            width: selRect.width,
+            height: selRect.height,
+            top: selRect.top,
+            right: selRect.right,
+            bottom: selRect.bottom,
+            left: selRect.left,
+          };
+
+          const detail: FzlReaderSelectionDetail = {
+            text,
+            start: 0,
+            end: text.length,
+            prefix: '',
+            suffix: '',
+            blockIndex: pageNum - 1,
+            endBlockIndex: pageNum - 1,
+            page: pageNum,
+            endPage: pageNum,
+            rect,
+            rects,
+          };
+
+          this._setSelection(detail);
+          return;
+        }
+      }
+    }
+
     const detail = range ? this.rangeToSelection(range) : null;
     if (detail) {
       if (this.snapToWords && range) {
@@ -1089,6 +1301,17 @@ export class FzlDocumentReader extends FzlWidgetMixin(LitElement) {
   }
 
   private _computePopoverPos(detail: FzlReaderSelectionDetail): { top: number; left: number } | null {
+    if (this.viewMode === 'pdf') {
+      const scroller = this.renderRoot?.querySelector<HTMLElement>('.scroller');
+      if (!scroller || !detail.rect) return null;
+      const box = scroller.getBoundingClientRect();
+      const half = Math.min(140, box.width / 2);
+      const center = detail.rect.left + detail.rect.width / 2 - box.left;
+      return {
+        top: detail.rect.bottom - box.top + scroller.scrollTop + 8,
+        left: Math.max(half, Math.min(box.width - half, center)),
+      };
+    }
     const page = this.renderRoot?.querySelector<HTMLElement>('.page');
     if (!page || !detail.rect) return null;
     const box = page.getBoundingClientRect();
@@ -1116,9 +1339,33 @@ export class FzlDocumentReader extends FzlWidgetMixin(LitElement) {
     return true;
   }
 
+  /** Scrolls to a specific PDF page (1-based). */
+  scrollToPage(pageNumber: number, behavior: ScrollBehavior = 'smooth'): boolean {
+    const pageEl = this.renderRoot?.querySelector<HTMLElement>(`.pdf-page[data-page-number="${pageNumber}"]`);
+    if (!pageEl) return false;
+    pageEl.scrollIntoView?.({ block: 'start', behavior });
+    return true;
+  }
+
   /** Scrolls to an annotation and flashes it. Returns `false` if it is not rendered. */
   async scrollToAnnotation(id: string, behavior: ScrollBehavior = 'smooth'): Promise<boolean> {
     await this.updateComplete;
+    if (this.viewMode === 'pdf') {
+      const ann = this.annotations.find((a) => String(a.id) === String(id));
+      if (!ann || typeof ann.page !== 'number') return false;
+      this.scrollToPage(ann.page, behavior);
+      const pageEl = this.renderRoot?.querySelector<HTMLElement>(`.pdf-page[data-page-number="${ann.page}"]`);
+      const marks = Array.from(
+        pageEl?.querySelectorAll<HTMLElement>(`.pdf-annotation[data-id="${id}"] .pdf-highlight`) ?? [],
+      );
+      for (const mark of marks) {
+        mark.classList.remove('flash');
+        void mark.offsetWidth;
+        mark.classList.add('flash');
+        setTimeout(() => mark.classList.remove('flash'), 1300);
+      }
+      return true;
+    }
     const marks = Array.from(this.renderRoot?.querySelectorAll<HTMLElement>('mark.ann') ?? []).filter((m) =>
       (m.dataset.ids ?? '').split(' ').includes(String(id)),
     );
@@ -1223,6 +1470,248 @@ export class FzlDocumentReader extends FzlWidgetMixin(LitElement) {
     }
   }
 
+  toggleViewMode(): void {
+    this.viewMode = this.viewMode === 'pdf' ? 'text' : 'pdf';
+    this._selection = null;
+    this.requestUpdate();
+  }
+
+  stepPdfScale(delta: number): void {
+    const next = Math.min(2.5, Math.max(0.6, Math.round((this.pdfScale + delta) * 100) / 100));
+    if (next === this.pdfScale) return;
+    this.pdfScale = next;
+    this._renderedPages.clear();
+    this.requestUpdate();
+  }
+
+  resetPdfScale(): void {
+    if (this.pdfScale === 1.15) return;
+    this.pdfScale = 1.15;
+    this._renderedPages.clear();
+    this.requestUpdate();
+  }
+
+  fitPdfWidth(): void {
+    const scroller = this.renderRoot?.querySelector<HTMLElement>('.scroller');
+    if (!scroller || !this._defaultPageWidth) return;
+    const availableWidth = scroller.clientWidth - 48;
+    if (availableWidth > 200) {
+      this.pdfScale = Math.min(2.5, Math.max(0.6, Math.round((availableWidth / this._defaultPageWidth) * 100) / 100));
+      this._renderedPages.clear();
+      this.requestUpdate();
+    }
+  }
+
+  private async _loadPdf(): Promise<void> {
+    if (!this.pdfSource || !this.pdfjs) {
+      this._pdfDoc = null;
+      this._pdfPageCount = 0;
+      return;
+    }
+    this._pdfLoading = true;
+    this._pdfError = null;
+    this._renderedPages.clear();
+    try {
+      const pdfjs = typeof this.pdfjs === 'function' ? await this.pdfjs() : await this.pdfjs;
+      let data: Uint8Array;
+      if (this.pdfSource instanceof Uint8Array) {
+        data = this.pdfSource;
+      } else if (this.pdfSource instanceof ArrayBuffer) {
+        data = new Uint8Array(this.pdfSource);
+      } else if (typeof Blob !== 'undefined' && this.pdfSource instanceof Blob) {
+        data = new Uint8Array(await this.pdfSource.arrayBuffer());
+      } else if (typeof this.pdfSource === 'string') {
+        const res = await fetch(this.pdfSource);
+        data = new Uint8Array(await res.arrayBuffer());
+      } else {
+        throw new Error('Formato de pdfSource não suportado');
+      }
+
+      const loadingTask = pdfjs.getDocument({ data });
+      const doc = await loadingTask.promise;
+      this._pdfDoc = doc;
+      this._pdfPageCount = doc.numPages;
+
+      if (doc.numPages > 0) {
+        const page1 = await doc.getPage(1);
+        const vp = page1.getViewport({ scale: 1 });
+        this._defaultPageWidth = vp.width;
+        this._defaultPageHeight = vp.height;
+      }
+    } catch (err: any) {
+      console.warn('[fzl-document-reader] Falha ao carregar documento PDF:', err);
+      this._pdfError = err?.message || 'Erro ao carregar PDF';
+      this._pdfDoc = null;
+    } finally {
+      this._pdfLoading = false;
+      this.requestUpdate();
+    }
+  }
+
+  private async _renderPage(pageNum: number): Promise<void> {
+    if (this._renderedPages.has(pageNum) || this._renderingPages.has(pageNum) || !this._pdfDoc) return;
+    const pageDiv = this.renderRoot?.querySelector(`.pdf-page[data-page-number="${pageNum}"]`) as HTMLElement | null;
+    if (!pageDiv) return;
+    const canvas = pageDiv.querySelector('canvas') as HTMLCanvasElement | null;
+    const textLayerDiv = pageDiv.querySelector('.textLayer') as HTMLElement | null;
+    if (!canvas || !textLayerDiv) return;
+
+    this._renderingPages.add(pageNum);
+    try {
+      const page = await this._pdfDoc.getPage(pageNum);
+      const dpr = typeof window !== 'undefined' ? window.devicePixelRatio || 1 : 1;
+      const viewport = page.getViewport({ scale: this.pdfScale * dpr });
+      const cssViewport = page.getViewport({ scale: this.pdfScale });
+
+      pageDiv.style.width = `${cssViewport.width}px`;
+      pageDiv.style.height = `${cssViewport.height}px`;
+
+      canvas.width = Math.floor(viewport.width);
+      canvas.height = Math.floor(viewport.height);
+      canvas.style.width = `${cssViewport.width}px`;
+      canvas.style.height = `${cssViewport.height}px`;
+
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        await page.render({ canvasContext: ctx, viewport }).promise;
+      }
+
+      textLayerDiv.innerHTML = '';
+      textLayerDiv.style.width = `${cssViewport.width}px`;
+      textLayerDiv.style.height = `${cssViewport.height}px`;
+      textLayerDiv.style.setProperty('--total-scale-factor', `${this.pdfScale}`);
+
+      const textContent = await page.getTextContent();
+      const pdfjs = typeof this.pdfjs === 'function' ? await this.pdfjs() : await this.pdfjs;
+      if (pdfjs && typeof pdfjs.TextLayer === 'function') {
+        const textLayer = new pdfjs.TextLayer({
+          textContentSource: textContent,
+          container: textLayerDiv,
+          viewport: cssViewport,
+        });
+        await textLayer.render();
+      } else if (pdfjs && typeof pdfjs.renderTextLayer === 'function') {
+        await pdfjs.renderTextLayer({
+          textContentSource: textContent,
+          container: textLayerDiv,
+          viewport: cssViewport,
+        }).promise;
+      }
+
+      this._renderedPages.add(pageNum);
+    } catch (err) {
+      console.warn(`[fzl-document-reader] Erro ao renderizar página ${pageNum}:`, err);
+    } finally {
+      this._renderingPages.delete(pageNum);
+    }
+  }
+
+  private _setupPdfIntersectionObserver() {
+    this._pdfObserver?.disconnect();
+    const scroller = this.renderRoot?.querySelector('.scroller');
+    if (!scroller || typeof IntersectionObserver === 'undefined') return;
+
+    this._pdfObserver = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            const pageNum = Number((entry.target as HTMLElement).dataset.pageNumber || '0');
+            if (pageNum > 0) void this._renderPage(pageNum);
+          }
+        }
+      },
+      { root: scroller, rootMargin: '400px 0px' }
+    );
+
+    const pageEls = this.renderRoot?.querySelectorAll('.pdf-page');
+    pageEls?.forEach((el) => this._pdfObserver?.observe(el));
+  }
+
+  private _renderPdfContainer(): TemplateResult {
+    if (this._pdfLoading) {
+      return html`<div class="empty">⏳ Carregando visualização original do PDF…</div>`;
+    }
+    if (this._pdfError) {
+      return html`<div class="empty">⚠️ ${this._pdfError}</div>`;
+    }
+    if (!this._pdfPageCount) {
+      return html`<div class="empty"><slot name="empty">Nenhuma página para exibir.</slot></div>`;
+    }
+
+    return html`
+      <div class="pdf-container" part="pdf-container">
+        ${Array.from({ length: this._pdfPageCount }, (_, i) => i + 1).map((pageNum) => html`
+          <div
+            class="pdf-page"
+            part="pdf-page"
+            data-page-number=${pageNum}
+            style=${styleMap({
+              width: `${this._defaultPageWidth * this.pdfScale}px`,
+              minHeight: `${this._defaultPageHeight * this.pdfScale}px`,
+            })}
+          >
+            <canvas class="pdf-canvas"></canvas>
+            <div class="textLayer" style=${styleMap({ '--total-scale-factor': `${this.pdfScale}` })}></div>
+            <div class="pdf-highlights-layer">
+              ${this._renderPdfPageHighlights(pageNum)}
+            </div>
+            <div class="pdf-page-number" aria-hidden="true">p. ${pageNum}</div>
+          </div>
+        `)}
+      </div>
+    `;
+  }
+
+  private _renderPdfPageHighlights(pageNum: number) {
+    const pageAnns = this.annotations.filter(
+      (a) => a.page === pageNum && Array.isArray(a.rects) && a.rects.length > 0,
+    );
+    if (!pageAnns.length) return null;
+
+    return pageAnns.map((a) => {
+      const active = this.activeAnnotation != null && String(this.activeAnnotation) === String(a.id);
+      return html`
+        <div
+          class="pdf-annotation ${active ? 'active' : ''}"
+          data-id=${a.id}
+          title=${a.title || ''}
+          @click=${(e: Event) => this._onPdfAnnotationClick(e, a)}
+        >
+          ${a.rects!.map(
+            (r) => html`
+              <div
+                class="pdf-highlight ${active ? 'active' : ''}"
+                style=${styleMap({
+                  left: `${r.left * 100}%`,
+                  top: `${r.top * 100}%`,
+                  width: `${r.width * 100}%`,
+                  height: `${r.height * 100}%`,
+                  backgroundColor: a.color ? `${a.color}55` : 'rgba(255, 235, 59, 0.45)',
+                  outlineColor: a.color || '#f57f17',
+                })}
+              ></div>
+            `,
+          )}
+        </div>
+      `;
+    });
+  }
+
+  private _onPdfAnnotationClick(e: Event, a: FzlReaderAnnotation) {
+    e.stopPropagation();
+    this.dispatchEvent(
+      new CustomEvent<FzlReaderAnnotationClickDetail>('fzl-reader-annotation-click', {
+        detail: {
+          id: a.id,
+          ids: [a.id],
+          annotation: a,
+        },
+        bubbles: true,
+        composed: true,
+      }),
+    );
+  }
+
   private _renderToolbar() {
     if (this.hideToolbar) return null;
     const wide = this.readingWidth === 'wide';
@@ -1235,6 +1724,18 @@ export class FzlDocumentReader extends FzlWidgetMixin(LitElement) {
         <div class="tools">
           <slot name="actions"></slot>
           <span class="sep" aria-hidden="true"></span>
+          ${this.pdfSource
+            ? html`
+                <button
+                  class="tool"
+                  type="button"
+                  aria-pressed=${this.viewMode === 'pdf' ? 'true' : 'false'}
+                  aria-label=${this.viewMode === 'pdf' ? 'Ver texto em blocos' : 'Ver PDF original'}
+                  title=${this.viewMode === 'pdf' ? 'Alternar para texto em blocos' : 'Alternar para PDF original'}
+                  @click=${() => this.toggleViewMode()}
+                >${this.viewMode === 'pdf' ? ICON_TEXT : ICON_PDF}</button>
+              `
+            : null}
           ${this._hasAsideContent
             ? html`<button
                 class="tool"
@@ -1245,30 +1746,65 @@ export class FzlDocumentReader extends FzlWidgetMixin(LitElement) {
                 @click=${() => this.toggleAside()}
               >${ICON_ASIDE}</button>`
             : null}
-          <button
-            class="tool"
-            type="button"
-            aria-label="Diminuir fonte"
-            title="Diminuir fonte"
-            ?disabled=${this.fontSize <= MIN_FONT_SIZE}
-            @click=${() => this.stepFontSize(-1)}
-          >A−</button>
-          <button
-            class="tool"
-            type="button"
-            aria-label="Aumentar fonte"
-            title="Aumentar fonte"
-            ?disabled=${this.fontSize >= MAX_FONT_SIZE}
-            @click=${() => this.stepFontSize(1)}
-          >A+</button>
-          <button
-            class="tool"
-            type="button"
-            aria-pressed=${wide ? 'true' : 'false'}
-            aria-label=${wide ? 'Coluna estreita' : 'Coluna larga'}
-            title=${wide ? 'Coluna estreita' : 'Coluna larga'}
-            @click=${() => this.toggleReadingWidth()}
-          >${wide ? ICON_NARROW : ICON_WIDE}</button>
+          ${this.viewMode === 'pdf' && this.pdfSource
+            ? html`
+                <button
+                  class="tool"
+                  type="button"
+                  aria-label="Diminuir zoom do PDF"
+                  title="Diminuir zoom"
+                  ?disabled=${this.pdfScale <= 0.6}
+                  @click=${() => this.stepPdfScale(-0.2)}
+                >${ICON_ZOOM_OUT}</button>
+                <button
+                  class="tool"
+                  type="button"
+                  aria-label="Redefinir zoom"
+                  title="Redefinir zoom (100%)"
+                  @click=${() => this.resetPdfScale()}
+                >${Math.round(this.pdfScale * 100)}%</button>
+                <button
+                  class="tool"
+                  type="button"
+                  aria-label="Aumentar zoom do PDF"
+                  title="Aumentar zoom"
+                  ?disabled=${this.pdfScale >= 2.5}
+                  @click=${() => this.stepPdfScale(0.2)}
+                >${ICON_ZOOM_IN}</button>
+                <button
+                  class="tool"
+                  type="button"
+                  aria-label="Ajustar à largura"
+                  title="Ajustar à largura"
+                  @click=${() => this.fitPdfWidth()}
+                >${ICON_FIT_WIDTH}</button>
+              `
+            : html`
+                <button
+                  class="tool"
+                  type="button"
+                  aria-label="Diminuir fonte"
+                  title="Diminuir fonte"
+                  ?disabled=${this.fontSize <= MIN_FONT_SIZE}
+                  @click=${() => this.stepFontSize(-1)}
+                >A−</button>
+                <button
+                  class="tool"
+                  type="button"
+                  aria-label="Aumentar fonte"
+                  title="Aumentar fonte"
+                  ?disabled=${this.fontSize >= MAX_FONT_SIZE}
+                  @click=${() => this.stepFontSize(1)}
+                >A+</button>
+                <button
+                  class="tool"
+                  type="button"
+                  aria-pressed=${wide ? 'true' : 'false'}
+                  aria-label=${wide ? 'Coluna estreita' : 'Coluna larga'}
+                  title=${wide ? 'Coluna estreita' : 'Coluna larga'}
+                  @click=${() => this.toggleReadingWidth()}
+                >${wide ? ICON_NARROW : ICON_WIDE}</button>
+              `}
           <button
             class="tool"
             type="button"
@@ -1295,22 +1831,39 @@ export class FzlDocumentReader extends FzlWidgetMixin(LitElement) {
         @pointerdown=${this._onScrollerPointerDown}
         @mousedown=${this._onScrollerPointerDown}
       >
-        ${this._blocks.length
-          ? html`<article
-              class="page ${this.readingWidth === 'wide' ? 'wide' : ''}"
-              part="page"
-              style="font-size:${this.fontSize}px"
-              @click=${this._onPageClick}
-            >
-              ${this._blocks.map((block, index) => {
-                const page = block.page;
-                const prev = index > 0 ? this._blocks[index - 1].page : undefined;
-                const marker =
-                  typeof page === 'number' && page !== prev
-                    ? html`<div class="pg" part="page-marker" data-page=${page} data-label=${`p. ${page}`} role="separator" aria-label=${`Página ${page}`}></div>`
-                    : null;
-                return html`${marker}${this.renderBlock(block, index)}`;
-              })}
+        ${this.viewMode === 'pdf' && this.pdfSource
+          ? this._renderPdfContainer()
+          : (this._blocks.length
+              ? html`<article
+                  class="page ${this.readingWidth === 'wide' ? 'wide' : ''}"
+                  part="page"
+                  style="font-size:${this.fontSize}px"
+                  @click=${this._onPageClick}
+                >
+                  ${this._blocks.map((block, index) => {
+                    const page = block.page;
+                    const prev = index > 0 ? this._blocks[index - 1].page : undefined;
+                    const marker =
+                      typeof page === 'number' && page !== prev
+                        ? html`<div class="pg" part="page-marker" data-page=${page} data-label=${`p. ${page}`} role="separator" aria-label=${`Página ${page}`}></div>`
+                        : null;
+                    return html`${marker}${this.renderBlock(block, index)}`;
+                  })}
+                  <div
+                    class="sel-pop"
+                    part="selection-popover"
+                    ?hidden=${!this._selection || !this._popoverPos || !this._hasPopoverContent}
+                    style=${styleMap(
+                      this._popoverPos ? { top: `${this._popoverPos.top}px`, left: `${this._popoverPos.left}px` } : {},
+                    )}
+                  >
+                    <slot name="selection-popover" @slotchange=${this._onPopoverSlotChange}></slot>
+                  </div>
+                </article>`
+              : html`<div class="empty"><slot name="empty">Nenhum documento para exibir.</slot></div>`)}
+
+        ${this.viewMode === 'pdf' && this.pdfSource
+          ? html`
               <div
                 class="sel-pop"
                 part="selection-popover"
@@ -1321,8 +1874,8 @@ export class FzlDocumentReader extends FzlWidgetMixin(LitElement) {
               >
                 <slot name="selection-popover" @slotchange=${this._onPopoverSlotChange}></slot>
               </div>
-            </article>`
-          : html`<div class="empty"><slot name="empty">Nenhum documento para exibir.</slot></div>`}
+            `
+          : null}
       </div>
       <aside class="aside" part="aside" ?hidden=${!this.asideOpen || !this._hasAsideContent}>
         <slot name="aside" @slotchange=${this._onAsideSlotChange}></slot>

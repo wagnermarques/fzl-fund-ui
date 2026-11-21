@@ -538,3 +538,86 @@ describe('aside panel', () => {
     expect(events).toEqual([true, false]);
   });
 });
+
+describe('PDF mode in <fzl-document-reader>', () => {
+  it('switches to PDF view mode when pdfSource is provided and toggles mode', async () => {
+    const el = await mount({ text: DOC });
+    expect(el.viewMode).toBe('text');
+
+    el.pdfSource = new Uint8Array([1, 2, 3]);
+    await el.updateComplete;
+    expect(el.viewMode).toBe('pdf');
+
+    // Toggles back to text
+    el.toggleViewMode();
+    await el.updateComplete;
+    expect(el.viewMode).toBe('text');
+
+    el.toggleViewMode();
+    await el.updateComplete;
+    expect(el.viewMode).toBe('pdf');
+  });
+
+  it('steps and resets PDF scale within bounds', async () => {
+    const el = await mount({ pdfSource: new Uint8Array([1, 2, 3]) });
+    await el.updateComplete;
+    expect(el.pdfScale).toBe(1.15);
+
+    el.stepPdfScale(0.2);
+    expect(el.pdfScale).toBeCloseTo(1.35);
+
+    el.resetPdfScale();
+    expect(el.pdfScale).toBe(1.15);
+
+    // Test upper bound
+    el.stepPdfScale(3.0);
+    expect(el.pdfScale).toBe(2.5);
+
+    // Test lower bound
+    el.stepPdfScale(-5.0);
+    expect(el.pdfScale).toBe(0.6);
+  });
+
+  it('renders annotations in PDF mode and emits fzl-reader-annotation-click', async () => {
+    const el = await mount({
+      pdfSource: new Uint8Array([1, 2, 3]),
+      annotations: [
+        {
+          id: 'q1',
+          start: 0,
+          end: 10,
+          page: 1,
+          color: '#2563eb',
+          title: 'Trecho 1',
+          rects: [{ left: 0.1, top: 0.2, width: 0.5, height: 0.05 }],
+        },
+      ],
+    });
+    // Mock pdfDoc
+    el._pdfDoc = {
+      numPages: 1,
+      getPage: async () => ({
+        getViewport: () => ({ width: 600, height: 800 }),
+        render: () => ({ promise: Promise.resolve() }),
+        getTextContent: async () => ({ items: [] }),
+      }),
+    };
+    el._pdfPageCount = 1;
+    await el.updateComplete;
+
+    const highlight = el.shadowRoot.querySelector('.pdf-highlight');
+    expect(highlight).not.toBeNull();
+    expect(highlight.style.left).toBe('10%');
+    expect(highlight.style.top).toBe('20%');
+
+    let clicked = null;
+    el.addEventListener('fzl-reader-annotation-click', (e) => {
+      clicked = e.detail;
+    });
+
+    const annEl = el.shadowRoot.querySelector('.pdf-annotation');
+    annEl.click();
+    expect(clicked?.id).toBe('q1');
+  });
+});
+

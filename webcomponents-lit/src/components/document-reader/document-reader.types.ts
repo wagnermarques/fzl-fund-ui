@@ -73,3 +73,14 @@ export function readerBlockOffsets(blocks: readonly FzlReaderBlock[]): number[] 
   }
   return offsets;
 }
+
+/** Normalized bounding box (0..1 relative to page width and height). */
+export interface FzlPdfRect {
+  left: number;
+  top: number;
+  width: number;
+  height: number;
+}
+
+export type FzlReaderViewMode = 'text' | 'pdf';
+

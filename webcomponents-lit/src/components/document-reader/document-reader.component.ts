@@ -93,6 +93,23 @@ export interface FzlReaderPreferencesChangeDetail {
 const MIN_FONT_SIZE = 12;
 const MAX_FONT_SIZE = 36;
 const FONT_STEP = 2;
+const MIN_PDF_GESTURE_SCALE = 0.3;
+const MAX_PDF_SCALE = 2.5;
+
+interface PinchState {
+  active: boolean;
+  mode: 'pdf' | 'text';
+  startDistance: number;
+  startScale: number;
+  targetScale: number;
+  startFontSize: number;
+  startMidX: number;
+  startMidY: number;
+  curMidX: number;
+  curMidY: number;
+  originX: number;
+  originY: number;
+}
 
 type FullscreenDoc = Document & {
   webkitFullscreenElement?: Element | null;
@@ -307,12 +324,34 @@ export class FzlDocumentReader extends FzlWidgetMixin(LitElement) {
       }
 
       .body {
+        position: relative;
         flex: 1 1 auto;
         min-height: 0;
         min-width: 0;
         max-width: 100%;
         overflow: hidden;
         display: flex;
+      }
+      .zoom-hud {
+        position: absolute;
+        top: 12px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 10;
+        padding: 4px 12px;
+        border-radius: 9999px;
+        background: rgba(15, 23, 42, 0.82);
+        color: #ffffff;
+        font-family: var(--_fzl-font-family);
+        font-size: 0.8rem;
+        font-weight: 600;
+        letter-spacing: 0.02em;
+        pointer-events: none;
+        user-select: none;
+        -webkit-user-select: none;
+        backdrop-filter: blur(6px);
+        -webkit-backdrop-filter: blur(6px);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
       }
       .aside {
         flex: none;
@@ -367,6 +406,9 @@ export class FzlDocumentReader extends FzlWidgetMixin(LitElement) {
         overflow: auto;
         overscroll-behavior: contain;
         -webkit-overflow-scrolling: touch;
+      }
+      :host([fullscreen]) .scroller {
+        touch-action: pan-x pan-y;
       }
       .scroller:focus-visible {
         outline: 2px solid var(--_fzl-color-primary, #2563eb);
@@ -680,6 +722,7 @@ export class FzlDocumentReader extends FzlWidgetMixin(LitElement) {
   }
 
   @state() private _blocks: FzlReaderBlock[] = [];
+  @state() private _zoomHudText = '';
 
   private _offsets: number[] = [];
   private _plainText = '';
@@ -691,6 +734,11 @@ export class FzlDocumentReader extends FzlWidgetMixin(LitElement) {
   private _resizeObserver: ResizeObserver | null = null;
   private _lastPointerInPopover = false;
   private _selectionTimer: ReturnType<typeof setTimeout> | null = null;
+  private _zoomHudTimer: ReturnType<typeof setTimeout> | null = null;
+  private _gestureTarget: HTMLElement | null = null;
+  private _pinch: PinchState | null = null;
+  private _pinchCooldownUntil = 0;
+  private _pdfRenderGeneration = 0;
 
   /** Normalized blocks being rendered. */
   get resolvedBlocks(): readonly FzlReaderBlock[] {
@@ -727,6 +775,7 @@ export class FzlDocumentReader extends FzlWidgetMixin(LitElement) {
     window.addEventListener('touchend', this._onPointerUp, true);
     window.addEventListener('pointerdown', this._onWindowPointerDown, true);
     window.addEventListener('mousedown', this._onWindowPointerDown, true);
+    this._bindTouchGestures();
     if (typeof ResizeObserver !== 'undefined') {
       this._resizeObserver ??= new ResizeObserver((entries) => {
         const width = entries[entries.length - 1]?.contentRect.width ?? this.clientWidth;
@@ -747,7 +796,10 @@ export class FzlDocumentReader extends FzlWidgetMixin(LitElement) {
     window.removeEventListener('touchend', this._onPointerUp, true);
     window.removeEventListener('pointerdown', this._onWindowPointerDown, true);
     window.removeEventListener('mousedown', this._onWindowPointerDown, true);
+    this._unbindTouchGestures();
+    this._cancelPinchPreview();
     if (this._selectionTimer) clearTimeout(this._selectionTimer);
+    if (this._zoomHudTimer) clearTimeout(this._zoomHudTimer);
     this._resizeObserver?.disconnect();
     this._pdfObserver?.disconnect();
     this._pdfObserver = null;
@@ -789,6 +841,7 @@ export class FzlDocumentReader extends FzlWidgetMixin(LitElement) {
 
   protected override updated(changed: PropertyValues<this>): void {
     super.updated(changed);
+    this._bindTouchGestures();
     if (changed.has('pdfSource') || changed.has('pdfjs')) {
       void this._loadPdf();
     }
@@ -863,6 +916,7 @@ export class FzlDocumentReader extends FzlWidgetMixin(LitElement) {
 
   private _setFullscreen(mode: FzlReaderFullscreenMode | null) {
     if (mode === this.fullscreenMode) return;
+    if (mode === null) this._cancelPinchPreview();
     const root = document.documentElement;
     if (mode === 'immersive') {
       this._savedRootOverflow = root.style.overflow;
@@ -1202,23 +1256,209 @@ export class FzlDocumentReader extends FzlWidgetMixin(LitElement) {
   };
 
   private _onScrollerPointerDown = (event: Event) => {
-    if (this._isInPopover(event)) return;
+    if (this._isInPopover(event) || this._pinch?.active) return;
     this._pointerSelecting = true;
   };
 
   private _onPointerUp = () => {
+    if (this._pinch?.active || Date.now() < this._pinchCooldownUntil) {
+      this._pointerSelecting = false;
+      return;
+    }
     this._pointerSelecting = false;
     this._scheduleSelectionRead(10);
   };
 
   private _onSelectionChange = () => {
-    if (this._pointerSelecting) return; // read once, when the pointer is released
+    if (this._pointerSelecting || this._pinch?.active || Date.now() < this._pinchCooldownUntil) return; // read once, when the pointer is released
     if (typeof window !== 'undefined') {
       const mouseEvt = window.event as MouseEvent | undefined;
       if (mouseEvt && (mouseEvt.buttons & 1) === 1) return;
     }
     this._scheduleSelectionRead(150);
   };
+
+  // ---------------------------------------------------------------- touch pinch zoom
+
+  private _bindTouchGestures() {
+    const scroller = this.renderRoot?.querySelector<HTMLElement>('.scroller') ?? null;
+    if (!scroller || scroller === this._gestureTarget) return;
+    this._unbindTouchGestures();
+    this._gestureTarget = scroller;
+    scroller.addEventListener('touchstart', this._onTouchStart, { passive: true });
+    scroller.addEventListener('touchmove', this._onTouchMove, { passive: false });
+    scroller.addEventListener('touchend', this._onTouchEnd, { passive: true });
+    scroller.addEventListener('touchcancel', this._onTouchEnd, { passive: true });
+    scroller.addEventListener('gesturestart', this._onGestureStart, { passive: false });
+    scroller.addEventListener('gesturechange', this._onGestureStart, { passive: false });
+  }
+
+  private _unbindTouchGestures() {
+    if (!this._gestureTarget) return;
+    this._gestureTarget.removeEventListener('touchstart', this._onTouchStart);
+    this._gestureTarget.removeEventListener('touchmove', this._onTouchMove);
+    this._gestureTarget.removeEventListener('touchend', this._onTouchEnd);
+    this._gestureTarget.removeEventListener('touchcancel', this._onTouchEnd);
+    this._gestureTarget.removeEventListener('gesturestart', this._onGestureStart);
+    this._gestureTarget.removeEventListener('gesturechange', this._onGestureStart);
+    this._gestureTarget = null;
+  }
+
+  private _onGestureStart = (event: Event) => {
+    if (this.fullscreen) event.preventDefault();
+  };
+
+  private _onTouchStart = (event: TouchEvent) => {
+    if (!this.fullscreen || event.touches.length !== 2 || this._isInPopover(event)) return;
+    const t0 = event.touches[0];
+    const t1 = event.touches[1];
+    if (!t0 || !t1) return;
+    const dist = Math.hypot(t1.clientX - t0.clientX, t1.clientY - t0.clientY);
+    if (dist < 10) return;
+
+    const midX = (t0.clientX + t1.clientX) / 2;
+    const midY = (t0.clientY + t1.clientY) / 2;
+    const mode: 'pdf' | 'text' = this.viewMode === 'pdf' && this.pdfSource ? 'pdf' : 'text';
+    const scroller = this.renderRoot?.querySelector<HTMLElement>('.scroller');
+    const pdfContainer = this.renderRoot?.querySelector<HTMLElement>('.pdf-container');
+    const originRect = (mode === 'pdf' && pdfContainer ? pdfContainer : scroller)?.getBoundingClientRect();
+    const originX = originRect ? midX - originRect.left : 0;
+    const originY = originRect ? midY - originRect.top : 0;
+
+    this._pinch = {
+      active: true,
+      mode,
+      startDistance: dist,
+      startScale: this.pdfScale,
+      targetScale: this.pdfScale,
+      startFontSize: this.fontSize,
+      startMidX: midX,
+      startMidY: midY,
+      curMidX: midX,
+      curMidY: midY,
+      originX,
+      originY,
+    };
+    this._pointerSelecting = false;
+    if (this._selectionTimer) {
+      clearTimeout(this._selectionTimer);
+      this._selectionTimer = null;
+    }
+  };
+
+  private _onTouchMove = (event: TouchEvent) => {
+    if (!this._pinch?.active || !this.fullscreen || event.touches.length !== 2) return;
+    event.preventDefault();
+    const t0 = event.touches[0];
+    const t1 = event.touches[1];
+    if (!t0 || !t1) return;
+    const dist = Math.hypot(t1.clientX - t0.clientX, t1.clientY - t0.clientY);
+    const ratio = dist / this._pinch.startDistance;
+    const midX = (t0.clientX + t1.clientX) / 2;
+    const midY = (t0.clientY + t1.clientY) / 2;
+    this._pinch.curMidX = midX;
+    this._pinch.curMidY = midY;
+
+    if (this._pinch.mode === 'pdf') {
+      const nextScale = Math.min(
+        MAX_PDF_SCALE,
+        Math.max(MIN_PDF_GESTURE_SCALE, Math.round(this._pinch.startScale * ratio * 100) / 100),
+      );
+      this._pinch.targetScale = nextScale;
+      const previewRatio = nextScale / this._pinch.startScale;
+      const dx = midX - this._pinch.startMidX;
+      const dy = midY - this._pinch.startMidY;
+      const pdfContainer = this.renderRoot?.querySelector<HTMLElement>('.pdf-container');
+      if (pdfContainer) {
+        pdfContainer.style.willChange = 'transform';
+        pdfContainer.style.transformOrigin = `${this._pinch.originX}px ${this._pinch.originY}px`;
+        pdfContainer.style.transform = `translate(${dx}px, ${dy}px) scale(${previewRatio})`;
+      }
+      this._showZoomHud(`${Math.round(nextScale * 100)}%`);
+    } else {
+      const nextFont = Math.round(
+        Math.min(MAX_FONT_SIZE, Math.max(MIN_FONT_SIZE, this._pinch.startFontSize * ratio)),
+      );
+      if (nextFont !== this.fontSize) {
+        this.fontSize = nextFont;
+      }
+      this._showZoomHud(`${nextFont}px`);
+    }
+  };
+
+  private _onTouchEnd = (event: TouchEvent) => {
+    if (!this._pinch?.active || event.touches.length >= 2) return;
+    const pinch = this._pinch;
+    this._pinch = null;
+    this._pinchCooldownUntil = Date.now() + 250;
+
+    if (pinch.mode === 'pdf') {
+      const pdfContainer = this.renderRoot?.querySelector<HTMLElement>('.pdf-container');
+      if (pdfContainer) {
+        pdfContainer.style.transform = '';
+        pdfContainer.style.transformOrigin = '';
+        pdfContainer.style.willChange = '';
+      }
+      if (Math.abs(pinch.targetScale - pinch.startScale) >= 0.02) {
+        const scroller = this.renderRoot?.querySelector<HTMLElement>('.scroller');
+        const scrollerRect = scroller?.getBoundingClientRect();
+        const endVpX = scrollerRect ? pinch.curMidX - scrollerRect.left : 0;
+        const endVpY = scrollerRect ? pinch.curMidY - scrollerRect.top : 0;
+        const scaleRatio = pinch.targetScale / pinch.startScale;
+
+        this.pdfScale = pinch.targetScale;
+        this._pdfRenderGeneration++;
+        this._renderedPages.clear();
+        this.requestUpdate();
+        this._showZoomHud(`${Math.round(pinch.targetScale * 100)}%`, 750);
+
+        void this.updateComplete.then(() => {
+          const curScroller = this.renderRoot?.querySelector<HTMLElement>('.scroller');
+          if (curScroller) {
+            curScroller.scrollLeft = Math.max(0, pinch.originX * scaleRatio - endVpX);
+            curScroller.scrollTop = Math.max(0, pinch.originY * scaleRatio - endVpY);
+          }
+          if (this._pdfDoc) {
+            this._setupPdfIntersectionObserver();
+          }
+        });
+      } else {
+        this._showZoomHud('');
+      }
+    } else {
+      if (this.fontSize !== pinch.startFontSize) {
+        this._emitPreferences();
+        this._showZoomHud(`${this.fontSize}px`, 750);
+      } else {
+        this._showZoomHud('');
+      }
+    }
+  };
+
+  private _showZoomHud(text: string, autoHideMs?: number) {
+    if (this._zoomHudTimer) {
+      clearTimeout(this._zoomHudTimer);
+      this._zoomHudTimer = null;
+    }
+    this._zoomHudText = text;
+    if (text && autoHideMs) {
+      this._zoomHudTimer = setTimeout(() => {
+        this._zoomHudTimer = null;
+        this._zoomHudText = '';
+      }, autoHideMs);
+    }
+  }
+
+  private _cancelPinchPreview() {
+    this._pinch = null;
+    const pdfContainer = this.renderRoot?.querySelector<HTMLElement>('.pdf-container');
+    if (pdfContainer) {
+      pdfContainer.style.transform = '';
+      pdfContainer.style.transformOrigin = '';
+      pdfContainer.style.willChange = '';
+    }
+    this._showZoomHud('');
+  }
 
   private _scheduleSelectionRead(delay: number) {
     if (this._selectionTimer) clearTimeout(this._selectionTimer);
@@ -1510,9 +1750,10 @@ export class FzlDocumentReader extends FzlWidgetMixin(LitElement) {
   }
 
   stepPdfScale(delta: number): void {
-    const next = Math.min(2.5, Math.max(0.6, Math.round((this.pdfScale + delta) * 100) / 100));
+    const next = Math.min(MAX_PDF_SCALE, Math.max(0.6, Math.round((this.pdfScale + delta) * 100) / 100));
     if (next === this.pdfScale) return;
     this.pdfScale = next;
+    this._pdfRenderGeneration++;
     this._renderedPages.clear();
     this.requestUpdate();
   }
@@ -1520,6 +1761,7 @@ export class FzlDocumentReader extends FzlWidgetMixin(LitElement) {
   resetPdfScale(): void {
     if (this.pdfScale === 1.15) return;
     this.pdfScale = 1.15;
+    this._pdfRenderGeneration++;
     this._renderedPages.clear();
     this.requestUpdate();
   }
@@ -1530,7 +1772,11 @@ export class FzlDocumentReader extends FzlWidgetMixin(LitElement) {
     const pad = this.hasAttribute('data-narrow') ? 16 : 48;
     const availableWidth = scroller.clientWidth - pad;
     if (availableWidth > 120) {
-      this.pdfScale = Math.min(2.5, Math.max(0.3, Math.round((availableWidth / this._defaultPageWidth) * 100) / 100));
+      this.pdfScale = Math.min(
+        MAX_PDF_SCALE,
+        Math.max(MIN_PDF_GESTURE_SCALE, Math.round((availableWidth / this._defaultPageWidth) * 100) / 100),
+      );
+      this._pdfRenderGeneration++;
       this._renderedPages.clear();
       this.requestUpdate();
     }
@@ -1544,6 +1790,7 @@ export class FzlDocumentReader extends FzlWidgetMixin(LitElement) {
     }
     this._pdfLoading = true;
     this._pdfError = null;
+    this._pdfRenderGeneration++;
     this._renderedPages.clear();
     try {
       const pdfjs = typeof this.pdfjs === 'function' ? await this.pdfjs() : await this.pdfjs;
@@ -1577,7 +1824,10 @@ export class FzlDocumentReader extends FzlWidgetMixin(LitElement) {
           const pad = this.hasAttribute('data-narrow') ? 16 : 48;
           const availableWidth = (scroller?.clientWidth ?? 0) - pad;
           if (availableWidth > 120 && this._defaultPageWidth * this.pdfScale > availableWidth) {
-            this.pdfScale = Math.min(2.5, Math.max(0.3, Math.floor((availableWidth / this._defaultPageWidth) * 100) / 100));
+            this.pdfScale = Math.min(
+              MAX_PDF_SCALE,
+              Math.max(MIN_PDF_GESTURE_SCALE, Math.floor((availableWidth / this._defaultPageWidth) * 100) / 100),
+            );
           }
         }
       }
@@ -1593,6 +1843,7 @@ export class FzlDocumentReader extends FzlWidgetMixin(LitElement) {
 
   private async _renderPage(pageNum: number): Promise<void> {
     if (this._renderedPages.has(pageNum) || this._renderingPages.has(pageNum) || !this._pdfDoc) return;
+    const gen = this._pdfRenderGeneration;
     const pageDiv = this.renderRoot?.querySelector(`.pdf-page[data-page-number="${pageNum}"]`) as HTMLElement | null;
     if (!pageDiv) return;
     const canvas = pageDiv.querySelector('canvas') as HTMLCanvasElement | null;
@@ -1602,6 +1853,7 @@ export class FzlDocumentReader extends FzlWidgetMixin(LitElement) {
     this._renderingPages.add(pageNum);
     try {
       const page = await this._pdfDoc.getPage(pageNum);
+      if (gen !== this._pdfRenderGeneration) return;
       const dpr = typeof window !== 'undefined' ? window.devicePixelRatio || 1 : 1;
       const viewport = page.getViewport({ scale: this.pdfScale * dpr });
       const cssViewport = page.getViewport({ scale: this.pdfScale });
@@ -1617,6 +1869,7 @@ export class FzlDocumentReader extends FzlWidgetMixin(LitElement) {
       const ctx = canvas.getContext('2d');
       if (ctx) {
         await page.render({ canvasContext: ctx, viewport }).promise;
+        if (gen !== this._pdfRenderGeneration) return;
       }
 
       textLayerDiv.innerHTML = '';
@@ -1625,6 +1878,7 @@ export class FzlDocumentReader extends FzlWidgetMixin(LitElement) {
       textLayerDiv.style.setProperty('--total-scale-factor', `${this.pdfScale}`);
 
       const textContent = await page.getTextContent();
+      if (gen !== this._pdfRenderGeneration) return;
       const pdfjs = typeof this.pdfjs === 'function' ? await this.pdfjs() : await this.pdfjs;
       if (pdfjs && typeof pdfjs.TextLayer === 'function') {
         const textLayer = new pdfjs.TextLayer({
@@ -1633,15 +1887,19 @@ export class FzlDocumentReader extends FzlWidgetMixin(LitElement) {
           viewport: cssViewport,
         });
         await textLayer.render();
+        if (gen !== this._pdfRenderGeneration) return;
       } else if (pdfjs && typeof pdfjs.renderTextLayer === 'function') {
         await pdfjs.renderTextLayer({
           textContentSource: textContent,
           container: textLayerDiv,
           viewport: cssViewport,
         }).promise;
+        if (gen !== this._pdfRenderGeneration) return;
       }
 
-      this._renderedPages.add(pageNum);
+      if (gen === this._pdfRenderGeneration) {
+        this._renderedPages.add(pageNum);
+      }
     } catch (err) {
       console.warn(`[fzl-document-reader] Erro ao renderizar página ${pageNum}:`, err);
     } finally {
@@ -1865,6 +2123,9 @@ export class FzlDocumentReader extends FzlWidgetMixin(LitElement) {
     return html`
       ${this._renderToolbar()}
       <div class="body">
+      ${this._zoomHudText
+        ? html`<div class="zoom-hud" part="zoom-hud" role="status" aria-live="polite">${this._zoomHudText}</div>`
+        : null}
       <div
         class="scroller"
         part="scroller"

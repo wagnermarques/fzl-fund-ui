@@ -621,3 +621,103 @@ describe('PDF mode in <fzl-document-reader>', () => {
   });
 });
 
+function createTouchEvent(type, points) {
+  const ev = new Event(type, { cancelable: true, bubbles: true });
+  Object.defineProperty(ev, 'touches', {
+    configurable: true,
+    value: points.map(([clientX, clientY], index) => ({ identifier: index, clientX, clientY })),
+  });
+  return ev;
+}
+
+describe('mobile pinch-to-zoom in fullscreen', () => {
+  it('pinches to zoom PDF scale in fullscreen (supporting scale down to 0.3) and clears preview transform', async () => {
+    const el = await mount({ pdfSource: new Uint8Array([1, 2, 3]) });
+    el._pdfDoc = {
+      numPages: 1,
+      getPage: async () => ({
+        getViewport: () => ({ width: 600, height: 800 }),
+        render: () => ({ promise: Promise.resolve() }),
+        getTextContent: async () => ({ items: [] }),
+      }),
+    };
+    el._pdfPageCount = 1;
+    await el.enterFullscreen();
+    await el.updateComplete;
+
+    const scroller = el.shadowRoot.querySelector('.scroller');
+    const pdfContainer = el.shadowRoot.querySelector('.pdf-container');
+    expect(el.pdfScale).toBe(1.15);
+
+    scroller.dispatchEvent(createTouchEvent('touchstart', [[100, 200], [200, 200]]));
+    const moveUp = createTouchEvent('touchmove', [[75, 200], [225, 200]]);
+    scroller.dispatchEvent(moveUp);
+    expect(moveUp.defaultPrevented).toBe(true);
+    expect(pdfContainer.style.transform).toContain('scale(');
+    await el.updateComplete;
+    expect(el.shadowRoot.querySelector('.zoom-hud')?.textContent).toBe('173%');
+
+    scroller.dispatchEvent(createTouchEvent('touchend', []));
+    await el.updateComplete;
+    expect(el.pdfScale).toBe(1.73);
+    expect(pdfContainer.style.transform).toBe('');
+
+    // Pinch in can go below 0.6 down to gesture floor 0.3
+    scroller.dispatchEvent(createTouchEvent('touchstart', [[0, 200], [200, 200]]));
+    scroller.dispatchEvent(createTouchEvent('touchmove', [[90, 200], [110, 200]]));
+    scroller.dispatchEvent(createTouchEvent('touchend', []));
+    await el.updateComplete;
+    expect(el.pdfScale).toBe(0.3);
+
+    await el.exitFullscreen();
+  });
+
+  it('pinches to change font size in text fullscreen and emits preferences', async () => {
+    const el = await mount({ text: DOC, fontSize: 18 });
+    await el.enterFullscreen();
+    await el.updateComplete;
+
+    let emitted = null;
+    el.addEventListener('fzl-reader-preferences-change', (e) => {
+      emitted = e.detail;
+    });
+
+    const scroller = el.shadowRoot.querySelector('.scroller');
+    scroller.dispatchEvent(createTouchEvent('touchstart', [[100, 200], [200, 200]]));
+    const moveUp = createTouchEvent('touchmove', [[75, 200], [225, 200]]);
+    scroller.dispatchEvent(moveUp);
+    expect(moveUp.defaultPrevented).toBe(true);
+    expect(el.fontSize).toBe(27);
+
+    scroller.dispatchEvent(createTouchEvent('touchend', []));
+    await el.updateComplete;
+    expect(emitted?.fontSize).toBe(27);
+
+    // Respects MAX_FONT_SIZE (36)
+    scroller.dispatchEvent(createTouchEvent('touchstart', [[100, 200], [150, 200]]));
+    scroller.dispatchEvent(createTouchEvent('touchmove', [[0, 200], [300, 200]]));
+    scroller.dispatchEvent(createTouchEvent('touchend', []));
+    await el.updateComplete;
+    expect(el.fontSize).toBe(36);
+
+    await el.exitFullscreen();
+  });
+
+  it('ignores pinch-to-zoom when not in fullscreen', async () => {
+    const el = await mount({ text: DOC, fontSize: 18, pdfSource: new Uint8Array([1, 2, 3]) });
+    await el.updateComplete;
+    expect(el.fullscreen).toBe(false);
+
+    const scroller = el.shadowRoot.querySelector('.scroller');
+    scroller.dispatchEvent(createTouchEvent('touchstart', [[100, 200], [200, 200]]));
+    const moveEvt = createTouchEvent('touchmove', [[75, 200], [225, 200]]);
+    scroller.dispatchEvent(moveEvt);
+    scroller.dispatchEvent(createTouchEvent('touchend', []));
+
+    expect(moveEvt.defaultPrevented).toBe(false);
+    expect(el.pdfScale).toBe(1.15);
+    expect(el.fontSize).toBe(18);
+  });
+});
+
+

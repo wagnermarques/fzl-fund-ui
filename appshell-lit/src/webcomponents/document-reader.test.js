@@ -6,6 +6,7 @@ import {
   readerPlainText,
   readerBlockOffsets,
   normalizeReaderBlocks,
+  extractPdfRangeText,
 } from '@fzl/webcomponents-lit/document-reader';
 
 async function mount(props = {}) {
@@ -676,6 +677,266 @@ describe('PDF mode in <fzl-document-reader>', () => {
     expect(textLayer.lastElementChild).toBe(endDiv);
     expect(endDiv.style.width).toBe('');
     expect(endDiv.style.height).toBe('');
+  });
+
+  it('extracts PDF selection across <br> with spaces, dehyphenation, and anchors in plainText', async () => {
+    class MockTextLayer {
+      constructor({ container }) {
+        this.container = container;
+      }
+      async render() {
+        const s1 = document.createElement('span');
+        s1.textContent = 'Portanto, não';
+        const br1 = document.createElement('br');
+        const s2 = document.createElement('span');
+        s2.textContent = 'podemos falar de difi-';
+        const br2 = document.createElement('br');
+        const s3 = document.createElement('span');
+        s3.textContent = 'culdade em acessar.';
+        this.container.append(s1, br1, s2, br2, s3);
+      }
+    }
+    const mockPdfjs = {
+      TextLayer: MockTextLayer,
+      getDocument: () => ({
+        promise: Promise.resolve({
+          numPages: 1,
+          getPage: async () => ({
+            getViewport: ({ scale }) => ({ width: 600 * scale, height: 800 * scale }),
+            render: () => ({ promise: Promise.resolve() }),
+            getTextContent: async () => ({ items: [] }),
+          }),
+        }),
+      }),
+    };
+
+    const fullParagraph = 'Introdução antes. Portanto, não podemos falar de dificuldade em acessar.';
+    const el = await mount({
+      pdfSource: new Uint8Array([1, 2, 3]),
+      pdfjs: mockPdfjs,
+      blocks: [{ type: 'paragraph', page: 1, text: fullParagraph }],
+    });
+    await vi.waitFor(() => {
+      expect(el.shadowRoot.querySelectorAll('.textLayer span').length).toBe(3);
+    });
+
+    const spans = el.shadowRoot.querySelectorAll('.textLayer span');
+    const range = document.createRange();
+    range.setStart(spans[0].firstChild, 0);
+    range.setEnd(spans[2].firstChild, spans[2].firstChild.data.length);
+    vi.spyOn(el, 'getSelectionRange').mockReturnValue(range);
+
+    let emitted = null;
+    el.addEventListener('fzl-reader-selection', (e) => {
+      emitted = e.detail;
+    });
+
+    window.dispatchEvent(new Event('pointerup'));
+    await vi.waitFor(() => {
+      expect(emitted).not.toBeNull();
+    });
+
+    const expectedQuote = 'Portanto, não podemos falar de dificuldade em acessar.';
+    const expectedStart = fullParagraph.indexOf(expectedQuote);
+    expect(emitted.text).toBe(expectedQuote);
+    expect(emitted.start).toBe(expectedStart);
+    expect(emitted.end).toBe(expectedStart + expectedQuote.length);
+    expect(emitted.prefix).toBe('Introdução antes. ');
+    expect(emitted.suffix).toBe('');
+    expect(emitted.page).toBe(1);
+    expect(emitted.endPage).toBe(1);
+  });
+
+  it('extractPdfRangeText handles vertical line jumps, horizontal word gaps, and zero-gap splits', () => {
+    const mkRect = (left, top, width, height) => ({
+      left,
+      top,
+      width,
+      height,
+      right: left + width,
+      bottom: top + height,
+      x: left,
+      y: top,
+      toJSON() {},
+    });
+
+    const layer = document.createElement('div');
+    layer.className = 'textLayer';
+    document.body.appendChild(layer);
+
+    // Case 1: two lines separated vertically without <br>
+    const l1 = document.createElement('span');
+    l1.textContent = 'primeira';
+    l1.getBoundingClientRect = () => mkRect(72, 100, 60, 14);
+    const l2 = document.createElement('span');
+    l2.textContent = 'segunda';
+    l2.getBoundingClientRect = () => mkRect(72, 120, 60, 14);
+    layer.append(l1, l2);
+
+    const r1 = document.createRange();
+    r1.setStart(l1.firstChild, 0);
+    r1.setEnd(l2.firstChild, l2.firstChild.data.length);
+    expect(extractPdfRangeText(r1)).toBe('primeira segunda');
+
+    // Case 2: same line with horizontal gap (> height * 0.15)
+    layer.innerHTML = '';
+    const g1 = document.createElement('span');
+    g1.textContent = 'afeto';
+    g1.getBoundingClientRect = () => mkRect(72, 100, 40, 14);
+    const g2 = document.createElement('span');
+    g2.textContent = 'emoção';
+    g2.getBoundingClientRect = () => mkRect(118, 100, 50, 14); // gap = 6 > 2.1
+    layer.append(g1, g2);
+
+    const r2 = document.createRange();
+    r2.setStart(g1.firstChild, 0);
+    r2.setEnd(g2.firstChild, g2.firstChild.data.length);
+    expect(extractPdfRangeText(r2)).toBe('afeto emoção');
+
+    // Case 3: same line without horizontal gap keeps a split word together
+    layer.innerHTML = '';
+    const w1 = document.createElement('span');
+    w1.textContent = 'apren';
+    w1.getBoundingClientRect = () => mkRect(72, 100, 40, 14);
+    const w2 = document.createElement('span');
+    w2.textContent = 'dizagem';
+    w2.getBoundingClientRect = () => mkRect(112, 100, 55, 14); // gap = 0
+    layer.append(w1, w2);
+
+    const r3 = document.createRange();
+    r3.setStart(w1.firstChild, 0);
+    r3.setEnd(w2.firstChild, w2.firstChild.data.length);
+    expect(extractPdfRangeText(r3)).toBe('aprendizagem');
+  });
+
+  it('emits clean PDF text with page and rects fallback when absent from plainText', async () => {
+    class MockTextLayer {
+      constructor({ container }) {
+        this.container = container;
+      }
+      async render() {
+        const s1 = document.createElement('span');
+        s1.textContent = 'Revista Brasileira';
+        const br = document.createElement('br');
+        const s2 = document.createElement('span');
+        s2.textContent = 'Vol. 17';
+        this.container.append(s1, br, s2);
+      }
+    }
+    const mockPdfjs = {
+      TextLayer: MockTextLayer,
+      getDocument: () => ({
+        promise: Promise.resolve({
+          numPages: 1,
+          getPage: async () => ({
+            getViewport: ({ scale }) => ({ width: 600 * scale, height: 800 * scale }),
+            render: () => ({ promise: Promise.resolve() }),
+            getTextContent: async () => ({ items: [] }),
+          }),
+        }),
+      }),
+    };
+
+    const el = await mount({
+      pdfSource: new Uint8Array([1, 2, 3]),
+      pdfjs: mockPdfjs,
+      blocks: [{ type: 'paragraph', page: 1, text: 'Corpo do artigo científico.' }],
+    });
+    await vi.waitFor(() => {
+      expect(el.shadowRoot.querySelectorAll('.textLayer span').length).toBe(2);
+    });
+
+    const pageDiv = el.shadowRoot.querySelector('.pdf-page');
+    pageDiv.getBoundingClientRect = () => ({ left: 0, top: 0, width: 600, height: 800, right: 600, bottom: 800, x: 0, y: 0 });
+
+    const spans = pageDiv.querySelectorAll('.textLayer span');
+    const range = document.createRange();
+    range.setStart(spans[0].firstChild, 0);
+    range.setEnd(spans[1].firstChild, spans[1].firstChild.data.length);
+    range.getClientRects = () => [{ left: 60, top: 40, width: 120, height: 16, right: 180, bottom: 56 }];
+    vi.spyOn(el, 'getSelectionRange').mockReturnValue(range);
+
+    let emitted = null;
+    el.addEventListener('fzl-reader-selection', (e) => {
+      emitted = e.detail;
+    });
+
+    window.dispatchEvent(new Event('pointerup'));
+    await vi.waitFor(() => {
+      expect(emitted).not.toBeNull();
+    });
+
+    expect(emitted.text).toBe('Revista Brasileira Vol. 17');
+    expect(emitted.start).toBe(0);
+    expect(emitted.end).toBe(emitted.text.length);
+    expect(emitted.prefix).toBe('');
+    expect(emitted.suffix).toBe('');
+    expect(emitted.page).toBe(1);
+    expect(emitted.rects).toEqual([{ left: 0.1, top: 0.05, width: 0.2, height: 0.02 }]);
+  });
+
+  it('disambiguates repeated PDF quotes by matching page number', async () => {
+    class MockTextLayer {
+      constructor({ container }) {
+        this.container = container;
+      }
+      async render() {
+        const pageDiv = this.container.closest('.pdf-page');
+        const pageNum = pageDiv?.dataset.pageNumber;
+        const s1 = document.createElement('span');
+        s1.textContent = pageNum === '2' ? 'frase' : 'outro';
+        const br = document.createElement('br');
+        const s2 = document.createElement('span');
+        s2.textContent = pageNum === '2' ? 'repetida' : 'trecho';
+        this.container.append(s1, br, s2);
+      }
+    }
+    const mockPdfjs = {
+      TextLayer: MockTextLayer,
+      getDocument: () => ({
+        promise: Promise.resolve({
+          numPages: 2,
+          getPage: async () => ({
+            getViewport: ({ scale }) => ({ width: 600 * scale, height: 800 * scale }),
+            render: () => ({ promise: Promise.resolve() }),
+            getTextContent: async () => ({ items: [] }),
+          }),
+        }),
+      }),
+    };
+
+    const el = await mount({
+      pdfSource: new Uint8Array([1, 2, 3]),
+      pdfjs: mockPdfjs,
+      blocks: [
+        { type: 'paragraph', page: 1, text: 'Na página um: frase repetida aqui.' },
+        { type: 'paragraph', page: 2, text: 'Na página dois: frase repetida aqui.' },
+      ],
+    });
+    await vi.waitFor(() => {
+      expect(el.shadowRoot.querySelectorAll('.pdf-page[data-page-number="2"] .textLayer span').length).toBe(2);
+    });
+
+    const spans = el.shadowRoot.querySelectorAll('.pdf-page[data-page-number="2"] .textLayer span');
+    const range = document.createRange();
+    range.setStart(spans[0].firstChild, 0);
+    range.setEnd(spans[1].firstChild, spans[1].firstChild.data.length);
+    vi.spyOn(el, 'getSelectionRange').mockReturnValue(range);
+
+    let emitted = null;
+    el.addEventListener('fzl-reader-selection', (e) => {
+      emitted = e.detail;
+    });
+
+    window.dispatchEvent(new Event('pointerup'));
+    await vi.waitFor(() => {
+      expect(emitted).not.toBeNull();
+    });
+
+    expect(emitted.page).toBe(2);
+    expect(emitted.text).toBe('frase repetida');
+    expect(emitted.start).toBe(el.plainText.lastIndexOf('frase repetida'));
+    expect(emitted.end).toBe(emitted.start + 'frase repetida'.length);
   });
 });
 

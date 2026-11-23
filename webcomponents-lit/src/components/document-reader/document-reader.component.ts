@@ -1624,10 +1624,13 @@ export class FzlDocumentReader extends FzlWidgetMixin(LitElement) {
     if (this.viewMode === 'pdf' && range && !range.collapsed) {
       const startEl = range.startContainer instanceof Element ? range.startContainer : range.startContainer.parentElement;
       const endEl = range.endContainer instanceof Element ? range.endContainer : range.endContainer.parentElement;
-      const pageDiv = (startEl?.closest('.pdf-page') || endEl?.closest('.pdf-page')) as HTMLElement | null;
+      const startPageDiv = startEl?.closest('.pdf-page') as HTMLElement | null;
+      const endPageDiv = endEl?.closest('.pdf-page') as HTMLElement | null;
+      const pageDiv = startPageDiv || endPageDiv;
       if (pageDiv) {
         const pageNum = Number(pageDiv.dataset.pageNumber || '1');
-        const text = range.toString().trim();
+        const endPageNum = Number(endPageDiv?.dataset.pageNumber || String(pageNum));
+        const text = extractPdfRangeText(range);
         if (text) {
           const pageRect = pageDiv.getBoundingClientRect();
           const clientRects = Array.from(range.getClientRects()).filter(
@@ -1636,12 +1639,15 @@ export class FzlDocumentReader extends FzlWidgetMixin(LitElement) {
               r.height > 0 &&
               !(pageRect.width > 0 && pageRect.height > 0 && r.width >= pageRect.width * 0.9 && r.height >= pageRect.height * 0.9),
           );
-          const rects: FzlPdfRect[] = clientRects.map((r) => ({
-            left: Math.max(0, (r.left - pageRect.left) / pageRect.width),
-            top: Math.max(0, (r.top - pageRect.top) / pageRect.height),
-            width: Math.min(1, r.width / pageRect.width),
-            height: Math.min(1, r.height / pageRect.height),
-          }));
+          const rects: FzlPdfRect[] =
+            pageRect.width > 0 && pageRect.height > 0
+              ? clientRects.map((r) => ({
+                  left: Math.max(0, (r.left - pageRect.left) / pageRect.width),
+                  top: Math.max(0, (r.top - pageRect.top) / pageRect.height),
+                  width: Math.min(1, r.width / pageRect.width),
+                  height: Math.min(1, r.height / pageRect.height),
+                }))
+              : [];
 
           let rect: FzlReaderSelectionRect;
           if (clientRects.length > 0) {
@@ -1664,19 +1670,32 @@ export class FzlDocumentReader extends FzlWidgetMixin(LitElement) {
             };
           }
 
-          const detail: FzlReaderSelectionDetail = {
-            text,
-            start: 0,
-            end: text.length,
-            prefix: '',
-            suffix: '',
-            blockIndex: pageNum - 1,
-            endBlockIndex: pageNum - 1,
-            page: pageNum,
-            endPage: pageNum,
-            rect,
-            rects,
-          };
+          const textMatch = this._matchPdfTextInPlainText(text, pageNum, rects[0]?.top);
+          const detail: FzlReaderSelectionDetail = textMatch
+            ? {
+                ...buildTextQuote(this._plainText, textMatch.start, textMatch.end, this.contextLength),
+                start: textMatch.start,
+                end: textMatch.end,
+                blockIndex: this.blockIndexAt(textMatch.start),
+                endBlockIndex: this.blockIndexAt(textMatch.end - 1),
+                page: pageNum,
+                endPage: endPageNum,
+                rect,
+                rects,
+              }
+            : {
+                text,
+                start: 0,
+                end: text.length,
+                prefix: '',
+                suffix: '',
+                blockIndex: pageNum - 1,
+                endBlockIndex: endPageNum - 1,
+                page: pageNum,
+                endPage: endPageNum,
+                rect,
+                rects,
+              };
 
           this._setSelection(detail);
           return;
@@ -1701,6 +1720,57 @@ export class FzlDocumentReader extends FzlWidgetMixin(LitElement) {
     const pending = this.pendingRange;
     if (pending && pending.start < this._selection.end && pending.end > this._selection.start) return;
     this._setSelection(null);
+  }
+
+  private _matchPdfTextInPlainText(
+    text: string,
+    pageNum: number,
+    firstRectTop?: number,
+  ): { start: number; end: number } | null {
+    if (!this._plainText || !text) return null;
+    const matches = findFlexibleWhitespaceMatches(this._plainText, text);
+    if (!matches.length) return null;
+    if (matches.length === 1) return matches[0];
+
+    let best = matches[0];
+    let bestPageDist = Infinity;
+    let bestTopDist = Infinity;
+
+    for (const m of matches) {
+      const matchPage = this.pageAt(m.start);
+      const pageDist = typeof matchPage === 'number' ? Math.abs(matchPage - pageNum) : 0;
+
+      let topDist = 0;
+      if (typeof firstRectTop === 'number') {
+        let pageStart = 0;
+        let pageEnd = this._plainText.length;
+        if (typeof matchPage === 'number' && this._blocks.length) {
+          let firstIdx = -1;
+          let lastIdx = -1;
+          for (let i = 0; i < this._blocks.length; i++) {
+            if (this._blocks[i].page === matchPage) {
+              if (firstIdx < 0) firstIdx = i;
+              lastIdx = i;
+            }
+          }
+          if (firstIdx >= 0) {
+            pageStart = this._offsets[firstIdx];
+            pageEnd = this._offsets[lastIdx] + this._blocks[lastIdx].text.length;
+          }
+        }
+        const span = Math.max(1, pageEnd - pageStart);
+        const relPos = Math.max(0, Math.min(1, (m.start - pageStart) / span));
+        topDist = Math.abs(relPos - firstRectTop);
+      }
+
+      if (pageDist < bestPageDist || (pageDist === bestPageDist && topDist < bestTopDist)) {
+        best = m;
+        bestPageDist = pageDist;
+        bestTopDist = topDist;
+      }
+    }
+
+    return best;
   }
 
   private _setSelection(detail: FzlReaderSelectionDetail | null) {
@@ -2398,6 +2468,189 @@ function textLengthBefore(block: HTMLElement, node: Node, offset: number): numbe
   r.setStart(block, 0);
   r.setEnd(node, offset);
   return r.toString().length;
+}
+
+/**
+ * Extracts selected text from a PDF `.textLayer` DOM range, reconstructing spaces across
+ * `<br>` line breaks, vertical line jumps, and horizontal word gaps, while dehyphenating
+ * soft line-break hyphens (matching `pdfPagesToBlocks`).
+ */
+export function extractPdfRangeText(range: Range): string {
+  if (!range || range.collapsed) return '';
+  if (range.startContainer === range.endContainer && range.startContainer.nodeType === Node.TEXT_NODE) {
+    return (range.startContainer as Text).data
+      .slice(range.startOffset, range.endOffset)
+      .replace(/[ \t\r\n]+/g, ' ')
+      .trim();
+  }
+
+  const root = range.commonAncestorContainer;
+  const rootEl = root.nodeType === Node.ELEMENT_NODE ? (root as Element) : root.parentElement;
+  const requireTextLayer = Boolean(rootEl?.closest('.textLayer') || rootEl?.querySelector?.('.textLayer'));
+
+  interface Segment {
+    text: string;
+    rect: DOMRect | null;
+    textLayer: Element | null;
+    sawBreakBefore: boolean;
+  }
+
+  const segments: Segment[] = [];
+  let sawBreak = false;
+
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_TEXT);
+  let node: Node | null;
+  while ((node = walker.nextNode())) {
+    if (node.nodeType === Node.ELEMENT_NODE) {
+      const el = node as Element;
+      if (
+        el.classList?.contains('endOfContent') ||
+        el.closest?.('.endOfContent') ||
+        el.classList?.contains('pdf-page-number') ||
+        el.closest?.('.pdf-page-number')
+      ) {
+        continue;
+      }
+      if (el.tagName === 'BR') {
+        let hit = false;
+        try {
+          hit = range.intersectsNode(el);
+        } catch {
+          hit = false;
+        }
+        if (hit && segments.length > 0) {
+          sawBreak = true;
+        }
+      }
+      continue;
+    }
+
+    if (node.nodeType !== Node.TEXT_NODE) continue;
+    const textNode = node as Text;
+    const parentEl = textNode.parentElement;
+    if (parentEl?.closest?.('.endOfContent') || parentEl?.closest?.('.pdf-page-number')) continue;
+    const textLayer = parentEl?.closest?.('.textLayer') ?? null;
+    if (requireTextLayer && !textLayer) continue;
+
+    if (textNode !== range.startContainer && textNode !== range.endContainer) {
+      let hit = false;
+      try {
+        hit = range.intersectsNode(textNode);
+      } catch {
+        hit = false;
+      }
+      if (!hit) continue;
+    }
+
+    const startOff = textNode === range.startContainer ? range.startOffset : 0;
+    const endOff = textNode === range.endContainer ? range.endOffset : textNode.data.length;
+    const raw = textNode.data.slice(startOff, endOff);
+    if (!raw) continue;
+
+    if (parentEl === textLayer && /^\s+$/.test(raw)) {
+      if (/[\r\n]/.test(raw) && segments.length > 0) sawBreak = true;
+      continue;
+    }
+
+    let rect: DOMRect | null = null;
+    try {
+      const sub = document.createRange();
+      sub.setStart(textNode, startOff);
+      sub.setEnd(textNode, endOff);
+      const r = sub.getBoundingClientRect?.();
+      if (r && r.width > 0 && r.height > 0) rect = r;
+    } catch {
+      rect = null;
+    }
+    if (!rect) {
+      const pr = parentEl?.getBoundingClientRect?.();
+      if (pr && pr.width > 0 && pr.height > 0) rect = pr;
+    }
+
+    segments.push({ text: raw, rect, textLayer, sawBreakBefore: sawBreak });
+    sawBreak = false;
+  }
+
+  if (!segments.length) {
+    return range.toString().replace(/[ \t\r\n]+/g, ' ').trim();
+  }
+
+  let out = segments[0].text;
+  for (let i = 1; i < segments.length; i++) {
+    const prev = segments[i - 1];
+    const seg = segments[i];
+    let isLineBreak =
+      seg.sawBreakBefore || (prev.textLayer != null && seg.textLayer != null && prev.textLayer !== seg.textLayer);
+    let needsSpace = false;
+
+    if (!isLineBreak && prev.rect && seg.rect) {
+      const lineH = Math.max(prev.rect.height, seg.rect.height);
+      const prevMidY = (prev.rect.top + prev.rect.bottom) / 2;
+      const segMidY = (seg.rect.top + seg.rect.bottom) / 2;
+      if (Math.abs(segMidY - prevMidY) > lineH * 0.5) {
+        isLineBreak = true;
+      } else if (seg.rect.left - prev.rect.right > lineH * 0.15) {
+        needsSpace = true;
+      }
+    }
+
+    if (isLineBreak) {
+      if (/\p{L}-$/u.test(out) && /^\p{Ll}/u.test(seg.text)) {
+        out = out.slice(0, -1) + seg.text;
+      } else if (!/\s$/.test(out) && !/^\s/.test(seg.text)) {
+        out += ` ${seg.text}`;
+      } else {
+        out += seg.text;
+      }
+    } else if (needsSpace && !/\s$/.test(out) && !/^\s/.test(seg.text)) {
+      out += ` ${seg.text}`;
+    } else {
+      out += seg.text;
+    }
+  }
+
+  const normalized = out.replace(/[ \t\r\n]+/g, ' ').trim();
+  return normalized || range.toString().replace(/[ \t\r\n]+/g, ' ').trim();
+}
+
+/** Finds all occurrences of `needle` inside `haystack`, collapsing runs of whitespace into single spaces. */
+function findFlexibleWhitespaceMatches(haystack: string, needle: string): Array<{ start: number; end: number }> {
+  const cleanNeedle = needle.replace(/\s+/g, ' ').trim();
+  if (!cleanNeedle || !haystack) return [];
+
+  const chars: string[] = [];
+  const map: number[] = [];
+  let inSpace = false;
+
+  for (let i = 0; i < haystack.length; i++) {
+    const ch = haystack[i];
+    if (/\s/.test(ch)) {
+      if (chars.length > 0 && !inSpace) {
+        chars.push(' ');
+        map.push(i);
+        inSpace = true;
+      }
+    } else {
+      chars.push(ch);
+      map.push(i);
+      inSpace = false;
+    }
+  }
+  if (inSpace) {
+    chars.pop();
+    map.pop();
+  }
+
+  const norm = chars.join('');
+  const results: Array<{ start: number; end: number }> = [];
+  let pos = norm.indexOf(cleanNeedle);
+  while (pos !== -1) {
+    const start = map[pos];
+    const end = map[pos + cleanNeedle.length - 1] + 1;
+    results.push({ start, end });
+    pos = norm.indexOf(cleanNeedle, pos + 1);
+  }
+  return results;
 }
 
 export class FzlLitDocumentReader extends FzlDocumentReader {}

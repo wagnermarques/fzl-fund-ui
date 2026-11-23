@@ -619,6 +619,64 @@ describe('PDF mode in <fzl-document-reader>', () => {
     annEl.click();
     expect(clicked?.id).toBe('q1');
   });
+
+  it('appends and relocates .endOfContent inside PDF .textLayer while selecting, then resets on pointerup', async () => {
+    class MockTextLayer {
+      constructor({ container }) {
+        this.container = container;
+      }
+      async render() {
+        const s1 = document.createElement('span');
+        s1.textContent = 'Primeira linha';
+        const s2 = document.createElement('span');
+        s2.textContent = 'Segunda linha';
+        this.container.append(s1, s2);
+      }
+    }
+    const mockPdfjs = {
+      TextLayer: MockTextLayer,
+      getDocument: () => ({
+        promise: Promise.resolve({
+          numPages: 1,
+          getPage: async () => ({
+            getViewport: ({ scale }) => ({ width: 600 * scale, height: 800 * scale }),
+            render: () => ({ promise: Promise.resolve() }),
+            getTextContent: async () => ({ items: [] }),
+          }),
+        }),
+      }),
+    };
+
+    const el = await mount({ pdfSource: new Uint8Array([1, 2, 3]), pdfjs: mockPdfjs });
+    await vi.waitFor(() => {
+      expect(el.shadowRoot.querySelectorAll('.textLayer span').length).toBe(2);
+    });
+
+    const textLayer = el.shadowRoot.querySelector('.textLayer');
+    const spans = textLayer.querySelectorAll('span');
+    const endDiv = textLayer.querySelector('.endOfContent');
+    expect(endDiv).not.toBeNull();
+    expect(textLayer.lastElementChild).toBe(endDiv);
+
+    textLayer.dispatchEvent(new Event('pointerdown', { bubbles: true, composed: true }));
+    expect(textLayer.classList.contains('selecting')).toBe(true);
+
+    const range = document.createRange();
+    range.setStart(spans[0].firstChild, 0);
+    range.setEnd(spans[0].firstChild, 8);
+    vi.spyOn(el, 'getSelectionRange').mockReturnValue(range);
+
+    document.dispatchEvent(new Event('selectionchange'));
+    expect(textLayer.classList.contains('selecting')).toBe(true);
+    expect(spans[0].nextElementSibling).toBe(endDiv);
+    expect(endDiv.nextElementSibling).toBe(spans[1]);
+
+    window.dispatchEvent(new Event('pointerup'));
+    expect(textLayer.classList.contains('selecting')).toBe(false);
+    expect(textLayer.lastElementChild).toBe(endDiv);
+    expect(endDiv.style.width).toBe('');
+    expect(endDiv.style.height).toBe('');
+  });
 });
 
 function createTouchEvent(type, points) {

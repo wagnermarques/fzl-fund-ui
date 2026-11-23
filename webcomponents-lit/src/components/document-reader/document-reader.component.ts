@@ -531,6 +531,8 @@ export class FzlDocumentReader extends FzlWidgetMixin(LitElement) {
         width: max-content;
         min-height: 100%;
         box-sizing: border-box;
+        user-select: none;
+        -webkit-user-select: none;
       }
       :host([data-narrow]) .pdf-container {
         padding: 12px 8px 80px;
@@ -542,11 +544,15 @@ export class FzlDocumentReader extends FzlWidgetMixin(LitElement) {
         border-radius: 3px;
         overflow: visible;
         margin: 0 auto;
+        user-select: none;
+        -webkit-user-select: none;
       }
       .pdf-canvas {
         display: block;
         width: 100%;
         height: 100%;
+        user-select: none;
+        -webkit-user-select: none;
       }
       .pdf-page-number {
         position: absolute;
@@ -569,6 +575,8 @@ export class FzlDocumentReader extends FzlWidgetMixin(LitElement) {
         forced-color-adjust: none;
         transform-origin: 0 0;
         caret-color: CanvasText;
+        user-select: text;
+        -webkit-user-select: text;
         z-index: 2;
       }
       .textLayer :is(span, br) {
@@ -578,7 +586,7 @@ export class FzlDocumentReader extends FzlWidgetMixin(LitElement) {
         cursor: text;
         transform-origin: 0% 0%;
       }
-      .textLayer > :not(.markedContent),
+      .textLayer > :not(.markedContent):not(.endOfContent),
       .textLayer .markedContent span:not(.markedContent) {
         z-index: 1;
         --font-height: 0;
@@ -592,6 +600,21 @@ export class FzlDocumentReader extends FzlWidgetMixin(LitElement) {
       }
       .textLayer ::selection {
         background: rgba(0, 106, 106, 0.35);
+      }
+      .textLayer br::selection {
+        background: transparent;
+      }
+      .textLayer .endOfContent {
+        display: block;
+        position: absolute;
+        inset: 100% 0 0;
+        z-index: 0;
+        cursor: default;
+        user-select: none;
+        -webkit-user-select: none;
+      }
+      .textLayer.selecting .endOfContent {
+        top: 0;
       }
       .pdf-highlights-layer {
         position: absolute;
@@ -739,6 +762,9 @@ export class FzlDocumentReader extends FzlWidgetMixin(LitElement) {
   private _pinch: PinchState | null = null;
   private _pinchCooldownUntil = 0;
   private _pdfRenderGeneration = 0;
+  private _pdfTextLayers = new Map<HTMLElement, HTMLElement>();
+  private _prevPdfRange: Range | null = null;
+  private _isFirefox: boolean | null = null;
 
   /** Normalized blocks being rendered. */
   get resolvedBlocks(): readonly FzlReaderBlock[] {
@@ -775,6 +801,7 @@ export class FzlDocumentReader extends FzlWidgetMixin(LitElement) {
     window.addEventListener('touchend', this._onPointerUp, true);
     window.addEventListener('pointerdown', this._onWindowPointerDown, true);
     window.addEventListener('mousedown', this._onWindowPointerDown, true);
+    window.addEventListener('blur', this._onWindowBlur);
     this._bindTouchGestures();
     if (typeof ResizeObserver !== 'undefined') {
       this._resizeObserver ??= new ResizeObserver((entries) => {
@@ -796,8 +823,11 @@ export class FzlDocumentReader extends FzlWidgetMixin(LitElement) {
     window.removeEventListener('touchend', this._onPointerUp, true);
     window.removeEventListener('pointerdown', this._onWindowPointerDown, true);
     window.removeEventListener('mousedown', this._onWindowPointerDown, true);
+    window.removeEventListener('blur', this._onWindowBlur);
     this._unbindTouchGestures();
     this._cancelPinchPreview();
+    this._resetPdfTextLayers();
+    this._pdfTextLayers.clear();
     if (this._selectionTimer) clearTimeout(this._selectionTimer);
     if (this._zoomHudTimer) clearTimeout(this._zoomHudTimer);
     this._resizeObserver?.disconnect();
@@ -1258,9 +1288,18 @@ export class FzlDocumentReader extends FzlWidgetMixin(LitElement) {
   private _onScrollerPointerDown = (event: Event) => {
     if (this._isInPopover(event) || this._pinch?.active) return;
     this._pointerSelecting = true;
+    if (this.viewMode === 'pdf') {
+      const textLayer = event
+        .composedPath()
+        .find((n): n is HTMLElement => n instanceof HTMLElement && n.classList?.contains('textLayer'));
+      if (textLayer) {
+        textLayer.classList.add('selecting');
+      }
+    }
   };
 
   private _onPointerUp = () => {
+    this._resetPdfTextLayers();
     if (this._pinch?.active || Date.now() < this._pinchCooldownUntil) {
       this._pointerSelecting = false;
       return;
@@ -1269,7 +1308,15 @@ export class FzlDocumentReader extends FzlWidgetMixin(LitElement) {
     this._scheduleSelectionRead(10);
   };
 
+  private _onWindowBlur = () => {
+    this._pointerSelecting = false;
+    this._resetPdfTextLayers();
+  };
+
   private _onSelectionChange = () => {
+    if (!this._pinch?.active && Date.now() >= this._pinchCooldownUntil) {
+      this._syncPdfTextLayerSelection();
+    }
     if (this._pointerSelecting || this._pinch?.active || Date.now() < this._pinchCooldownUntil) return; // read once, when the pointer is released
     if (typeof window !== 'undefined') {
       const mouseEvt = window.event as MouseEvent | undefined;
@@ -1277,6 +1324,108 @@ export class FzlDocumentReader extends FzlWidgetMixin(LitElement) {
     }
     this._scheduleSelectionRead(150);
   };
+
+  private _resetPdfTextLayerEntry(textLayer: HTMLElement, endDiv: HTMLElement) {
+    if (endDiv.parentElement !== textLayer || textLayer.lastElementChild !== endDiv) {
+      textLayer.append(endDiv);
+    }
+    endDiv.style.width = '';
+    endDiv.style.height = '';
+    endDiv.style.userSelect = '';
+    textLayer.classList.remove('selecting');
+  }
+
+  private _resetPdfTextLayers() {
+    this._prevPdfRange = null;
+    for (const [textLayer, endDiv] of this._pdfTextLayers) {
+      if (!textLayer.isConnected) {
+        this._pdfTextLayers.delete(textLayer);
+        continue;
+      }
+      this._resetPdfTextLayerEntry(textLayer, endDiv);
+    }
+  }
+
+  private _syncPdfTextLayerSelection() {
+    if (this.viewMode !== 'pdf' || !this._pdfTextLayers.size) return;
+    const range = this.getSelectionRange();
+    if (!range || range.collapsed) {
+      this._resetPdfTextLayers();
+      return;
+    }
+
+    for (const [textLayer, endDiv] of this._pdfTextLayers) {
+      if (!textLayer.isConnected) {
+        this._pdfTextLayers.delete(textLayer);
+        continue;
+      }
+      let active = false;
+      try {
+        active = range.intersectsNode(textLayer);
+      } catch {
+        active = false;
+      }
+      if (active) {
+        textLayer.classList.add('selecting');
+      } else {
+        this._resetPdfTextLayerEntry(textLayer, endDiv);
+      }
+    }
+
+    this._isFirefox ??= typeof navigator !== 'undefined' && /Firefox/i.test(navigator.userAgent);
+    if (this._isFirefox) return;
+
+    let modifyStart = false;
+    if (this._prevPdfRange) {
+      try {
+        modifyStart =
+          range.compareBoundaryPoints(Range.END_TO_END, this._prevPdfRange) === 0 ||
+          range.compareBoundaryPoints(Range.START_TO_END, this._prevPdfRange) === 0;
+      } catch {
+        modifyStart = false;
+      }
+    }
+
+    let anchor: Node | null = modifyStart ? range.startContainer : range.endContainer;
+    if (anchor?.nodeType === Node.TEXT_NODE) {
+      anchor = anchor.parentNode;
+    }
+    const parentTextLayer = (anchor instanceof Element ? anchor.closest('.textLayer') : null) as HTMLElement | null;
+    const endDiv = parentTextLayer ? this._pdfTextLayers.get(parentTextLayer) : null;
+    if (!parentTextLayer || !endDiv || !anchor || anchor === endDiv) {
+      this._prevPdfRange = range.cloneRange();
+      return;
+    }
+
+    if (!modifyStart && range.endOffset === 0) {
+      let cur: Node | null = anchor;
+      while (cur && cur !== parentTextLayer) {
+        if (cur.previousSibling) {
+          cur = cur.previousSibling;
+          if (cur !== endDiv && cur.childNodes.length) {
+            anchor = cur;
+            break;
+          }
+        } else {
+          cur = cur.parentNode;
+        }
+      }
+    }
+
+    if (
+      anchor &&
+      anchor !== endDiv &&
+      anchor !== parentTextLayer &&
+      anchor.parentElement &&
+      parentTextLayer.contains(anchor.parentElement)
+    ) {
+      endDiv.style.width = parentTextLayer.style.width;
+      endDiv.style.height = parentTextLayer.style.height;
+      endDiv.style.userSelect = 'text';
+      anchor.parentElement.insertBefore(endDiv, modifyStart ? anchor : anchor.nextSibling);
+    }
+    this._prevPdfRange = range.cloneRange();
+  }
 
   // ---------------------------------------------------------------- touch pinch zoom
 
@@ -1481,7 +1630,12 @@ export class FzlDocumentReader extends FzlWidgetMixin(LitElement) {
         const text = range.toString().trim();
         if (text) {
           const pageRect = pageDiv.getBoundingClientRect();
-          const clientRects = Array.from(range.getClientRects()).filter((r) => r.width > 0 && r.height > 0);
+          const clientRects = Array.from(range.getClientRects()).filter(
+            (r) =>
+              r.width > 0 &&
+              r.height > 0 &&
+              !(pageRect.width > 0 && pageRect.height > 0 && r.width >= pageRect.width * 0.9 && r.height >= pageRect.height * 0.9),
+          );
           const rects: FzlPdfRect[] = clientRects.map((r) => ({
             left: Math.max(0, (r.left - pageRect.left) / pageRect.width),
             top: Math.max(0, (r.top - pageRect.top) / pageRect.height),
@@ -1489,17 +1643,26 @@ export class FzlDocumentReader extends FzlWidgetMixin(LitElement) {
             height: Math.min(1, r.height / pageRect.height),
           }));
 
-          const selRect = range.getBoundingClientRect();
-          const rect: FzlReaderSelectionRect = {
-            x: selRect.x,
-            y: selRect.y,
-            width: selRect.width,
-            height: selRect.height,
-            top: selRect.top,
-            right: selRect.right,
-            bottom: selRect.bottom,
-            left: selRect.left,
-          };
+          let rect: FzlReaderSelectionRect;
+          if (clientRects.length > 0) {
+            const top = Math.min(...clientRects.map((r) => r.top));
+            const right = Math.max(...clientRects.map((r) => r.right));
+            const bottom = Math.max(...clientRects.map((r) => r.bottom));
+            const left = Math.min(...clientRects.map((r) => r.left));
+            rect = { x: left, y: top, width: right - left, height: bottom - top, top, right, bottom, left };
+          } else {
+            const selRect = range.getBoundingClientRect();
+            rect = {
+              x: selRect.x,
+              y: selRect.y,
+              width: selRect.width,
+              height: selRect.height,
+              top: selRect.top,
+              right: selRect.right,
+              bottom: selRect.bottom,
+              left: selRect.left,
+            };
+          }
 
           const detail: FzlReaderSelectionDetail = {
             text,
@@ -1792,6 +1955,8 @@ export class FzlDocumentReader extends FzlWidgetMixin(LitElement) {
     this._pdfError = null;
     this._pdfRenderGeneration++;
     this._renderedPages.clear();
+    this._pdfTextLayers.clear();
+    this._prevPdfRange = null;
     try {
       const pdfjs = typeof this.pdfjs === 'function' ? await this.pdfjs() : await this.pdfjs;
       let data: Uint8Array;
@@ -1872,6 +2037,7 @@ export class FzlDocumentReader extends FzlWidgetMixin(LitElement) {
         if (gen !== this._pdfRenderGeneration) return;
       }
 
+      this._pdfTextLayers.delete(textLayerDiv);
       textLayerDiv.innerHTML = '';
       textLayerDiv.style.width = `${cssViewport.width}px`;
       textLayerDiv.style.height = `${cssViewport.height}px`;
@@ -1898,6 +2064,10 @@ export class FzlDocumentReader extends FzlWidgetMixin(LitElement) {
       }
 
       if (gen === this._pdfRenderGeneration) {
+        const endDiv = document.createElement('div');
+        endDiv.className = 'endOfContent';
+        textLayerDiv.append(endDiv);
+        this._pdfTextLayers.set(textLayerDiv, endDiv);
         this._renderedPages.add(pageNum);
       }
     } catch (err) {

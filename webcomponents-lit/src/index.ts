@@ -42,3 +42,5 @@ export * from './components/file-manager/file-manager.types';
 export * from './components/file-manager/file-manager.component';
 export * from './components/social-login/social-login.types';
 export * from './components/social-login/social-login.component';
+export * from './components/google-doc-editor/google-doc-editor.types';
+export * from './components/google-doc-editor/google-doc-editor.component';

@@ -99,6 +99,10 @@
       "types": "./dist/social-login.d.ts",
       "import": "./dist/social-login.js"
     },
+    "./google-doc-editor": {
+      "types": "./dist/google-doc-editor.d.ts",
+      "import": "./dist/google-doc-editor.js"
+    },
     "./controllers": {
       "types": "./dist/controllers.d.ts",
       "import": "./dist/controllers.js"

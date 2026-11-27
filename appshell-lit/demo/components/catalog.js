@@ -29,6 +29,7 @@ import audioCaptureDoc from '../../../docs/components/audio-capture.md?raw'
 import documentPickerDoc from '../../../docs/components/document-picker.md?raw'
 import fileManagerDoc from '../../../docs/components/file-manager.md?raw'
 import socialLoginDoc from '../../../docs/components/social-login.md?raw'
+import richTextEditorDoc from '../../../docs/components/rich-text-editor.md?raw'
 
 /** Categorias taxonômicas para classificação dos Web Components do ecossistema FZL. */
 export const componentCategories = [
@@ -662,6 +663,26 @@ export const catalog = [
         packageName: '@fzl/webcomponents-lit',
         manifest: litManifest,
         load: () => import('@fzl/webcomponents-lit/form'),
+      },
+    ],
+  },
+  {
+    id: 'rich-text-editor',
+    category: 'forms',
+    name: 'Rich Text & Table Editor',
+    icon: 'edit_note',
+    summary:
+      'Editor de texto rico (WYSIWYG) e tabelas reativo com visual padronizado, botões de formatação, sanitização integrada e suporte nativo a Shadow DOM.',
+    doc: richTextEditorDoc,
+    slotText: '',
+    implementations: [
+      {
+        id: 'lit',
+        label: 'Lit',
+        tag: 'fzl-lit-rich-text-editor',
+        packageName: '@fzl/webcomponents-lit',
+        manifest: litManifest,
+        load: () => import('@fzl/webcomponents-lit/rich-text-editor'),
       },
     ],
   },

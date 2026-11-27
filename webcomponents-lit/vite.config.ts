@@ -31,6 +31,7 @@ export default defineConfig({
         'file-manager': resolve(__dirname, 'src/components/file-manager/file-manager.component.ts'),
         'social-login': resolve(__dirname, 'src/components/social-login/social-login.component.ts'),
         'google-doc-editor': resolve(__dirname, 'src/components/google-doc-editor/google-doc-editor.component.ts'),
+        'rich-text-editor': resolve(__dirname, 'src/components/rich-text-editor/rich-text-editor.component.ts'),
         'controllers': resolve(__dirname, 'src/controllers/index.ts')
       },
       formats: ['es']

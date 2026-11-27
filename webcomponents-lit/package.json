@@ -107,7 +107,6 @@
       "types": "./dist/rich-text-editor.d.ts",
       "import": "./dist/rich-text-editor.js"
     },
-    },
     "./controllers": {
       "types": "./dist/controllers.d.ts",
       "import": "./dist/controllers.js"
